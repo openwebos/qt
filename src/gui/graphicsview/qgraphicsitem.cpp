@@ -2716,7 +2716,11 @@ void QGraphicsItem::setOpacity(qreal opacity)
     if (newOpacity == d_ptr->opacity)
         return;
 
+#ifndef QT_WEBOS
     bool wasFullyTransparent = d_ptr->isOpacityNull();
+#else // QT_WEBOS
+    bool wasFullyTransparent = d_ptr->opacity < qreal(0.001);
+#endif // QT_WEBOS
     d_ptr->opacity = newOpacity;
 
     // Notify change.
