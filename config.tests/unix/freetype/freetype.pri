@@ -1,3 +1,5 @@
+CONFIG += link_pkgconfig
+PKGCONFIG += freetype2
 !cross_compile {
     TRY_INCLUDEPATHS = /include /usr/include $$QMAKE_INCDIR $$QMAKE_INCDIR_X11 $$INCLUDEPATH
     # LSB doesn't allow using headers from /include or /usr/include

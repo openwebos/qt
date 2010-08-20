@@ -10,7 +10,11 @@ OUTDIR=$4
 
 # build and run a test program
 test -d "$OUTDIR/config.tests/unix/doubleformat" || mkdir -p "$OUTDIR/config.tests/unix/doubleformat"
+if [ ! true ] ; then # QT_WEBOS
 "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "QT_BUILD_TREE=$OUTDIR" "$SRCDIR/config.tests/unix/doubleformat/doubleformattest.pro" -o "$OUTDIR/config.tests/unix/doubleformat/Makefile" >/dev/null 2>&1
+else # QT_WEBOS
+"$OUTDIR/bin/qmake-palm" -nocache -spec "$QMKSPEC" "QT_BUILD_TREE=$OUTDIR" "$SRCDIR/config.tests/unix/doubleformat/doubleformattest.pro" -o "$OUTDIR/config.tests/unix/doubleformat/Makefile" >/dev/null 2>&1
+fi # QT_WEBOS
 cd "$OUTDIR/config.tests/unix/doubleformat"
 
 DOUBLEFORMAT="UNKNOWN"

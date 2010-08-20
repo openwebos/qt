@@ -59,7 +59,7 @@
 
 #include "qdebug.h"
 
-// #define GESTURE_DEBUG
+//#define GESTURE_DEBUG
 #ifndef GESTURE_DEBUG
 # define DEBUG if (0) qDebug
 #else
@@ -81,6 +81,9 @@ QGestureManager::QGestureManager(QObject *parent)
   #if defined(QT_MAC_USE_COCOA)
     registerGestureRecognizer(new QMacPanGestureRecognizer);
   #endif
+#elif defined(QT_WEBOS)										// for QT_WEBOS
+    registerGestureRecognizer(new QPinchGestureRecognizer);	// for QT_WEBOS
+    registerGestureRecognizer(new QTapGestureRecognizer);	// for QT_WEBOS
 #else
     registerGestureRecognizer(new QPanGestureRecognizer);
     registerGestureRecognizer(new QPinchGestureRecognizer);
@@ -162,7 +165,8 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
     QMap<ObjectGesture, QList<QGesture *> >::Iterator iter = m_objectGestures.begin();
     while (iter != m_objectGestures.end()) {
         ObjectGesture objectGesture = iter.key();
-        if (objectGesture.gesture == type && target == objectGesture.object) {
+        if (objectGesture.gesture == type && target == objectGesture.object.data()) {
+#if 1 // #ifndef QT_WEBOS // REBASE_CHECK_REQUIRED
             QSet<QGesture *> gestures = iter.value().toSet();
             for (QHash<QGestureRecognizer *, QSet<QGesture *> >::iterator
                  it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {
@@ -178,6 +182,26 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
                 m_gesturesToDelete.insert(g);
             }
 
+            qDeleteAll(iter.value());
+#else // QT_WEBOS
+            // Need to remove gestures from the active and maybe gestures containers.
+            // otherwise we will end up with a dangling reference and a crash if these
+            // gestures use a delayed timer
+            for (QList<QGesture *>::const_iterator it = iter.value().begin();
+                 it != iter.value().end(); ++it) {
+                QGesture* g = (*it);
+
+                m_activeGestures.remove(g);
+
+                QHash<QGesture *, QBasicTimer>::iterator i = m_maybeGestures.find(g);
+                if (i != m_maybeGestures.end()) {
+                    i.value().stop();
+                    m_maybeGestures.erase(i);
+                }
+            }
+
+            qDeleteAll(iter.value());
+#endif // QT_WEBOS
             iter = m_objectGestures.erase(iter);
         } else {
             ++iter;

@@ -326,4 +326,12 @@ void QEventLoop::wakeUp()
 void QEventLoop::quit()
 { exit(0); }
 
+#ifdef QT_WEBOS
+Qt::HANDLE QEventLoop::platformHandle() const
+{
+    Q_D(const QEventLoop);
+    d->threadData->eventDispatcher->platformHandle();
+}
+#endif // QT_WEBOS
+
 QT_END_NAMESPACE

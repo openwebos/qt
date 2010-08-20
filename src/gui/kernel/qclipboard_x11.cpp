@@ -56,10 +56,17 @@
 
 #include "qplatformdefs.h"
 
+#ifndef QT_WEBOS
 #include "qclipboard.h"
 #include "qclipboard_p.h"
 
 #ifndef QT_NO_CLIPBOARD
+#else // QT_WEBOS
+#ifndef QT_NO_CLIPBOARD
+
+#include "qclipboard.h"
+#include "qclipboard_p.h"
+#endif // QT_WEBOS
 
 #include "qabstracteventdispatcher.h"
 #include "qapplication.h"

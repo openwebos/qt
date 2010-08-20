@@ -91,6 +91,10 @@ public:
 
     static bool versionSupported();
 
+#ifdef QT_WEBOS
+    Qt::HANDLE platformHandle() const;
+#endif // QT_WEBOS
+
 protected:
     QEventDispatcherGlib(QEventDispatcherGlibPrivate &dd, QObject *parent);
 };

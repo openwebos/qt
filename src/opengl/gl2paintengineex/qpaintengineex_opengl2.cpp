@@ -194,6 +194,13 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
         updateMatrix();
 }
 
+#ifdef QT_WEBOS
+static inline bool isPowerOfTwo(int v)
+{
+    return (v & (v-1)) == 0;
+}
+#endif // QT_WEBOS
+
 void QGL2PaintEngineExPrivate::updateBrushTexture()
 {
     Q_Q(QGL2PaintEngineEx);
@@ -247,13 +254,19 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         QGLTexture *tex = ctx->d_func()->bindTexture(currentBrushPixmap, GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption |
                                                      QGLContext::CanFlipNativePixmapBindOption);
+#ifndef QT_WEBOS
+        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+#else // QT_WEBOS
         GLenum wrapMode = GL_REPEAT;
-#ifdef QT_OPENGL_ES_2
-        // should check for GL_OES_texture_npot or GL_IMG_texture_npot extension
-        if (!isPowerOfTwo(currentBrushPixmap.width()) || !isPowerOfTwo(currentBrushPixmap.height()))
+#if  defined(QT_OPENGL_ES_2)
+        // Standard OpenGL ES 2.0 spec says only supported option for npot textures is CLAMP_TO_EDGE.
+        // GL_OES_Texture_npot extension is supposed to allow the other modes, but SGX driver 1.5
+        // still has issues with it.
+        if (!isPowerOfTwo(texPixmap.width()) || !isPowerOfTwo(texPixmap.height()))
             wrapMode = GL_CLAMP_TO_EDGE;
 #endif
         updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+#endif // QT_WEBOS
         textureInvertedY = tex->options & QGLContext::InvertedYBindOption ? -1 : 1;
     }
     brushTextureDirty = false;
@@ -1789,6 +1802,16 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
             glEnable(GL_BLEND);
             glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 
+#ifdef QT_WEBOS
+            GLenum wrapMode = GL_REPEAT;
+#if  defined(QT_OPENGL_ES_2)
+            // Standard OpenGL ES 2.0 spec says only supported option for npot textures is CLAMP_TO_EDGE.
+            // GL_OES_Texture_npot extension is supposed to allow the other modes, but SGX driver 1.5
+            // still has issues with it.
+            wrapMode = GL_CLAMP_TO_EDGE;
+#endif
+#endif // QT_WEBOS
+            
             glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
             glBindTexture(GL_TEXTURE_2D, cache->texture());
 #if !defined(QT_NO_DEBUG) && defined(QT_OPENGL_ES_2)
@@ -1800,7 +1823,11 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
                 qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
             }
 #endif
+#ifndef QT_WEBOS
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+#else // QT_WEBOS
+            updateTextureFilter(GL_TEXTURE_2D, wrapMode, false);
+#endif // QT_WEBOS
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
             glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);
@@ -1830,41 +1857,29 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         prepareForDraw(false); // Text always causes src pixels to be transparent
     }
 
-    QGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QGLTextureGlyphCache::Linear:QGLTextureGlyphCache::Nearest;
-    if (lastMaskTextureUsed != cache->texture() || cache->filterMode() != filterMode) {
-
-        glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
-        if (lastMaskTextureUsed != cache->texture()) {
-            glBindTexture(GL_TEXTURE_2D, cache->texture());
-            lastMaskTextureUsed = cache->texture();
-        }
-
-        if (cache->filterMode() != filterMode) {
-            if (filterMode == QGLTextureGlyphCache::Linear) {
-                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            } else {
-                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            }
-            cache->setFilterMode(filterMode);
-        }
-    }
-
-    bool srgbFrameBufferEnabled = false;
-    if (ctx->d_ptr->extension_flags & QGLExtensions::SRGBFrameBuffer) {
-#if defined(Q_WS_MAC)
-        if (glyphType == QFontEngineGlyphCache::Raster_RGBMask)
-#elif defined(Q_WS_WIN)
-        if (glyphType != QFontEngineGlyphCache::Raster_RGBMask || fontSmoothingApproximately(2.1))
-#else
-        if (false)
+#ifdef QT_WEBOS
+    GLenum wrapMode = GL_REPEAT;
+#if  defined(QT_OPENGL_ES_2)
+    // Standard OpenGL ES 2.0 spec says only supported option for npot textures is CLAMP_TO_EDGE.
+    // GL_OES_Texture_npot extension is supposed to allow the other modes, but SGX driver 1.5
+    // still has issues with it.
+    wrapMode = GL_CLAMP_TO_EDGE;
 #endif
-        {
-            glEnable(FRAMEBUFFER_SRGB_EXT);
-            srgbFrameBufferEnabled = true;
-        }
+#endif // QT_WEBOS
+	
+    glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+    if (lastMaskTextureUsed != cache->texture()) {
+        glBindTexture(GL_TEXTURE_2D, cache->texture());
+        lastMaskTextureUsed = cache->texture();
     }
+#ifndef QT_WEBOS
+    updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, s->matrix.type() > QTransform::TxTranslate);
+#else // QT_WEBOS
+    updateTextureFilter(GL_TEXTURE_2D, wrapMode, false);
+#endif // QT_WEBOS
+
+    shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
+>>>>>>> Rebased off qt v4.7.0-rc1.
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
     glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);

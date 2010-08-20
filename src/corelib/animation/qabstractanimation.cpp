@@ -1048,6 +1048,17 @@ void QAbstractAnimation::updateDirection(QAbstractAnimation::Direction direction
     Q_UNUSED(direction);
 }
 
+#ifdef QT_WEBOS
+void QAbstractAnimation::setAnimationTimerInterval(int ms)
+{
+    QUnifiedTimer::instance()->setTimingInterval(ms);
+}
+
+int QAbstractAnimation::animationTimerInterval()
+{
+    return QUnifiedTimer::instance()->getTimingInterval();
+}
+#endif // QT_WEBOS
 
 QT_END_NAMESPACE
 

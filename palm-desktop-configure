@@ -1,0 +1,5 @@
+#!/bin/bash
+relpath=$0
+D=`dirname "$relpath"`
+abspath="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/configure"
+$abspath --prefix=$LUNA_STAGING -debug -opensource -no-cups -no-nis -no-openssl -no-exceptions -no-accessibility -no-qt3support -no-xmlpatterns -no-multimedia -no-phonon -no-phonon-backend -system-sqlite -no-svg -no-webkit -no-javascript-jit -no-script -no-scripttools -no-dbus -reduce-relocations -force-pkg-config -glib -no-gtkstyle -no-xinput -opengl -qconfig palm -confirm-license -make 'libs tools'

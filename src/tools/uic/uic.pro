@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = uic
+TARGET = uic-palm
 
 DESTDIR = ../../../bin
 DEFINES += QT_UIC

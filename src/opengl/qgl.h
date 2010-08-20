@@ -389,6 +389,12 @@ public:
     QPaintDevice* device() const;
     QColor overlayTransparentColor() const;
 
+#ifdef QT_WEBOS
+#if defined(Q_WS_QWS)
+    void setEglSwapInterval(int interval);
+#endif
+#endif // QT_WEBOS
+
     static const QGLContext* currentContext();
 
 #ifdef Q_WS_QPA

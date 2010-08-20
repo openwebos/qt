@@ -46,6 +46,9 @@ HEADERS += \
         painting/qtransform.h \
         painting/qwindowsurface_p.h \
         painting/qwmatrix.h \
+        painting/qareaallocator_p.h \
+        painting/qareaallocator.h \
+        painting/qpixmapatlas.h \
         painting/qpaintbuffer_p.h
 
 
@@ -86,6 +89,8 @@ SOURCES += \
         painting/qtextureglyphcache.cpp \
         painting/qtransform.cpp \
         painting/qwindowsurface.cpp \
+        painting/qareaallocator.cpp \
+        painting/qpixmapatlas.cpp \
         painting/qpaintbuffer.cpp
 
         SOURCES +=                                      \

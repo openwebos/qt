@@ -91,6 +91,10 @@ public:
     EventFilter setEventFilter(EventFilter filter);
     bool filterEvent(void *message);
 
+#ifdef QT_WEBOS
+    virtual Qt::HANDLE platformHandle() const { return 0; }
+#endif // QT_WEBOS
+
 Q_SIGNALS:
     void aboutToBlock();
     void awake();

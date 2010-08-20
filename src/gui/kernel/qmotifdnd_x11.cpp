@@ -764,6 +764,7 @@ QVariant QX11Data::motifdndObtainData(const char *mimeType)
 
     XFlush(X11->display);
 
+#ifndef QT_NO_CLIPBOARD // for QT_WEBOS
     XEvent xevent;
     bool got=X11->clipboardWaitForEvent(tw->internalWinId(), SelectionNotify, &xevent, 5000);
     if (got) {
@@ -779,6 +780,7 @@ QVariant QX11Data::motifdndObtainData(const char *mimeType)
 
     // wait again for SelectionNotify event
     X11->clipboardWaitForEvent(tw->internalWinId(), SelectionNotify, &xevent, 5000);
+#endif // QT_NO_CLIPBOARD // for QT_WEBOS
 
     if ((dropWidget->windowType() == Qt::Desktop)) {
         delete tw;

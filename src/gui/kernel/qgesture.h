@@ -66,19 +66,30 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGesture)
 
+#ifndef QT_WEBOS
     Q_PROPERTY(Qt::GestureState state READ state)
+#else // QT_WEBOS
+    Q_PROPERTY(Qt::GestureState state READ state WRITE setState)
+#endif // QT_WEBOS
     Q_PROPERTY(Qt::GestureType gestureType READ gestureType)
     Q_PROPERTY(QGesture::GestureCancelPolicy gestureCancelPolicy READ gestureCancelPolicy WRITE setGestureCancelPolicy)
     Q_PROPERTY(QPointF hotSpot READ hotSpot WRITE setHotSpot RESET unsetHotSpot)
     Q_PROPERTY(bool hasHotSpot READ hasHotSpot)
 
 public:
+#ifndef QT_WEBOS
     explicit QGesture(QObject *parent = 0);
+#else // QT_WEBOS
+    explicit QGesture(QObject *parent = 0, Qt::GestureType type = Qt::CustomGesture);
+#endif // QT_WEBOS
     ~QGesture();
 
     Qt::GestureType gestureType() const;
 
     Qt::GestureState state() const;
+#ifdef QT_WEBOS
+    void setState(Qt::GestureState state);
+#endif // QT_WEBOS
 
     QPointF hotSpot() const;
     void setHotSpot(const QPointF &value);

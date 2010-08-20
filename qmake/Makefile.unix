@@ -86,17 +86,17 @@ CPPFLAGS = -g -I. -Igenerators -Igenerators/unix -Igenerators/win32 \
 
 CXXFLAGS = @QMAKE_CXXFLAGS@ $(CPPFLAGS)
 
-first all: $(BUILD_PATH)/bin/qmake
-qmake: $(BUILD_PATH)/bin/qmake
+first all: $(BUILD_PATH)/bin/qmake-palm
+qmake: $(BUILD_PATH)/bin/qmake-palm
 
-$(BUILD_PATH)/bin/qmake: $(OBJS) $(QOBJS)
+$(BUILD_PATH)/bin/qmake-palm: $(OBJS) $(QOBJS)
 	$(CXX) -o "$@" $(OBJS) $(QOBJS) $(LFLAGS)
 
 clean::
 	rm -f $(OBJS) $(QOBJS)
 
 distclean:: clean
-	rm -rf $(BUILD_PATH)/bin/qmake .deps
+	rm -rf $(BUILD_PATH)/bin/qmake-palm .deps
 
 depend:
 	makedepend -D__MAKEDEPEND__ $(CPPFLAGS) $(DEPEND_SRC)

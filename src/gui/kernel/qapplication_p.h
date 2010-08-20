@@ -666,6 +666,9 @@ private:
 Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
                                             QTouchEvent::DeviceType deviceType,
                                             const QList<QTouchEvent::TouchPoint> &touchPoints);
+#ifdef QT_WEBOS
+Q_GUI_EXPORT bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
+#endif // QT_WEBOS
 
 #if defined(Q_WS_WIN)
   extern void qt_win_set_cursor(QWidget *, bool);

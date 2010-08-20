@@ -983,8 +983,17 @@ bool KeymapParser::parseSymbol(const QByteArray &str, const QTextCodec * /*codec
     }
 
     // map unicode in the iso-8859-1 range to Qt key codes
+#ifndef QT_WEBOS
     if (unicode >= 0x0020 && unicode <= 0x00ff && qtcode == Qt::Key_unknown)
         qtcode = unicode; // iso-8859-1
+#else // QT_WEBOS
+    if (unicode >= 0x0020 && unicode <= 0x00ff && qtcode == Qt::Key_unknown) {
+        if (unicode >= 0x0061 && unicode <= 0x007a)
+            qtcode = unicode - 0x20; // convert lower case to upper case
+        else
+            qtcode = unicode; // iso-8859-1
+    }
+#endif // QT_WEBOS
 
     return true;
 }

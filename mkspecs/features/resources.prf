@@ -1,5 +1,5 @@
 defined(qtPrepareTool)|load(qt_functions) ### Qt 5: see default_pre.prf
-qtPrepareTool(QMAKE_RCC, rcc)
+qtPrepareTool(QMAKE_RCC, rcc-palm)
 
 isEmpty(RCC_DIR):RCC_DIR = .
 isEmpty(QMAKE_RESOURCE_PREFIX):QMAKE_RESOURCE_PREFIX = /tmp/

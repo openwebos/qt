@@ -701,6 +701,18 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     if (item == dragDropItem)
         dragDropItem = 0;
 
+#ifdef QT_WEBOS
+    // Make sure to remove any reference to this item from current gestureTargets
+    QHash<QGesture*, QGraphicsObject*>::iterator iter = gestureTargets.begin();
+    while (iter != gestureTargets.end()) {
+        if (iter.value() == item) {
+            iter = gestureTargets.erase(iter);
+        }
+        else
+            ++iter;
+    }
+#endif // QT_WEBOS
+	
     // Reenable selectionChanged() for individual items
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
@@ -5861,7 +5873,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
         return;
     }
 
+#ifndef QT_WEBOS
     bool ignoreSceneTouchEvent = true;
+#else // QT_WEBOS
+    bool acceptSceneTouchEvent = true;
+#endif // QT_WEBOS
     QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator it = itemsNeedingEvents.constBegin();
     const QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator end = itemsNeedingEvents.constEnd();
     for (; it != end; ++it) {
@@ -5911,7 +5927,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
                     itemForTouchPointId.remove(touchPoint.id());
                     sceneCurrentTouchPoints.remove(touchPoint.id());
                 }
+#ifndef QT_WEBOS
                 ignoreSceneTouchEvent = false;
+#else // QT_WEBOS
+                acceptSceneTouchEvent = false;
+#endif // QT_WEBOS
             }
             break;
         }
@@ -5919,12 +5939,20 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             if (item->d_ptr->acceptedTouchBeginEvent) {
                 updateTouchPointsForItem(item, &touchEvent);
                 (void) sendEvent(item, &touchEvent);
+#ifndef QT_WEBOS
                 ignoreSceneTouchEvent = false;
+#else // QT_WEBOS
+                acceptSceneTouchEvent = false;
+#endif // QT_WEBOS
             }
             break;
         }
     }
+#ifndef QT_WEBOS
     sceneTouchEvent->setAccepted(ignoreSceneTouchEvent);
+#else // QT_WEBOS
+    sceneTouchEvent->setAccepted(acceptSceneTouchEvent);
+#endif // QT_WEBOS
 }
 
 bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEvent *touchEvent)

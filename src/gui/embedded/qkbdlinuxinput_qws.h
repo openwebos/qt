@@ -56,7 +56,11 @@ QT_MODULE(Gui)
 
 class QWSLinuxInputKbPrivate;
 
+#ifndef QT_WEBOS
 class QWSLinuxInputKeyboardHandler : public QWSKeyboardHandler
+#else // QT_WEBOS
+class Q_GUI_EXPORT QWSLinuxInputKeyboardHandler : public QWSKeyboardHandler
+#endif // QT_WEBOS
 {
 public:
     QWSLinuxInputKeyboardHandler(const QString&);

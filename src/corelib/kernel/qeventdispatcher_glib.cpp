@@ -54,6 +54,12 @@
 
 #include <glib.h>
 
+#ifdef QT_WEBOS
+#ifdef QT_USE_TIMERFD
+#include <sys/timerfd.h>
+#endif
+#endif // QT_WEBOS
+
 QT_BEGIN_NAMESPACE
 
 struct GPollFDWithQSocketNotifier
@@ -125,6 +131,11 @@ static GSourceFuncs socketNotifierSourceFuncs = {
 struct GTimerSource
 {
     GSource source;
+#ifdef QT_WEBOS
+#ifdef QT_USE_TIMERFD
+    GPollFD timerPollFd;
+#endif
+#endif // QT_WEBOS
     QTimerInfoList timerList;
     QEventLoop::ProcessEventsFlags processEventsFlags;
     bool runWithIdlePriority;
@@ -132,17 +143,59 @@ struct GTimerSource
 
 static gboolean timerSourcePrepareHelper(GTimerSource *src, gint *timeout)
 {
+#ifndef QT_WEBOS
     timeval tv = { 0l, 0l };
     if (!(src->processEventsFlags & QEventLoop::X11ExcludeTimers) && src->timerList.timerWait(tv))
         *timeout = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
     else
         *timeout = -1;
+#else // QT_WEBOS
+    timeval tv = { 0l, 0l };
+
+#ifdef QT_USE_TIMERFD
+    struct itimerspec its = { 0 };
+#endif
+
+    if (!(src->processEventsFlags & QEventLoop::X11ExcludeTimers) && src->timerList.timerWait(tv)) {
+        *timeout = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+#ifdef QT_USE_TIMERFD
+	// enable timerfd with a one-shot value
+        if (src->timerPollFd.fd != -1) {
+            its.it_value.tv_sec = tv.tv_sec;
+            its.it_value.tv_nsec = tv.tv_usec * 1000;
+            ::timerfd_settime(src->timerPollFd.fd, 0, &its, 0);
+        }
+#endif
+    } else {
+	// no timers so set infinite time for this source
+        *timeout = -1;
+#ifdef QT_USE_TIMERFD
+	// and disable the timerfd
+        if (src->timerPollFd.fd != -1) {
+            ::timerfd_settime(src->timerPollFd.fd, 0, &its, 0);
+        }
+#endif
+    }
+
+#endif // QT_WEBOS
 
     return (*timeout == 0);
 }
 
 static gboolean timerSourceCheckHelper(GTimerSource *src)
 {
+#ifdef QT_WEBOS
+#ifdef QT_USE_TIMERFD
+    // ret is the number of times that the timerfd fired
+    // since we last read it
+    //
+    // this timerfd is set to non-blocking, so we won't block here
+    uint64_t ret;
+    if ((src->timerPollFd.fd != -1) && (src->timerPollFd.revents & G_IO_IN))
+        read(src->timerPollFd.fd, &ret, sizeof(ret));
+#endif
+#endif // QT_WEBOS
+
     if (src->timerList.isEmpty()
         || (src->processEventsFlags & QEventLoop::X11ExcludeTimers))
         return false;
@@ -182,7 +235,11 @@ static gboolean timerSourceDispatch(GSource *source, GSourceFunc, gpointer)
     GTimerSource *timerSource = reinterpret_cast<GTimerSource *>(source);
     if (timerSource->processEventsFlags & QEventLoop::X11ExcludeTimers)
         return true;
+#ifndef QT_WEBOS
     timerSource->runWithIdlePriority = true;
+#else // QT_WEBOS
+    timerSource->runWithIdlePriority = false;
+#endif // QT_WEBOS
     (void) timerSource->timerList.activateTimers();
     return true; // ??? don't remove, right again?
 }
@@ -340,6 +397,33 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     timerSource->processEventsFlags = QEventLoop::AllEvents;
     timerSource->runWithIdlePriority = false;
     g_source_set_can_recurse(&timerSource->source, true);
+
+#ifdef QT_WEBOS
+#ifdef QT_USE_TIMERFD
+    int timerfd = ::timerfd_create(CLOCK_MONOTONIC, 0);
+        
+    timerSource->timerPollFd.fd = timerfd;
+
+    if (timerfd == -1) {
+        qErrnoWarning(errno, "timerfd_create failed");
+    } else {
+        // TFD_NONBLOCK is not always defined, so use fcntl to set non-blocking
+        long flags = ::fcntl(timerfd, F_GETFL);
+       
+        if (flags == -1) {
+            qErrnoWarning(errno, "fcntl F_GETFL failed");
+        } else {
+            if (::fcntl(timerfd, F_SETFL, flags | O_NONBLOCK) == -1) {
+                qErrnoWarning(errno, "fcntl F_SETFL failed");
+            }
+        }
+
+        timerSource->timerPollFd.events = G_IO_IN;
+        g_source_add_poll(&timerSource->source, &timerSource->timerPollFd);
+    }
+#endif
+#endif // QT_WEBOS
+
     g_source_attach(&timerSource->source, mainContext);
 
     idleTimerSource = reinterpret_cast<GIdleTimerSource *>(g_source_new(&idleTimerSourceFuncs,
@@ -347,7 +431,9 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     idleTimerSource->timerSource = timerSource;
     g_source_set_can_recurse(&idleTimerSource->source, true);
     g_source_set_priority(&idleTimerSource->source, G_PRIORITY_DEFAULT_IDLE);
+#ifndef QT_WEBOS
     g_source_attach(&idleTimerSource->source, mainContext);
+#endif // QT_WEBOS
 }
 
 void QEventDispatcherGlibPrivate::runTimersOnceWithNormalPriority()
@@ -374,7 +460,9 @@ QEventDispatcherGlib::~QEventDispatcherGlib()
     g_source_destroy(&d->timerSource->source);
     g_source_unref(&d->timerSource->source);
     d->timerSource = 0;
+#ifndef QT_WEBOS
     g_source_destroy(&d->idleTimerSource->source);
+#endif // QT_WEBOS
     g_source_unref(&d->idleTimerSource->source);
     d->idleTimerSource = 0;
 
@@ -592,6 +680,14 @@ bool QEventDispatcherGlib::versionSupported()
     return ((GLIB_MAJOR_VERSION << 16) + (GLIB_MINOR_VERSION << 8) + GLIB_MICRO_VERSION) >= 0x020301;
 #endif
 }
+
+#ifdef QT_WEBOS
+Qt::HANDLE QEventDispatcherGlib::platformHandle() const
+{
+    Q_D(const QEventDispatcherGlib);
+    return reinterpret_cast<Qt::HANDLE>(d->mainContext);
+}
+#endif // QT_WEBOS
 
 QEventDispatcherGlib::QEventDispatcherGlib(QEventDispatcherGlibPrivate &dd, QObject *parent)
     : QAbstractEventDispatcher(dd, parent)

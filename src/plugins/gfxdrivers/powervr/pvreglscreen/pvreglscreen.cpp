@@ -53,6 +53,21 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#ifdef QT_WEBOS
+#include <QtGui/private/qgraphicssystem_qws_p.h>
+#include <QtOpenGL/private/qpixmapdata_gl_p.h>
+
+class PvrEglScreenPrivate : public QWSGraphicsSystem
+{
+public:
+
+    virtual QPixmapData* createPixmapData(QPixmapData::PixelType type) const {
+        return new QGLPixmapData(type);
+    }
+
+};
+#endif // QT_WEBOS
+
 //![0]
 PvrEglScreen::PvrEglScreen(int displayId)
     : QGLScreen(displayId)
@@ -151,6 +166,10 @@ bool PvrEglScreen::connect(const QString &displaySpec)
         ttyDevice = ttyRegExp.cap(1);
     if (displayArgs.contains(QLatin1String("nographicsmodeswitch")))
         doGraphicsMode = false;
+
+#ifdef QT_WEBOS
+    setGraphicsSystem(new PvrEglScreenPrivate);
+#endif // QT_WEBOS
 
     // The screen is ready.
     return true;

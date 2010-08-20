@@ -88,6 +88,10 @@ public:
 
     void wakeUp();
 
+#ifdef QT_WEBOS
+    Qt::HANDLE platformHandle() const;
+#endif // QT_WEBOS
+
 public Q_SLOTS:
     void quit();
 };

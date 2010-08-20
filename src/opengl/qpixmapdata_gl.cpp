@@ -287,6 +287,14 @@ bool QGLPixmapData::isValid() const
 
 bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
 {
+#ifdef QT_WEBOS
+#ifdef QT_OPENGL_ES_2	
+   // HACK: this is to prevent binding textures in here which
+   // causes some textures to appear inverted
+   return false;
+#endif
+#endif // QT_WEBOS
+	
     if (ctx == m_ctx)
         return true;
 

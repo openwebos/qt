@@ -229,6 +229,10 @@ public:
     ~QKeyEvent();
 
     int key() const { return k; }
+#ifdef QT_WEBOS
+	void setKey(int key) { k = key; }
+	bool isGestureKey() { if (k > Qt::Key_Gesture_Key_Range_Start && k < Qt::Key_Gesture_Key_Range_End) return true; return false; }
+#endif // QT_WEBOS
 #ifndef QT_NO_SHORTCUT
     bool matches(QKeySequence::StandardKey key) const;
 #endif

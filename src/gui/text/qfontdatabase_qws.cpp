@@ -215,7 +215,12 @@ bool QFontDatabasePrivate::loadFromCache(const QString &fontPath)
     while (!familyname.isEmpty() && !stream.atEnd()) {
         QString foundryname;
         int weight;
+#ifndef QT_WEBOS
         quint8 italic;
+#else // QT_WEBOS
+        int italicObliqueStyle;
+        int stretch;
+#endif // QT_WEBOS
         int pixelSize;
         QByteArray file;
         int fileIndex;
@@ -224,8 +229,13 @@ bool QFontDatabasePrivate::loadFromCache(const QString &fontPath)
 
         QList<QFontDatabase::WritingSystem> writingSystems;
 
+#ifndef QT_WEBOS
         stream >> foundryname >> weight >> italic >> pixelSize
                >> file >> fileIndex >> antialiased >> writingSystemCount;
+#else // QT_WEBOS
+        stream >> foundryname >> weight >> italicObliqueStyle >> stretch >> pixelSize
+               >> file >> fileIndex >> antialiased >> writingSystemCount;
+#endif // QT_WEBOS
 
         for (quint8 i = 0; i < writingSystemCount; ++i) {
             quint8 ws;
@@ -233,8 +243,13 @@ bool QFontDatabasePrivate::loadFromCache(const QString &fontPath)
             writingSystems.append(QFontDatabase::WritingSystem(ws));
         }
 
+#ifndef QT_WEBOS
         addFont(familyname, foundryname.toLatin1().constData(), weight, italic, pixelSize, file, fileIndex, antialiased,
                 writingSystems);
+#else // QT_WEBOS
+        addFont(familyname, foundryname.toLatin1().constData(), weight, italicObliqueStyle, pixelSize, file, fileIndex, antialiased, stretch,
+                writingSystems);
+#endif // QT_WEBOS
 
         stream >> familyname;
     }
@@ -257,8 +272,17 @@ static QString qwsFontPath()
         fontpath = QLatin1String(":/qt/fonts");
 #else
 #ifndef QT_NO_SETTINGS
+#ifndef QT_WEBOS
         fontpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
         fontpath += QLatin1String("/fonts");
+#else // QT_WEBOS
+#ifndef PALM_DEVICE
+        fontpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
+        fontpath += QLatin1String("/fonts");
+#else
+        fontpath = QLatin1String("/usr/share/fonts");
+#endif //PALM_DEVICE
+#endif // QT_WEBOS
 #else
         fontpath = QLatin1String("/lib/fonts");
 #endif
@@ -403,6 +427,66 @@ static void initializeDb()
 #endif
 #endif //QT_FONTS_ARE_RESOURCES
 
+#ifdef QT_WEBOS
+    // Fix for NOV-106613
+    // In order to avoid choosing Chinese characters from the Dotum font instead of HeiS font, we need to order the fallback fonts properly,
+    // instead of leaving it to qt to order them alphabetically based on the name of the font.
+    // the following order for the CJK fonts has been taken from PGFallbackFonts.cpp:
+    // 1- "Hei S"  2- "HeiT"  3- "Heisei Kaku Gothic"  4- "Dotum"
+    
+    // "Hei S"
+    QtFontFamily* heisFontFamily = NULL;
+    int index = 0;
+    for (; index < db->count; index++) {
+    	if (db->families[index]->name == QString::fromAscii("Hei S")) {
+    		heisFontFamily = db->families[index];
+    		break;
+    	}
+    }
+    if (heisFontFamily) {
+    	db->families[index] = db->families[0];
+    	db->families[0] = heisFontFamily;
+    }
+
+	// "HeiT"
+    QtFontFamily* heitFontFamily = NULL;
+    for (index = 0; index < db->count; index++) {
+    	if (db->families[index]->name == QString::fromAscii("HeiT")) {
+    		heitFontFamily = db->families[index];
+    		break;
+    	}
+    }
+    if (heitFontFamily) {
+    	db->families[index] = db->families[1];
+    	db->families[1] = heitFontFamily;
+    }
+
+	// "Heisei Kaku Gothic"
+    QtFontFamily* heiseiKakuFontFamily = NULL;
+    for (index = 0; index < db->count; index++) {
+    	if (db->families[index]->name == QString::fromAscii("Heisei Kaku Gothic")) {
+    		heiseiKakuFontFamily = db->families[index];
+    		break;
+    	}
+    }
+    if (heiseiKakuFontFamily) {
+    	db->families[index] = db->families[2];
+    	db->families[2] = heiseiKakuFontFamily;
+    }
+
+	// "Dotum"
+    QtFontFamily* dotumFontFamily = NULL;
+    for (index = 0; index < db->count; index++) {
+    	if (db->families[index]->name == QString::fromAscii("Dotum")) {
+    		dotumFontFamily = db->families[index];
+    		break;
+    	}
+    }
+    if (dotumFontFamily) {
+    	db->families[index] = db->families[3];
+    	db->families[3] = dotumFontFamily;
+    }
+#endif // QT_WEBOS
 
 #ifdef QFONTDATABASE_DEBUG
     // print the database
@@ -464,11 +548,19 @@ static void initializeDb()
             if (weight <= 0)
                 weight = QFont::Normal;
 
+#ifndef QT_WEBOS
             db->addFont(info.family(), foundry.toLatin1().constData(),
                         weight, info.style() != QFont::StyleNormal,
                         qRound(info.pixelSize()), /*file*/QByteArray(),
                         /*fileIndex*/0, /*antiAliased*/true,
                         info.writingSystems());
+#else // QT_WEBOS
+            db->addFont(info.family(), foundry.toLatin1().constData(),
+                        weight, info.style() != QFont::StyleNormal,
+                        qRound(info.pixelSize()), /*file*/QByteArray(),
+                        /*fileIndex*/0, /*antiAliased*/true, QFont::Unstretched,
+                        info.writingSystems());
+#endif // QT_WEBOS
         }
     }
 #endif

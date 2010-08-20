@@ -108,6 +108,10 @@ unix:!symbian {
                 kernel/qcrashhandler_p.h
 
         contains(QT_CONFIG, glib) {
+            contains(QT_CONFIG, timerfd) {
+                DEFINES += QT_USE_TIMERFD
+            }
+
             SOURCES += \
                 kernel/qeventdispatcher_glib.cpp
             HEADERS += \

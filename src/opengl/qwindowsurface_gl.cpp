@@ -247,12 +247,21 @@ static void qt_cleanup_gl_share_widget()
         _qt_gl_share_widget()->cleanup();
 }
 
+#ifndef QT_WEBOS
 QGLWidget* qt_gl_share_widget()
 {
     if (QGLGlobalShareWidget::cleanedUp)
         return 0;
     return _qt_gl_share_widget()->shareWidget();
 }
+#else // QT_WEBOS
+QGLWidget* qt_dummyShareWidget = 0;
+
+QGLWidget* qt_gl_share_widget()
+{
+    return qt_dummyShareWidget;
+}
+#endif // QT_WEBOS
 
 void qt_destroy_gl_share_widget()
 {

@@ -144,7 +144,7 @@ qmake.path=$$[QT_INSTALL_BINS]
 win32 {
    qmake.files=$$QT_BUILD_TREE/bin/qmake.exe
 } else {
-   qmake.files=$$QT_BUILD_TREE/bin/qmake
+   qmake.files=$$QT_BUILD_TREE/bin/qmake-palm
 }
 INSTALLS += qmake
 

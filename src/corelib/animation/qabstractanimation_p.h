@@ -157,6 +157,13 @@ public:
     //defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
     void setTimingInterval(int interval);
 
+#ifdef QT_WEBOS
+    int getTimingInterval() const
+    {
+        return timingInterval;
+    }
+#endif // QT_WEBOS
+
     /*
        this allows to have a consistent timer interval at each tick from the timer
        not taking the real time that passed into account.

@@ -106,6 +106,11 @@ public:
     virtual int duration() const = 0;
     int totalDuration() const;
 
+#ifdef QT_WEBOS
+    static void setAnimationTimerInterval(int ms);
+    static int animationTimerInterval();
+#endif // QT_WEBOS
+
 Q_SIGNALS:
     void finished();
     void stateChanged(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);

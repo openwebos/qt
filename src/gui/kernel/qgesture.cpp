@@ -98,10 +98,18 @@ QT_BEGIN_NAMESPACE
     QGesture objects are created by gesture recognizers in the
     QGestureRecognizer::create() function.
 */
+#ifndef QT_WEBOS
 QGesture::QGesture(QObject *parent)
+#else // QT_WEBOS
+QGesture::QGesture(QObject *parent, Qt::GestureType type)
+#endif // QT_WEBOS
     : QObject(*new QGesturePrivate, parent)
 {
+#ifndef QT_WEBOS
     d_func()->gestureType = Qt::CustomGesture;
+#else // QT_WEBOS
+    d_func()->gestureType = type;
+#endif // QT_WEBOS
 }
 
 /*!
@@ -156,6 +164,13 @@ Qt::GestureState QGesture::state() const
 {
     return d_func()->state;
 }
+
+#ifdef QT_WEBOS
+void QGesture::setState(Qt::GestureState state)
+{
+	d_func()->state = state;
+}
+#endif // QT_WEBOS
 
 QPointF QGesture::hotSpot() const
 {

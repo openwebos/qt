@@ -214,10 +214,15 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     if (d->sharing && shareContext)
         const_cast<QGLContext *>(shareContext)->d_func()->sharing = true;
 
+#ifndef QT_WEBOS
 #if defined(EGL_VERSION_1_1)
     if (d->glFormat.swapInterval() != -1 && devType == QInternal::Widget)
         eglSwapInterval(d->eglContext->display(), d->glFormat.swapInterval());
 #endif
+#else // QT_WEBOS
+    printf("Turning vsync %s\n", d->glFormat.swapInterval() ? "on" : "off");
+    eglSwapInterval(d->eglContext->display(), d->glFormat.swapInterval());
+#endif // QT_WEBOS
 
     // Create the EGL surface to draw into.  We cannot use
     // QEglContext::createSurface() because it does not have
@@ -232,6 +237,13 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     return true;
 }
 
+#ifdef QT_WEBOS
+void QGLContext::setEglSwapInterval(int interval){
+    Q_D(QGLContext);
+    printf("Turning vsync %s\n", interval ? "on" : "off");
+    eglSwapInterval(d->eglContext->display(), interval);
+}
+#endif // QT_WEBOS
 
 bool QGLWidget::event(QEvent *e)
 {

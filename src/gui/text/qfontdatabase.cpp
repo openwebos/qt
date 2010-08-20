@@ -732,11 +732,18 @@ public:
     bool loadFromCache(const QString &fontPath);
     void addQPF2File(const QByteArray &file);
 #endif // Q_WS_QWS
-#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
+#ifndef QT_WEBOS
     void addFont(const QString &familyname, const char *foundryname, int weight,
                  bool italic, int pixelSize, const QByteArray &file, int fileIndex,
                  bool antialiased,
                  const QList<QFontDatabase::WritingSystem> &writingSystems = QList<QFontDatabase::WritingSystem>());
+#else // QT_WEBOS
+    void addFont(const QString &familyname, const char *foundryname, int weight, 
+                 int italicObliqueStyle, int pixelSize, const QByteArray &file, int fileIndex,
+                 bool antialiased, int stretch = QFont::Unstretched,
+                 const QList<QFontDatabase::WritingSystem> &writingSystems = QList<QFontDatabase::WritingSystem>());
+#endif // QT_WEBOS
 #ifndef QT_NO_FREETYPE
     QStringList addTTFile(const QByteArray &file, const QByteArray &fontData = QByteArray());
 #endif // QT_NO_FREETYPE
@@ -797,16 +804,30 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
     return families[pos];
 }
 
-#if defined(Q_WS_QWS) ||  defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
+#ifndef QT_WEBOS
 void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundryname, int weight, bool italic, int pixelSize,
                                    const QByteArray &file, int fileIndex, bool antialiased,
                                    const QList<QFontDatabase::WritingSystem> &writingSystems)
+#else // QT_WEBOS
+void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundryname, int weight, int italicObliqueStyle, int pixelSize,
+                                   const QByteArray &file, int fileIndex, bool antialiased, int stretch,
+                                   const QList<QFontDatabase::WritingSystem> &writingSystems)
+#endif // QT_WEBOS
 {
+#ifndef QT_WEBOS
 //    qDebug() << "Adding font" << familyname << weight << italic << pixelSize << file << fileIndex << antialiased;
     QtFontStyle::Key styleKey;
     styleKey.style = italic ? QFont::StyleItalic : QFont::StyleNormal;
     styleKey.weight = weight;
     styleKey.stretch = 100;
+#else // QT_WEBOS
+//    qDebug() << "Adding font" << familyname << weight << italicObliqueStyle << pixelSize << file << fileIndex << antialiased << stretch;
+    QtFontStyle::Key styleKey;
+    styleKey.style = italicObliqueStyle;
+    styleKey.weight = weight;
+    styleKey.stretch = stretch;
+#endif // QT_WEBOS
     QtFontFamily *f = family(familyname, true);
 
     if (writingSystems.isEmpty()) {
@@ -830,8 +851,13 @@ void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundr
 
 #if defined(Q_WS_QWS)
     if (stream) {
+#ifndef QT_WEBOS
         *stream << familyname << foundry->name << weight << quint8(italic) << pixelSize
                 << file << fileIndex << quint8(antialiased);
+#else // QT_WEBOS
+        *stream << familyname << foundry->name << weight << italicObliqueStyle << stretch << pixelSize
+                << file << fileIndex << quint8(antialiased);
+#endif // QT_WEBOS
         *stream << quint8(writingSystems.count());
         for (int i = 0; i < writingSystems.count(); ++i)
             *stream << quint8(writingSystems.at(i));
@@ -867,10 +893,31 @@ QStringList QFontDatabasePrivate::addTTFile(const QByteArray &file, const QByteA
         numFaces = face->num_faces;
 
         int weight = QFont::Normal;
+#ifndef QT_WEBOS
         bool italic = face->style_flags & FT_STYLE_FLAG_ITALIC;
 
         if (face->style_flags & FT_STYLE_FLAG_BOLD)
             weight = QFont::Bold;
+#else // QT_WEBOS
+        int stretch = QFont::Unstretched;
+        int italicObliqueStyle = QFont::StyleNormal;
+
+        if (face->style_flags & FT_STYLE_FLAG_BOLD)
+            weight = QFont::Bold;
+
+        QString styleName = QString::fromUtf8(face->style_name);
+        if (styleName.contains(QLatin1String("condensed"), Qt::CaseInsensitive)) {
+        	stretch = QFont::Condensed;
+        }
+        if (styleName.contains(QLatin1String("bold"), Qt::CaseInsensitive)) {
+        	weight = QFont::Bold;
+        }
+        if (styleName.contains(QLatin1String("italic"), Qt::CaseInsensitive)) {
+        	italicObliqueStyle = QFont::StyleItalic;
+        } else if (styleName.contains(QLatin1String("oblique"), Qt::CaseInsensitive)) {
+        	italicObliqueStyle = QFont::StyleOblique;
+        }
+#endif // QT_WEBOS
 
         QList<QFontDatabase::WritingSystem> writingSystems;
         // detect symbol fonts
@@ -898,10 +945,17 @@ QStringList QFontDatabasePrivate::addTTFile(const QByteArray &file, const QByteA
             }
         }
 
+#ifndef QT_WEBOS
         QString family = QString::fromAscii(face->family_name);
         families.append(family);
         addFont(family, /*foundry*/ "", weight, italic,
                 /*pixelsize*/ 0, file, index, /*antialias*/ true, writingSystems);
+#else // QT_WEBOS
+        QString family = QString::fromUtf8(face->family_name);
+        families.append(family);        
+        addFont(family, /*foundry*/ "", weight, italicObliqueStyle,
+                /*pixelsize*/ 0, file, index, /*antialias*/ true, stretch, writingSystems);
+#endif // QT_WEBOS
 
         FT_Done_Face(face);
         ++index;

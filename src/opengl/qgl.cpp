@@ -3805,14 +3805,24 @@ void QGLContextPrivate::setCurrentContext(QGLContext *context)
     \sa QGLFormat::defaultFormat(), {Textures Example}
 */
 
+#ifdef QT_WEBOS
+extern QGLWidget* qt_dummyShareWidget;
+#endif // QT_WEBOS
+
 QGLWidget::QGLWidget(QWidget *parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
     : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
 {
+#ifdef QT_WEBOS
+    qt_dummyShareWidget = this;
+#endif // QT_WEBOS
     Q_D(QGLWidget);
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(QGLFormat::defaultFormat(), this), shareWidget);
+#ifdef QT_WEBOS
+    qt_dummyShareWidget = this;
+#endif // QT_WEBOS
 }
 
 
@@ -3848,11 +3858,17 @@ QGLWidget::QGLWidget(const QGLFormat &format, QWidget *parent, const QGLWidget* 
                      Qt::WindowFlags f)
     : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
 {
+#ifdef QT_WEBOS
+    qt_dummyShareWidget = this;
+#endif // QT_WEBOS
     Q_D(QGLWidget);
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
     d->init(new QGLContext(format, this), shareWidget);
+#ifdef QT_WEBOS
+    qt_dummyShareWidget = this;
+#endif // QT_WEBOS
 }
 
 /*!
@@ -3884,11 +3900,17 @@ QGLWidget::QGLWidget(QGLContext *context, QWidget *parent, const QGLWidget *shar
                      Qt::WindowFlags f)
     : QWidget(*(new QGLWidgetPrivate), parent, f | Qt::MSWindowsOwnDC)
 {
+#ifdef QT_WEBOS
+    qt_dummyShareWidget = this;
+#endif // QT_WEBOS
     Q_D(QGLWidget);
     setAttribute(Qt::WA_PaintOnScreen);
     setAttribute(Qt::WA_NoSystemBackground);
     setAutoFillBackground(true); // for compatibility
     d->init(context, shareWidget);
+#ifdef QT_WEBOS
+    qt_dummyShareWidget = this;
+#endif // QT_WEBOS
 }
 
 /*!
@@ -5519,6 +5541,10 @@ QGLExtensions::Extensions QGLExtensions::currentContextExtensions()
         if (srgbCapableFramebuffers)
             glExtensions |= SRGBFrameBuffer;
     }
+#ifdef QT_WEBOS
+    if (extensions.match("GL_EXT_texture_format_BGRA8888"))
+        glExtensions |= BGRATextureFormat;
+#endif // QT_WEBOS
 
     return glExtensions;
 }

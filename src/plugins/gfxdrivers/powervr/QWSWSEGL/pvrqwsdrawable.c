@@ -257,6 +257,7 @@ static int pvrQwsAddDrawable(void)
         long stride = 0;
         unsigned long flipId = 0;
         unsigned long numBuffers;
+#ifndef QT_WEBOS
         if (PVR2DCreateFlipChain(pvrQwsDisplay.context, 0,
                                  //PVR2D_CREATE_FLIPCHAIN_SHARED |
                                  //PVR2D_CREATE_FLIPCHAIN_QUERY,
@@ -266,6 +267,17 @@ static int pvrQwsAddDrawable(void)
                                  pvrQwsDisplay.screens[0].pixelFormat,
                                  &stride, &flipId, &(pvrQwsDisplay.flipChain))
                 == PVR2D_OK) {
+#else // QT_WEBOS
+        if (PVR2DCreateFlipChain(pvrQwsDisplay.context, PVR2D_CREATE_FLIPCHAIN_FB0,
+                                 //PVR2D_CREATE_FLIPCHAIN_SHARED |
+                                 //PVR2D_CREATE_FLIPCHAIN_QUERY,
+                                 pvrQwsDisplay.numFlipBuffers,
+                                 pvrQwsDisplay.screens[0].screenRect.width,
+                                 pvrQwsDisplay.screens[0].screenRect.height,
+                                 pvrQwsDisplay.screens[0].pixelFormat,
+                                 &stride, &flipId, &(pvrQwsDisplay.flipChain))
+                == PVR2D_OK) {
+#endif // QT_WEBOS
             pvrQwsDisplay.screens[0].screenStride = stride;
             PVR2DGetFlipChainBuffers(pvrQwsDisplay.context,
                                      pvrQwsDisplay.flipChain,
@@ -416,6 +428,9 @@ PvrQwsDrawable *pvrQwsScreenWindow(int screen)
 
 PvrQwsDrawable *pvrQwsCreateWindow(int screen, long winId, const PvrQwsRect *rect)
 {
+#ifdef QT_WEBOS
+	printf("Creating a native EGL window\n");
+#endif // QT_WEBOS
     PvrQwsDrawable *drawable;
 
     if (!pvrQwsEnsureScreen(screen))
@@ -431,6 +446,9 @@ PvrQwsDrawable *pvrQwsCreateWindow(int screen, long winId, const PvrQwsRect *rec
     drawable->screen = screen;
     drawable->pixelFormat = pvrQwsDisplay.screens[screen].pixelFormat;
     drawable->rect = *rect;
+#ifdef QT_WEBOS 
+    drawable->isFullScreen = 1;
+#endif // QT_WEBOS
 
     if (!pvrQwsAddDrawable()) {
         free(drawable);

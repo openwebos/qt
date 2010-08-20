@@ -73,6 +73,9 @@ public:
     QWSKbPrivate(QWSKeyboardHandler *h, const QString &device)
         : m_handler(h), m_modifiers(0), m_composing(0), m_dead_unicode(0xffff),
           m_no_zap(false), m_do_compose(false),
+#ifdef QT_WEBOS
+		  m_capslock_on (false),
+#endif // QT_WEBOS
           m_keymap(0), m_keymap_size(0), m_keycompose(0), m_keycompose_size(0)
     {
         m_ar_timer = new QTimer(this);
@@ -164,6 +167,9 @@ private:
 
     bool m_no_zap;
     bool m_do_compose;
+#ifdef QT_WEBOS
+    bool m_capslock_on;
+#endif // QT_WEBOS
 
     const QWSKeyboard::Mapping *m_keymap;
     int m_keymap_size;
@@ -548,13 +554,33 @@ QWSKeyboardHandler::KeycodeAction QWSKeyboardHandler::processKeycode(quint16 key
     bool skip = false;
     quint16 unicode = it->unicode;
     quint32 qtcode = it->qtcode;
+#ifdef QT_WEBOS
+    quint16 shiftMods = QWSKeyboard::ModShift | QWSKeyboard::ModCtrlL | QWSKeyboard::ModShiftR;
+#endif
 
     if ((it->flags & QWSKeyboard::IsModifier) && it->special) {
+#ifndef QT_WEBOS
         // this is a modifier, i.e. Shift, Alt, ...
         if (pressed)
             d->m_modifiers |= quint8(it->special);
         else
             d->m_modifiers &= ~quint8(it->special);
+#else // QT_WEBOS
+	if (d->m_capslock_on && (it->special & shiftMods)) {
+		//CapsLock on with Shift modifier, reversing shift modifier action
+		if (pressed)
+			d->m_modifiers &= ~quint8(it->special);
+		else
+			d->m_modifiers |= quint8(it->special);
+	}
+	else {
+		// this is a modifier, i.e. Shift, Alt, ...
+		if (pressed)
+			d->m_modifiers |= quint8(it->special);
+		else
+			d->m_modifiers &= ~quint8(it->special);
+	}
+#endif // QT_WEBOS
     } else if (qtcode >= Qt::Key_CapsLock && qtcode <= Qt::Key_ScrollLock) {
         // (Caps|Num|Scroll)Lock
         if (first_press) {
@@ -568,6 +594,16 @@ QWSKeyboardHandler::KeycodeAction QWSKeyboardHandler::processKeycode(quint16 key
             default                : break;
             }
         }
+#ifdef QT_WEBOS
+	if (qtcode == Qt::Key_CapsLock && pressed) {
+		d->m_capslock_on = !d->m_capslock_on;
+		if (d->m_capslock_on)
+			d->m_modifiers |= QWSKeyboard::ModShift;
+		else 
+			d->m_modifiers &= ~(shiftMods);
+	}
+#endif // QT_WEBOS
+
     } else if ((it->flags & QWSKeyboard::IsSystem) && it->special && first_press) {
         switch (it->special) {
         case QWSKeyboard::SystemReboot:

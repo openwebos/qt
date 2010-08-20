@@ -193,6 +193,10 @@ if [ -d /System/Library/Frameworks/Carbon.framework ]; then
     BUILD_ON_MAC=yes
 else
     PLATFORM_MAC=no
+# QT_WEBOS
+PLATFORM_WEBOS=yes
+
+
 fi
 
 #-----------------------------------------------------------------------------
@@ -761,6 +765,7 @@ CFG_QS60STYLE=auto
 CFG_LARGEFILE=auto
 CFG_OPENSSL=auto
 CFG_PTMALLOC=no
+CFG_TIMERFD=no
 CFG_STL=auto
 CFG_PRECOMPILE=auto
 CFG_SEPARATE_DEBUG_INFO=no
@@ -2119,6 +2124,13 @@ while [ "$#" -gt 0 ]; do
             fi
         fi
         ;;
+    timerfd)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_TIMERFD="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     declarative)
         if [ "$VAL" = "yes" ]; then
             CFG_DECLARATIVE="yes"
@@ -3092,9 +3104,9 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
             CFG_HOST_ARCH=i386
         else
             if [ "$OPT_VERBOSE" = "yes" ]; then
-                echo "    64-bit AMD 80x86 (x86_64)"
+                echo "    64-bit AMD 80x86 (x86_64) (But using 32 bit build)"
             fi
-            CFG_HOST_ARCH=x86_64
+            CFG_HOST_ARCH=i386
         fi
         ;;
     *:*:ppc)
@@ -3412,8 +3424,8 @@ if [ "$CFG_REDUCE_EXPORTS" = "auto" ]; then
     fi
 fi
 
-# detect the availability of the -Bsymbolic-functions linker optimization
-if [ "$CFG_REDUCE_RELOCATIONS" != "no" ]; then
+# auto-detect the availability of the -Bsymbolic-functions linker optimization
+if [ "$CFG_REDUCE_RELOCATIONS" = "auto" ]; then
     if "$unixtests/bsymbolic_functions.test" "$TEST_COMPILER" "$OPT_VERBOSE"; then
         CFG_REDUCE_RELOCATIONS=no
     else
@@ -4848,6 +4860,11 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
         if [ "$PLATFORM" = "irix-cc" ] || [ "$PLATFORM" = "irix-cc-64" ]; then
 	    EXTRA_LFLAGS="$EXTRA_LFLAGS -lm"
         fi
+
+		if [ "$PLATFORM_WEBOS" = "yes" ]; then			# QT_WEBOS
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -DQT_WEBOS"		# QT_WEBOS
+            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DQT_WEBOS"	# QT_WEBOS
+		fi												# QT_WEBOS
 
 	[ -n "$CC" ] && echo "CC = $CC" >> "$mkfile"
 	[ -n "$CXX" ] && echo "CXX = $CXX" >> "$mkfile"
@@ -8441,10 +8458,10 @@ QMAKE_ABSOLUTE_SOURCE_ROOT = \$\$QT_SOURCE_TREE
 QMAKE_MOC_SRC    = \$\$QT_BUILD_TREE/src/moc
 
 #local paths that cannot be queried from the QT_INSTALL_* properties while building QTDIR
-QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc
-QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic
-QMAKE_UIC3       = \$\$QT_BUILD_TREE/bin/uic3
-QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc
+QMAKE_MOC        = \$\$QT_BUILD_TREE/bin/moc-palm
+QMAKE_UIC        = \$\$QT_BUILD_TREE/bin/uic-palm
+QMAKE_UIC3       = \$\$QT_BUILD_TREE/bin/uic3-palm
+QMAKE_RCC        = \$\$QT_BUILD_TREE/bin/rcc-palm
 QMAKE_QDBUSXML2CPP = \$\$QT_BUILD_TREE/bin/qdbusxml2cpp
 QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
 QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
@@ -8844,13 +8861,11 @@ EXEC=""
 #-------------------------------------------------------------------------------
 
 echo "Finding project files. Please wait..."
-if [ "$CFG_NOPROCESS" != "yes" ]; then
-    "$outpath/bin/qmake" -prl -r "${relpath}/projects.pro"
-    if [ -f "${relpath}/projects.pro" ]; then
-        mkfile="${outpath}/Makefile"
-        [ -f "$mkfile" ] && chmod +w "$mkfile"
-        QTDIR="$outpath" "$outpath/bin/qmake" -spec "$XQMAKESPEC" "${relpath}/projects.pro" -o "$mkfile"
-    fi
+"$outpath/bin/qmake-palm" -prl -r "${relpath}/projects.pro"
+if [ -f "${relpath}/projects.pro" ]; then
+    mkfile="${outpath}/Makefile"
+    [ -f "$mkfile" ] && chmod +w "$mkfile"
+    QTDIR="$outpath" "$outpath/bin/qmake-palm" -spec "$XQMAKESPEC" "${relpath}/projects.pro" -o "$mkfile"
 fi
 
 # .projects      -> projects to process
@@ -9036,7 +9051,7 @@ for file in .projects .projects.3; do
         QMAKE_SPEC_ARGS="-spec $SPEC"
         echo $ECHO_N "  for $a$ECHO_C"
 
-        QMAKE="$outpath/bin/qmake"
+        QMAKE="$outpath/bin/qmake-palm"
 	QMAKE_ARGS="$QMAKE_SWITCHES $QMAKE_SPEC_ARGS"
         if [ "$file" = ".projects.3" ]; then
             echo " (fast)"

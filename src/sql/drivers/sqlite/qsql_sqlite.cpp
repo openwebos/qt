@@ -530,7 +530,15 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
 
     sqlite3_enable_shared_cache(sharedCache);
 
+#ifndef QT_WEBOS
     if (sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, NULL) == SQLITE_OK) {
+#else // QT_WEBOS
+#if SQLITE_VERSION_NUMBER >= 3005000
+    if (sqlite3_open_v2(db.toUtf8().constData(), &d->access, openMode, NULL) == SQLITE_OK) {
+#else
+	if (sqlite3_open(db.toUtf8().constData(), &d->access) == SQLITE_OK) {
+#endif
+#endif // QT_WEBOS
         sqlite3_busy_timeout(d->access, timeOut);
         setOpen(true);
         setOpenError(false);

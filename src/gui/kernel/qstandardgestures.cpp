@@ -441,8 +441,15 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
+#ifndef QT_WEBOS // REBASE_CHECK_REQUIRED necessary?
         d->position = ev->touchPoints().at(0).pos();
         q->setHotSpot(ev->touchPoints().at(0).screenPos());
+#else // QT_WEBOS
+        QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+        d->position = p.pos();
+        d->hotSpot = p.screenPos();
+        d->isHotSpotSet = true;
+#endif // QT_WEBOS
         result = QGestureRecognizer::TriggerGesture;
         break;
     }
@@ -450,6 +457,10 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
     case QEvent::TouchEnd: {
         if (q->state() != Qt::NoGesture && ev->touchPoints().size() == 1) {
             QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+#ifdef QT_WEBOS // REBASE_CHECK_REQUIRED use setHotSpot?
+            d->hotSpot = p.screenPos();
+            d->isHotSpotSet = true;
+#endif // QT_WEBOS
             QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
             enum { TapRadius = 40 };
             if (delta.manhattanLength() <= TapRadius) {
@@ -466,6 +477,17 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
     case QEvent::MouseButtonRelease:
         result = QGestureRecognizer::Ignore;
         break;
+#ifdef QT_WEBOS
+    case QEvent::Gesture:
+    {
+    	QGesture* g = static_cast<QGestureEvent*>(event)->gesture(Qt::SysMgrGestureFlick);
+		if (g && g->state() == Qt::GestureFinished && q->state() != Qt::NoGesture ) {
+			result = QGestureRecognizer::CancelGesture;
+			break;
+		}
+    }
+    // fall through
+#endif // QT_WEBOS
     default:
         result = QGestureRecognizer::Ignore;
         break;
@@ -503,13 +525,23 @@ QGestureRecognizer::Result
 QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
                                         QEvent *event)
 {
+#ifdef QT_WEBOS
+    QGestureRecognizer::Result result = QGestureRecognizer::CancelGesture;
+#endif // QT_WEBOS
     QTapAndHoldGesture *q = static_cast<QTapAndHoldGesture *>(state);
     QTapAndHoldGesturePrivate *d = q->d_func();
 
     if (object == state && event->type() == QEvent::Timer) {
         q->killTimer(d->timerId);
         d->timerId = 0;
+#ifndef QT_WEBOS
         return QGestureRecognizer::FinishGesture | QGestureRecognizer::ConsumeEventHint;
+#else // QT_WEBOS
+        if (q->state() != Qt::NoGesture && q->state() != Qt::GestureCanceled) {
+        	result = QGestureRecognizer::FinishGesture;
+        }
+        return result | QGestureRecognizer::ConsumeEventHint;
+#endif // QT_WEBOS
     }
 
     const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
@@ -518,6 +550,11 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     const QGraphicsSceneMouseEvent *gsme = static_cast<const QGraphicsSceneMouseEvent *>(event);
 #endif
 
+#ifndef QT_WEBOS
+    enum { TimerInterval = 2000 };
+#else // QT_WEBOS
+    enum { TimerInterval = 500 };
+#endif // QT_WEBOS
     enum { TapRadius = 40 };
 
     switch (event->type()) {
@@ -538,8 +575,14 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     case QEvent::TouchBegin:
+#ifndef QT_WEBOS // REBASE_CHECK_REQUIRED changed from pos() to startScreenPos. Should we change it too?
         d->position = ev->touchPoints().at(0).startScreenPos();
         q->setHotSpot(d->position);
+#else
+        d->position = ev->touchPoints().at(0).pos();
+        d->hotSpot = ev->touchPoints().at(0).screenPos();
+        d->isHotSpotSet = true;
+#endif // QT_WEBOS
         if (d->timerId)
             q->killTimer(d->timerId);
         d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
@@ -549,15 +592,43 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
 #endif
     case QEvent::MouseButtonRelease:
     case QEvent::TouchEnd:
+#ifndef QT_WEBOS // REBASE_CHECK_REQUIRED still correct?... note that "result" is gone from qt4.7.0-rc1 and flow never goes to TouchUpdate anymore
         return QGestureRecognizer::CancelGesture; // get out of the MayBeGesture state
+#else // QT_WEBOS
+		result = QGestureRecognizer::CancelGesture;
+		if (d->timerId)
+			q->killTimer(d->timerId);
+		d->timerId = 0;
+#endif // QT_WEBOS
+        break;
     case QEvent::TouchUpdate:
         if (d->timerId && ev->touchPoints().size() == 1) {
             QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
             QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
+#ifndef QT_WEBOS // REBASE_CHECK_REQUIRED still correct?
             if (delta.manhattanLength() <= TapRadius)
                 return QGestureRecognizer::MayBeGesture;
         }
         return QGestureRecognizer::CancelGesture;
+#else // QT_WEBOS
+            if (delta.manhattanLength() > TapRadius) {
+                result = QGestureRecognizer::CancelGesture;
+				if (d->timerId)
+	                q->killTimer(d->timerId);
+				d->timerId = 0;
+            } else {
+            	result = QGestureRecognizer::Ignore;
+            }
+        } else if (ev->touchPoints().size() > 1) {
+        	result = QGestureRecognizer::CancelGesture;
+			if (d->timerId)
+	        	q->killTimer(d->timerId);
+			d->timerId = 0;
+        } else {
+        	result = QGestureRecognizer::Ignore;
+        }
+		break;
+#endif // QT_WEBOS
     case QEvent::MouseMove: {
         QPoint delta = me->globalPos() - d->position.toPoint();
         if (d->timerId && delta.manhattanLength() <= TapRadius)
@@ -575,6 +646,9 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
     default:
         return QGestureRecognizer::Ignore;
     }
+#ifdef QT_WEBOS
+    return result;
+#endif
 }
 
 void QTapAndHoldGestureRecognizer::reset(QGesture *state)

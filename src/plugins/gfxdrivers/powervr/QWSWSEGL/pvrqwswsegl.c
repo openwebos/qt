@@ -40,6 +40,11 @@
 ****************************************************************************/
 
 #include <GLES/eglplatform.h>
+#ifndef QT_WEBOS
+#include <GLES/egltypes.h>
+#else // QT_WEBOS
+#include <drveglplatform.h>
+#endif // QT_WEBOS
 #include <wsegl.h>
 #include <pvr2d.h>
 #include <string.h>
@@ -48,6 +53,7 @@
 
 #define WSEGL_UNUSED(x) (void)x;
 
+#ifndef QT_WEBOS
 // If the PVR2D version is not specified, then assume MBX-style headers.
 // If the version is defined, then we assume that we have SGX-style headers.
 #if !defined(PVR2D_REV_MAJOR)
@@ -70,6 +76,33 @@ static WSEGLConfig wseglDisplayConfigs[] = {
      0, 0, 0, WSEGL_OPAQUE, 0},
     {WSEGL_NO_DRAWABLE, 0, 0, 0, 0, 0, 0, 0}
 };
+#else // QT_WEBOS
+/* Capability information for the display */
+/* RR
+static WSEGLCaps const wseglDisplayCaps[] = {
+    {WSEGL_CAP_WINDOWS_USE_MBX_SYNC, 1},
+    {WSEGL_CAP_PIXMAPS_USE_MBX_SYNC, 1},
+    {WSEGL_NO_CAPS, 0}
+};
+*/
+
+static WSEGLCaps const wseglDisplayCaps[] = {
+    { WSEGL_CAP_WINDOWS_USE_HW_SYNC, 1 },
+    { WSEGL_CAP_MIN_SWAP_INTERVAL, 1 },
+    { WSEGL_CAP_MAX_SWAP_INTERVAL, 1 },
+    {WSEGL_NO_CAPS, 0}
+};
+
+
+/* Configuration information for the display */
+static WSEGLConfig wseglDisplayConfigs[] = {
+    {WSEGL_DRAWABLE_WINDOW, WSEGL_PIXELFORMAT_8888, WSEGL_FALSE,
+     0, 0, 0, WSEGL_OPAQUE, 0},
+    {WSEGL_DRAWABLE_PIXMAP, WSEGL_PIXELFORMAT_8888, WSEGL_FALSE,
+     0, 0, 0, WSEGL_OPAQUE, 0},
+    {WSEGL_NO_DRAWABLE, 0, 0, 0, 0, 0, 0, 0}
+};
+#endif // QT_WEBOS
 
 /* Determine if nativeDisplay is a valid display handle */
 static WSEGLError wseglIsDisplayValid(NativeDisplayType nativeDisplay)

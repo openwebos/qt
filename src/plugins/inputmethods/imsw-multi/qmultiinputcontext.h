@@ -68,6 +68,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef QT_WEBOS
+class QMenu;
+#endif // QT_WEBOS
+
 class QMultiInputContext : public QInputContext
 {
     Q_OBJECT
