@@ -4644,7 +4644,7 @@ static const char qt_configure_licensee_str          [256 + 12] = "$LICENSE_USER
 static const char qt_configure_licensed_products_str [256 + 12] = "$LICENSE_PRODUCTS_STR";
 
 /* Installation date */
-static const char qt_configure_installation          [12+11]    = "qt_instdate=$TODAY";
+static const char qt_configure_installation          [12+11]    = "qt_instdate=2010-05-05";
 EOF
 
 
