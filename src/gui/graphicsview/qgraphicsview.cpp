@@ -3334,6 +3334,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     mouseEvent.setButton(event->button());
     mouseEvent.setModifiers(event->modifiers());
     mouseEvent.setAccepted(false);
+    mouseEvent.setCanceled(event->canceled());
     if (event->spontaneous())
         qt_sendSpontaneousEvent(d->scene, &mouseEvent);
     else

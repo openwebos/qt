@@ -339,7 +339,7 @@ class QGraphicsSceneMouseEventPrivate : public QGraphicsSceneEventPrivate
 public:
     inline QGraphicsSceneMouseEventPrivate()
         : button(Qt::NoButton),
-          buttons(0), modifiers(0)
+          buttons(0), modifiers(0), canceled (false)
     { }
 
     QPointF pos;
@@ -354,6 +354,7 @@ public:
     Qt::MouseButton button;
     Qt::MouseButtons buttons;
     Qt::KeyboardModifiers modifiers;
+    bool canceled;
 };
 
 /*!
@@ -623,6 +624,18 @@ void QGraphicsSceneMouseEvent::setModifiers(Qt::KeyboardModifiers modifiers)
 {
     Q_D(QGraphicsSceneMouseEvent);
     d->modifiers = modifiers;
+}
+
+bool QGraphicsSceneMouseEvent::canceled() const
+{
+    Q_D(const QGraphicsSceneMouseEvent);
+    return d->canceled;
+}
+
+void QGraphicsSceneMouseEvent::setCanceled(bool canceled)
+{
+    Q_D(QGraphicsSceneMouseEvent);
+    d->canceled = canceled;
 }
 
 class QGraphicsSceneWheelEventPrivate : public QGraphicsSceneEventPrivate

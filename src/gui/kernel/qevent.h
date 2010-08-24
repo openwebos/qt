@@ -90,6 +90,9 @@ public:
     QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos,
                 Qt::MouseButton button, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers);
+    QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos, const bool isCanceled,
+                Qt::MouseButton button, Qt::MouseButtons buttons,
+                Qt::KeyboardModifiers modifiers);
     ~QMouseEvent();
 
     inline const QPoint &pos() const { return p; }
@@ -106,6 +109,7 @@ public:
                                                  Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
     inline bool hasExtendedInfo() const { return reinterpret_cast<const QMouseEvent *>(d) == this; }
     QPointF posF() const;
+    inline bool canceled() const { return canceled; }
 
 #ifdef QT3_SUPPORT
     QT3_SUPPORT_CONSTRUCTOR QMouseEvent(Type type, const QPoint &pos, Qt::ButtonState button, int state);
@@ -120,6 +124,7 @@ protected:
     QPoint p, g;
     Qt::MouseButton b;
     Qt::MouseButtons mouseState;
+    bool canceled;
 };
 
 class Q_GUI_EXPORT QHoverEvent : public QEvent
