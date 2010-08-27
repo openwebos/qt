@@ -40,6 +40,12 @@
 ****************************************************************************/
 
 // Palm -->
+
+/* Enable WebOS specific code */
+#ifndef QT_WEBOS
+#define QT_WEBOS
+#endif
+
 /* Compiler features */
 #ifndef QT_NO_EXCEPTIONS
 #define QT_NO_EXCEPTIONS

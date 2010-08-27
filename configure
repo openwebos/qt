@@ -4861,11 +4861,6 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 	    EXTRA_LFLAGS="$EXTRA_LFLAGS -lm"
         fi
 
-		if [ "$PLATFORM_WEBOS" = "yes" ]; then			# QT_WEBOS
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -DQT_WEBOS"		# QT_WEBOS
-            EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS -DQT_WEBOS"	# QT_WEBOS
-		fi												# QT_WEBOS
-
 	[ -n "$CC" ] && echo "CC = $CC" >> "$mkfile"
 	[ -n "$CXX" ] && echo "CXX = $CXX" >> "$mkfile"
         if [ "$CFG_SILENT" = "yes" ]; then
