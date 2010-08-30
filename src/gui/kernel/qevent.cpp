@@ -168,7 +168,11 @@ QInputEvent::~QInputEvent()
 
 QMouseEvent::QMouseEvent(Type type, const QPoint &position, Qt::MouseButton button,
                          Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
+#ifndef QT_WEBOS
+    : QInputEvent(type, modifiers), p(position), b(button), mouseState(buttons)
+#else // QT_WEBOS
     : QInputEvent(type, modifiers), p(position), b(button), mouseState(buttons), isCanceled (false)
+#endif // QT_WEBOS
 {
     g = QCursor::pos();
 }
@@ -188,7 +192,11 @@ QMouseEvent::~QMouseEvent()
     Qt::KeyButtonMask.
 */
 QMouseEvent::QMouseEvent(Type type, const QPoint &pos, Qt::ButtonState button, int state)
+#ifdef QT_WEBOS
+    : QInputEvent(type), p(pos), b((Qt::MouseButton)button)
+#else // QT_WEBOS
     : QInputEvent(type), p(pos), b((Qt::MouseButton)button), isCanceled (false)
+#endif // QT_WEBOS
 {
     g = QCursor::pos();
     mouseState = Qt::MouseButtons((state ^ b) & Qt::MouseButtonMask);
@@ -203,7 +211,11 @@ QMouseEvent::QMouseEvent(Type type, const QPoint &pos, Qt::ButtonState button, i
 */
 QMouseEvent::QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos,
                          Qt::ButtonState button, int state)
+#ifndef // QT_WEBOS
+    : QInputEvent(type), p(pos), g(globalPos), b((Qt::MouseButton)button)
+#else // QT_WEBOS
     : QInputEvent(type), p(pos), g(globalPos), b((Qt::MouseButton)button), isCanceled (false)
+#endif // QT_WEBOS
 {
     mouseState = Qt::MouseButtons((state ^ b) & Qt::MouseButtonMask);
     modState = Qt::KeyboardModifiers(state & (int)Qt::KeyButtonMask);
@@ -231,6 +243,10 @@ QMouseEvent::QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos,
 QMouseEvent::QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos,
                          Qt::MouseButton button, Qt::MouseButtons buttons,
                          Qt::KeyboardModifiers modifiers)
+#ifndef QT_WEBOS
+    : QInputEvent(type, modifiers), p(pos), g(globalPos), b(button), mouseState(buttons)
+{}
+#else // QT_WEBOS
     : QInputEvent(type, modifiers), p(pos), g(globalPos), b(button), mouseState(buttons), isCanceled (false)
 {}
 
@@ -239,6 +255,7 @@ QMouseEvent::QMouseEvent(Type type, const QPoint &pos, const QPoint &globalPos, 
                          Qt::KeyboardModifiers modifiers)
     : QInputEvent(type, modifiers), p(pos), g(globalPos), b(button), mouseState(buttons), isCanceled (isCanceled)
 {}
+#endif // QT_WEBOS
 
 /*!
     \internal

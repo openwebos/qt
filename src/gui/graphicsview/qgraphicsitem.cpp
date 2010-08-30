@@ -2716,7 +2716,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
     if (newOpacity == d_ptr->opacity)
         return;
 
-#ifndef QT_WEBOS
+#ifndef QT_WEBOS // REBASE_CHECK_REQUIRED still necessary?
     bool wasFullyTransparent = d_ptr->isOpacityNull();
 #else // QT_WEBOS
     bool wasFullyTransparent = d_ptr->opacity < qreal(0.001);

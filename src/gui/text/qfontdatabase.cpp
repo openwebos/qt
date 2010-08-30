@@ -809,19 +809,17 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
 void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundryname, int weight, bool italic, int pixelSize,
                                    const QByteArray &file, int fileIndex, bool antialiased,
                                    const QList<QFontDatabase::WritingSystem> &writingSystems)
-#else // QT_WEBOS
-void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundryname, int weight, int italicObliqueStyle, int pixelSize,
-                                   const QByteArray &file, int fileIndex, bool antialiased, int stretch,
-                                   const QList<QFontDatabase::WritingSystem> &writingSystems)
-#endif // QT_WEBOS
 {
-#ifndef QT_WEBOS
 //    qDebug() << "Adding font" << familyname << weight << italic << pixelSize << file << fileIndex << antialiased;
     QtFontStyle::Key styleKey;
     styleKey.style = italic ? QFont::StyleItalic : QFont::StyleNormal;
     styleKey.weight = weight;
     styleKey.stretch = 100;
 #else // QT_WEBOS
+void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundryname, int weight, int italicObliqueStyle, int pixelSize,
+                                   const QByteArray &file, int fileIndex, bool antialiased, int stretch,
+                                   const QList<QFontDatabase::WritingSystem> &writingSystems)
+{
 //    qDebug() << "Adding font" << familyname << weight << italicObliqueStyle << pixelSize << file << fileIndex << antialiased << stretch;
     QtFontStyle::Key styleKey;
     styleKey.style = italicObliqueStyle;

@@ -73,8 +73,10 @@ public:
     QWidget *widget() const;
     void setWidget(QWidget *widget);
 
+#ifdef QT_WEBOS
     bool canceled() const;
     void setCanceled (bool canceled);
+#endif // QT_WEBOS
 protected:
     QGraphicsSceneEvent(QGraphicsSceneEventPrivate &dd, Type type = None);
     QScopedPointer<QGraphicsSceneEventPrivate> d_ptr;
@@ -126,8 +128,10 @@ public:
     Qt::KeyboardModifiers modifiers() const;
     void setModifiers(Qt::KeyboardModifiers modifiers);
 
+#ifdef QT_WEBOS
     bool canceled() const;
     void setCanceled(const bool canceled);
+#endif // QT_WEBOS
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneMouseEvent)
