@@ -311,8 +311,8 @@ public:
             }
 
             if (spriteAdder) {
-				delete spriteAdder;
-			}
+                delete spriteAdder;
+            }
         }
 
         Q_ASSERT(boundSprites.size() == allocated.size());
