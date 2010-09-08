@@ -310,8 +310,9 @@ public:
                 usedAtlasSize += spriteRegion.width() * spriteRegion.height();
             }
 
-            if (spriteAdder)
-                spriteAdder->end();
+            if (spriteAdder) {
+				delete spriteAdder;
+			}
         }
 
         Q_ASSERT(boundSprites.size() == allocated.size());
