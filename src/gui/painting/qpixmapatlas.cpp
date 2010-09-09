@@ -82,7 +82,7 @@ public:
         Q_ASSERT(!alloc.isNull());
     }
 
-    QPixmapAtlasPrivate(const QSize initialSize)
+    QPixmapAtlasPrivate(const QSize initialSize, const QSize margin)
         : alloc(new QSimpleAreaAllocator(nextPowerOfTwo(initialSize)))
         , usedAtlasSize(0)
         , expandWidth(false)
@@ -90,6 +90,7 @@ public:
         Q_ASSERT(atlas.isNull());
         Q_ASSERT(atlas.width() == 0);
         Q_ASSERT(atlas.height() == 0);
+        alloc->setMargin(margin);
     }
 
     QPixmapAtlasPrivate(const QPixmapAtlasPrivate& copy)
@@ -97,6 +98,7 @@ public:
         , usedAtlasSize(0)
         , expandWidth(false)
     {
+        alloc->setMargin(copy.alloc->margin());
         QList<Sprite> sprites;
         for (SpriteOrder::const_iterator i = copy.insertionOrder.begin(), ni = copy.insertionOrder.end(); i != ni; i++) {
             Sprite sprite;
@@ -162,7 +164,9 @@ public:
             return true;
         }
 
-        QPixmapAtlasPrivate copy(alloc->create(size));
+        QAreaAllocator* areaAlloc = alloc->create(size);
+        areaAlloc->setMargin(alloc->margin());
+        QPixmapAtlasPrivate copy(areaAlloc);
         QList<Sprite> sprites;
         for (SpriteOrder::const_iterator i = insertionOrder.begin(), ni = insertionOrder.end(); i != ni; i++) {
             Sprite sprite;
@@ -630,8 +634,8 @@ QSize QPixmapAtlas::maximumAtlasSize()
     return QPixmapAtlasPrivate::maximumAtlasSize();
 }
 
-QPixmapAtlas::QPixmapAtlas(const QSize &initialSize)
-    : d_ptr(new QPixmapAtlasPrivate(initialSize))
+QPixmapAtlas::QPixmapAtlas(const QSize &initialSize, const QSize &margin)
+    : d_ptr(new QPixmapAtlasPrivate(initialSize, margin))
 {
 }
 

@@ -59,7 +59,7 @@ public:
     static void setMaximumAtlasSize(const QSize& size);
     static QSize maximumAtlasSize();
 
-    QPixmapAtlas(const QSize& initialSize = QSize());
+    QPixmapAtlas(const QSize& initialSize = QSize(), const QSize& margin = QSize());
     QPixmapAtlas(QAreaAllocator *allocator);
     QPixmapAtlas(const QPixmapAtlas& atlas);
     ~QPixmapAtlas();
