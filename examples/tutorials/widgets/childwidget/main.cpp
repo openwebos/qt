@@ -47,14 +47,21 @@ int main(int argc, char *argv[])
     QWidget window;
     window.resize(320, 240);
     window.setWindowTitle(QApplication::translate("childwidget", "Child widget"));
-    window.show();
 
-//! [create, position and show]
-    QPushButton *button = new QPushButton(
-        QApplication::translate("childwidget", "Press me"), &window);
-    button->move(100, 100);
-    button->show();
-//! [create, position and show]
-    return app.exec();
+	QLabel *label = new QLabel(QApplication::translate("windowlayout", "Name:"));
+	QLineEdit *lineEdit = new QLineEdit();
+
+	QPushButton *button = new QPushButton(
+		QApplication::translate("childwidget", "Press me"), &window);
+
+	QHBoxLayout *layout = new QHBoxLayout();
+	layout->addWidget(label);
+	layout->addWidget(lineEdit);
+	layout->addWidget(button);
+	window.setLayout(layout);
+
+
+	window.show();
+	return app.exec();
 }
 //! [main program]

@@ -44,7 +44,7 @@ import QtQuick 1.0
 Rectangle {
     id: screen
 
-    width: 490; height: 720
+	width: 320; height: 480
 
     SystemPalette { id: activePalette }
 

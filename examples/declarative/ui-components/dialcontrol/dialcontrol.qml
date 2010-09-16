@@ -46,7 +46,7 @@ import "content"
 //! [0]
 Rectangle {
     color: "#545454"
-    width: 300; height: 300
+	width: 320; height: 480
 
     // Dial with a slider to adjust it
     Dial {

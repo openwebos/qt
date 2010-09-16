@@ -43,7 +43,7 @@ import "content"
 
 Rectangle {
     id: page
-    width: 1030; height: 540
+	width: 320; height: 480
 
     Grid {
         anchors.centerIn: parent; spacing: 20

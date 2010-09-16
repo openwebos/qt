@@ -44,7 +44,7 @@ import "content"
 Rectangle {
     id: main
 
-    width: 600; height: 405
+	width: 320; height: 480
     color: "#edecec"
 
     Flickable {

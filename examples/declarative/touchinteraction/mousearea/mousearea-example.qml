@@ -42,7 +42,7 @@ import QtQuick 1.0
 
 Rectangle {
     id: box
-    width: 350; height: 250
+	width: 320; height: 480
 
     Rectangle {
         id: redSquare

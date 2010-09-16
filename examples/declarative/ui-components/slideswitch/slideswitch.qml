@@ -43,7 +43,7 @@ import "content"
 
 Rectangle {
     color: "white"
-    width: 400; height: 250
+	width: 320; height: 480
 
 //![0]
     Switch { anchors.centerIn: parent; on: false }

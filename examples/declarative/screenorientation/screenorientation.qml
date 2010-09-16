@@ -44,8 +44,8 @@ import "Core/screenorientation.js" as ScreenOrientation
 
 Rectangle {
     id: window
-    width: 360  
-    height: 640
+	width: 320
+	height: 480
     color: "white"
 
     Rectangle {

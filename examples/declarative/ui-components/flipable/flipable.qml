@@ -44,7 +44,7 @@ import "content"
 Rectangle {
     id: window
     
-    width: 480; height: 320
+	width: 320; height: 480
     color: "darkgreen"
 
     Row {

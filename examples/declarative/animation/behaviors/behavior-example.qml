@@ -41,7 +41,7 @@
 import QtQuick 1.0
 
 Rectangle {
-    width: 600; height: 400
+	width: 320; height: 400
     color: "#343434"
 
     Rectangle {

@@ -42,7 +42,7 @@ import QtQuick 1.0
 
 Rectangle {
     id: page
-    width: 500; height: 250
+	width: 320; height: 480
     color: "#edecec"
 
     MouseArea {

@@ -45,8 +45,8 @@ import QtQuick 1.0
 
 Rectangle {
     color: "lightgray"
-    width: 240
-    height: 320
+	width: 320
+	height: 480
 
     VisualItemModel {
         id: itemModel
@@ -86,7 +86,7 @@ Rectangle {
     }
 
     Rectangle {
-        width: 240; height: 30
+		width: 320; height: 30
         anchors { top: view.bottom; bottom: parent.bottom }
         color: "gray"
 

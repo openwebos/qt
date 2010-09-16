@@ -42,7 +42,7 @@ import QtQuick 1.0
 import "content"
 
 Rectangle {
-    width: 640; height: 240
+	width: 320; height: 480
     color: "#646464"
 
     Row {

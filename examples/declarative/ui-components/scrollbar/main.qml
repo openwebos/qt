@@ -41,7 +41,7 @@
 import QtQuick 1.0
 
 Rectangle {
-    width: 640
+	width: 320
     height: 480
 
     // Create a flickable to view a large image.

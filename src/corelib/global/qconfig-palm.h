@@ -306,8 +306,8 @@
 #ifndef QT_NO_DESKTOPSERVICES
 #  define QT_NO_DESKTOPSERVICES
 #endif
-#ifndef QT_NO_SCRIPT
-#  define QT_NO_SCRIPT
+#ifdef QT_NO_SCRIPT
+#error QT Declarative requires QT Script, disabled by QT_NO_SCRIPT
 #endif
 #ifndef QT_NO_SYSTEMTRAYICON
 #  define QT_NO_SYSTEMTRAYICON
@@ -336,7 +336,7 @@
 #  define QT_NO_LCDNUMBER
 #endif
 #ifndef QT_NO_LINEEDIT
-#  define QT_NO_LINEEDIT
+// required for QDeclarative #  define QT_NO_LINEEDIT
 #endif
 #ifndef QT_NO_COMBOBOX
 #  define QT_NO_COMBOBOX

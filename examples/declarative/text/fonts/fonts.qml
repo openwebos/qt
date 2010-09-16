@@ -43,7 +43,7 @@ import QtQuick 1.0
 Rectangle {
     property string myText: "The quick brown fox jumps over the lazy dog."
 
-    width: 800; height: 480
+	width: 320; height: 480
     color: "steelblue"
 
     FontLoader { id: fixedFont; name: "Courier" }

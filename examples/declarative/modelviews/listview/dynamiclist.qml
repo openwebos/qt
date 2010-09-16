@@ -45,7 +45,7 @@ import "content"
 
 Rectangle {
     id: container
-    width: 500; height: 400
+	width: 320; height: 480
     color: "#343434"
 
     // The model:

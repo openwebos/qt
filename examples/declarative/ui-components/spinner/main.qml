@@ -42,14 +42,14 @@ import QtQuick 1.0
 import "content"
 
 Rectangle {
-    width: 240; height: 320
+	width: 320; height: 480
 
     Column {
         y: 20; x: 20; spacing: 20
 
         Spinner {
             id: spinner
-            width: 200; height: 240
+			width: 280; height: 440
             focus: true
             model: 20
             itemHeight: 30

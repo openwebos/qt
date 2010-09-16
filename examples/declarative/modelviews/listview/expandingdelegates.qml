@@ -45,7 +45,7 @@ import "content"
 
 Rectangle {
     id: page
-    width: 400; height: 240
+	width: 320; height: 480
     color: "black"
 
     // Delegate for the recipes.  This delegate has two modes:

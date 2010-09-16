@@ -41,8 +41,8 @@
 import QtQuick 1.0
 
 Rectangle {
-    width: 490
-    height: 285
+	width: 320
+	height: 480
 
     Grid {
         property int cellWidth: (width - (spacing * (columns - 1))) / columns

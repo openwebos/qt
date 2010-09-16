@@ -41,7 +41,7 @@
 import QtQuick 1.0
 
 Rectangle {
-    width: 350; height: 400
+	width: 320; height: 480
 
     function showRequestInfo(text) {
         log.text = log.text + "\n" + text

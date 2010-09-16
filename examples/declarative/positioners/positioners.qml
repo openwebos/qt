@@ -42,7 +42,7 @@ import QtQuick 1.0
 
 Rectangle {
     id: page
-    width: 420; height: 420
+	width: 320; height: 480
 
     Column {
         id: layout1

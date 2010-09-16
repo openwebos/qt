@@ -41,7 +41,7 @@
 import QtQuick 1.0
 
 Rectangle {
-    width: 400; height: 240
+	width: 320; height: 480
     color: "white"
 
     ListModel {

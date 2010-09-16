@@ -42,7 +42,7 @@ import QtQuick 1.0
 
 TabWidget {
     id: tabs
-    width: 640; height: 480
+	width: 320; height: 480
 
     Rectangle {
         property string title: "Red"

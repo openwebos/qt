@@ -46,7 +46,7 @@ import Qt.labs.gestures 1.0
 Rectangle {
     id: rect
     width: 320
-    height: 180
+	height: 480
 
     Text {
         anchors.centerIn: parent

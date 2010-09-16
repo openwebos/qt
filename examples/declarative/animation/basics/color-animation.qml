@@ -43,7 +43,7 @@ import Qt.labs.particles 1.0
 
 Item {
     id: window
-    width: 640; height: 480
+	width: 320; height: 480
 
     // Let's draw the sky...
     Rectangle {

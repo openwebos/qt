@@ -48,7 +48,7 @@ Item {
     property int activeSuns: 0
 
     //This is a desktop-sized example
-    width: 800; height: 480
+	width: 320; height: 480
 
 
     MouseArea {
@@ -125,7 +125,7 @@ Item {
     Rectangle {
         id: toolbox
 
-        width: 380
+		width: 220
         color: activePalette.window
         anchors { right: parent.right; top: parent.top; bottom: parent.bottom }
 
@@ -179,7 +179,7 @@ Item {
             Text { text: "Arbitrary QML:" }
 
             Rectangle {
-                width: 360; height: 240
+				width: toolbox.width; height: 240
 
                 TextEdit {
                     id: qmlText

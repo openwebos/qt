@@ -41,11 +41,11 @@
 #ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 
-#include <QMainWindow>
+#include <QWidget>
 
 class ImageWidget;
 
-class MainWidget : public QMainWindow
+class MainWidget : public QWidget
 {
     Q_OBJECT
 
