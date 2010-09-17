@@ -60,8 +60,8 @@ Rectangle {
     property int heartbeatInterval: 200
     property int halfbeatInterval: 160
 
-    width: 480
-    height: 750
+    width: 320
+    height: 480
 
     property int direction
     property int headDirection

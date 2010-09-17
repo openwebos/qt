@@ -46,7 +46,7 @@ import "Core/calculator.js" as CalcEngine
 Rectangle {
     id: window
 
-    width: 360; height: 480
+    width: 320; height: 480
     color: "#282828"
 
     property string rotateLeft: "\u2939"
