@@ -43,7 +43,7 @@ import "content"
 
 Rectangle {
     id: window
-	width: 320; height: 460; color: "#232323"
+	width: 320; height: 480; color: "#232323"
 
     ListModel {
         id: easingTypes
