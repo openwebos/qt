@@ -575,24 +575,17 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
         return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
     case QEvent::TouchBegin:
-#ifndef QT_WEBOS // REBASE_CHECK_REQUIRED changed from pos() to startScreenPos. Should we change it too?
         d->position = ev->touchPoints().at(0).startScreenPos();
         q->setHotSpot(d->position);
-#else
-        d->position = ev->touchPoints().at(0).pos();
-        d->hotSpot = ev->touchPoints().at(0).screenPos();
-        d->isHotSpotSet = true;
-#endif // QT_WEBOS
         if (d->timerId)
             q->killTimer(d->timerId);
-        d->timerId = q->startTimer(QTapAndHoldGesturePrivate::Timeout);
-        return QGestureRecognizer::MayBeGesture; // we don't show a sign of life until the timeout
-#ifndef QT_NO_GRAPHICSVIEW
+        d->timerId = q->startTimer(TimerInterval);
+        return QGestureRecognizer::TriggerGesture;
     case QEvent::GraphicsSceneMouseRelease:
 #endif
     case QEvent::MouseButtonRelease:
     case QEvent::TouchEnd:
-#ifndef QT_WEBOS // REBASE_CHECK_REQUIRED still correct?... note that "result" is gone from qt4.7.0-rc1 and flow never goes to TouchUpdate anymore
+#ifndef QT_WEBOS
         return QGestureRecognizer::CancelGesture; // get out of the MayBeGesture state
 #else // QT_WEBOS
 		result = QGestureRecognizer::CancelGesture;
@@ -605,7 +598,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
         if (d->timerId && ev->touchPoints().size() == 1) {
             QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
             QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
-#ifndef QT_WEBOS // REBASE_CHECK_REQUIRED still correct?
+#ifndef QT_WEBOS
             if (delta.manhattanLength() <= TapRadius)
                 return QGestureRecognizer::MayBeGesture;
         }
