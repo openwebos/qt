@@ -614,7 +614,7 @@ QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
 
     const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
 
-    enum { TimerInterval = 500 };
+    enum { TimerInterval = 700 };
     enum { TapRadius = 40 };
 
     switch (event->type()) {
