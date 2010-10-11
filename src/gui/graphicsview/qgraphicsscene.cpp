@@ -1192,6 +1192,9 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 */
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
+// Patching an open Qt issue (http://bugreports.qt.nokia.com/browse/QTBUG-11280)
+#ifndef QT_WEBOS
+
     if (QGraphicsObject *object = item->toGraphicsObject()) {
 #ifndef QT_NO_GESTURES
         QGestureManager *gestureManager = QApplicationPrivate::instance()->gestureManager;
@@ -1201,6 +1204,8 @@ bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
         }
 #endif // QT_NO_GESTURES
     }
+
+#endif // QT_WEBOS
 
     if (filterEvent(item, event))
         return false;
