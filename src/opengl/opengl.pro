@@ -52,6 +52,7 @@ SOURCES += qgl.cpp \
                 qgraphicssystem_gl_p.h \
                 qwindowsurface_gl_p.h \
                 qpixmapdata_gl_p.h \
+				qpixmapdata_egl_p.h \
                 gl2paintengineex/qglgradientcache_p.h \
                 gl2paintengineex/qglengineshadermanager_p.h \
                 gl2paintengineex/qgl2pexvertexarray_p.h \
@@ -70,6 +71,7 @@ SOURCES += qgl.cpp \
                 qgraphicssystem_gl.cpp \
                 qwindowsurface_gl.cpp \
                 qpixmapdata_gl.cpp \
+				qpixmapdata_egl_p.cpp \
                 gl2paintengineex/qglgradientcache.cpp \
                 gl2paintengineex/qglengineshadermanager.cpp \
                 gl2paintengineex/qgl2pexvertexarray.cpp \

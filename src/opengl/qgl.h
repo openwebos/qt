@@ -363,6 +363,8 @@ public:
 
     void deleteTexture(GLuint tx_id);
 
+    void setTextureOptions(const QPixmap& pixmap, BindOptions options);
+
     void drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
     void drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
 
@@ -446,6 +448,7 @@ private:
     friend class QGL2PaintEngineExPrivate;
     friend class QGLEngineShaderManager;
     friend class QGLWindowSurface;
+	friend class QEglGLPixmapData;
     friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
     friend class QGLTextureGlyphCache;

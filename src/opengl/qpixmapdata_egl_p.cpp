@@ -18,21 +18,24 @@
 
 QT_BEGIN_NAMESPACE
 
-#define NI() do { printf("%s not implemented\n", __PRETTY_FUNCTION__); exit(-1); } while (0)
+#if defined(EGLPIXMAP_DEBUG)
+#define NI() do { printf("%s not implemented\n", __PRETTY_FUNCTION__); /*exit(-1); */ } while (0)
 #define TRACE() printf("%s (%d)\n", __PRETTY_FUNCTION__, __LINE__)
-#undef TRACE()
-#define TRACE() 
+#else
+#define NI()
+#define TRACE()
+#endif
 
 extern QGLWidget* qt_gl_share_widget();
 
 QEglGLPixmapData::QEglGLPixmapData(PixelType type)
-	: QPixmapData(type, OpenGLClass)
+    : QPixmapData(type, OpenGLClass)
     , m_engine(0)
-	, m_ctx(0)
-	, m_dirty(false)
-	, m_hasFillColor(false)
-	, m_hasAlpha(false)
-	, m_fbo(0)
+    , m_ctx(0)
+    , m_dirty(false)
+    , m_hasFillColor(false)
+    , m_hasAlpha(false)
+    , m_fbo(0)
 {
     TRACE();
 }
@@ -41,14 +44,14 @@ QEglGLPixmapData::~QEglGLPixmapData()
 {
     TRACE();
 
-	QGLWidget *shareWidget = qt_gl_share_widget();
+    QGLWidget *shareWidget = qt_gl_share_widget();
     if (!shareWidget)
         return;
 
     delete m_engine;
 
-	if (m_fbo)
-		glDeleteFramebuffers(1, &m_fbo);
+    if (m_fbo)
+        glDeleteFramebuffers(1, &m_fbo);
 
     if (m_texture.id) {
         QGLShareContextScope ctx(shareWidget->context());
@@ -59,7 +62,6 @@ QEglGLPixmapData::~QEglGLPixmapData()
 void QEglGLPixmapData::resize(int width, int height)
 {
     TRACE();
-	printf("resize: %d, %d\n", width, height);
     if (width == w && height == h)
         return;
 
@@ -119,7 +121,7 @@ void QEglGLPixmapData::fromImage(const QImage &image, Qt::ImageConversionFlags f
 }
 
 bool QEglGLPixmapData::fromFile(const QString &filename, const char *format,
-								Qt::ImageConversionFlags flags)
+                                Qt::ImageConversionFlags flags)
 {
     TRACE();
     if (pixelType() == QPixmapData::BitmapType)
@@ -154,7 +156,7 @@ bool QEglGLPixmapData::fromFile(const QString &filename, const char *format,
 }
 
 bool QEglGLPixmapData::fromData(const uchar *buffer, uint len, const char *format,
-								Qt::ImageConversionFlags flags)
+                                Qt::ImageConversionFlags flags)
 {
     TRACE();
     bool alpha;
@@ -179,13 +181,13 @@ bool QEglGLPixmapData::fromData(const uchar *buffer, uint len, const char *forma
 
 void QEglGLPixmapData::copy(const QPixmapData *data, const QRect &rect)
 {
-	NI();    
+    QPixmapData::copy(data, rect);
 }
 
 bool QEglGLPixmapData::scroll(int dx, int dy, const QRect &rect)
 {
-	NI();
-	return false;
+    NI();
+    return false;
 }
 
 void QEglGLPixmapData::fill(const QColor &color)
@@ -204,23 +206,23 @@ void QEglGLPixmapData::fill(const QColor &color)
         m_hasAlpha = color.alpha() != 255;
     }
 
-	m_source = QImage();
-	m_hasFillColor = true;
-	m_fillColor = color;
+    m_source = QImage();
+    m_hasFillColor = true;
+    m_fillColor = color;
 }
 
 bool QEglGLPixmapData::hasAlphaChannel() const
 {
     TRACE();
-	return m_hasAlpha;    
+    return m_hasAlpha;    
 }
 
 extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
 
 QImage QEglGLPixmapData::toImage() const
 {
-	if (!isValid())
-		return QImage();
+    if (!isValid())
+        return QImage();
 
     if (m_fbo) {
 //        copyBackFromRenderFbo(true);
@@ -244,26 +246,26 @@ QPaintEngine* QEglGLPixmapData::paintEngine() const
         return 0;
 
     TRACE();
-	if (m_fbo)
-		return m_engine;
+    if (m_fbo)
+        return m_engine;
 
-	ensureCreated();
-
-    TRACE();
-	glGenFramebuffers(1, &m_fbo);	
-	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture.id, 0);
-
-	int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-
-		printf("FBO generation failed with error: 0x%08x\n", status);
-		return 0;
-	}
+    ensureCreated();
 
     TRACE();
-	m_engine = new QGL2PaintEngineEx;
-	return m_engine;	
+    glGenFramebuffers(1, &m_fbo);   
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture.id, 0);
+
+    int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+
+        printf("FBO generation failed with error: 0x%08x\n", status);
+        return 0;
+    }
+
+    TRACE();
+    m_engine = new QGL2PaintEngineEx;
+    return m_engine;    
 }
 
 extern int qt_defaultDpiX();
@@ -309,40 +311,35 @@ bool QEglGLPixmapData::isValidContext(const QGLContext *ctx) const
 
     const QGLContext *share_ctx = qt_gl_share_widget()->context();
     bool ret = ctx == share_ctx || QGLContext::areSharing(ctx, share_ctx);
-	return ret;
+    return ret;
 }
+
+extern QRgb qt_gl_convertToGLFormat(QRgb src_pixel, GLenum texture_format);
 
 GLuint QEglGLPixmapData::bind() const
 {
     TRACE();
-	ensureCreated();
+    ensureCreated();
 
     GLuint id = m_texture.id;
     glBindTexture(GL_TEXTURE_2D, id);
 
     if (m_hasFillColor) {
-/* FIXME		
-        if (!useFramebufferObjects()) {
-            m_source = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
-            m_source.fill(PREMUL(m_fillColor.rgba()));
-        }
-
         m_hasFillColor = false;
 
         GLenum format = qt_gl_preferredTextureFormat();
         QImage tx(w, h, QImage::Format_ARGB32_Premultiplied);
         tx.fill(qt_gl_convertToGLFormat(m_fillColor.rgba(), format));
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, GL_UNSIGNED_BYTE, tx.bits());
-*/
     }
 
-	return id;
+    return id;
 }
 
 QGLTexture * QEglGLPixmapData::texture() const
 {
     TRACE();
-    return &m_texture;    
+    return &m_texture;
 }
 
 bool QEglGLPixmapData::isValid() const
@@ -361,29 +358,28 @@ void QEglGLPixmapData::ensureCreated() const
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     m_ctx = ctx;
-//	if (!m_ctx)
-//        m_ctx = sharedContext();
-//	m_ctx = sharedContext();
 
     const GLenum internal_format = m_hasAlpha ? GL_RGBA : GL_RGB;
     const GLenum external_format = internal_format;
     const GLenum target = GL_TEXTURE_2D;
 
     TRACE();
-	
+    
     if (!m_texture.id) {
-		TRACE();
+
+        TRACE();
         glGenTextures(1, &m_texture.id);
         glBindTexture(target, m_texture.id);
         glTexImage2D(target, 0, internal_format, w, h, 0, external_format, GL_UNSIGNED_BYTE, 0);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            
     }
 
     if (!m_source.isNull()) {
-		TRACE();
+        TRACE();
         if (external_format == GL_RGB) {
-            const QImage tx = m_source.convertToFormat(QImage::Format_RGB888);
+            const QImage tx = m_source.convertToFormat(QImage::Format_RGB888).mirrored(false, true);
 
             glBindTexture(target, m_texture.id);
             glTexSubImage2D(target, 0, 0, 0, w, h, external_format,
@@ -396,7 +392,7 @@ void QEglGLPixmapData::ensureCreated() const
                             GL_UNSIGNED_BYTE, tx.bits());
         }
 
-		m_source = QImage();
+        m_source = QImage();
     }
 
     m_texture.options &= ~QGLContext::MemoryManagedBindOption;    
@@ -426,55 +422,47 @@ QImage QEglGLPixmapData::fillImage(const QColor &color) const
     return img;
 }
 
+QGLPaintDevice* QEglGLPixmapData::glDevice() const
+{
+    return this;
+}
+
 void QEglGLPixmapData::beginPaint()
 {
-	TRACE();
-	if (!isValid())
-		return;
+    TRACE();
+    if (!isValid())
+        return;
 
-	m_thisFBO = m_fbo;
-	QGLPaintDevice::beginPaint();
+    m_thisFBO = m_fbo;
+    QGLPaintDevice::beginPaint();
 
-	if (m_hasFillColor) {
-		m_hasFillColor = false;
+    if (m_hasFillColor) {
+        m_hasFillColor = false;
         float alpha = m_fillColor.alphaF();
         glDisable(GL_SCISSOR_TEST);
         glClearColor(m_fillColor.redF() * alpha, m_fillColor.greenF() * alpha, m_fillColor.blueF() * alpha, alpha);
         glClear(GL_COLOR_BUFFER_BIT);
-	}			
+    }           
 }
 
 void QEglGLPixmapData::endPaint()
 {
-	TRACE();
-	if (!isValid())
-		return;
+    TRACE();
+    if (!isValid())
+        return;
 
-	QGLPaintDevice::endPaint();
+    QGLPaintDevice::endPaint();
 }
 
 QGLContext* QEglGLPixmapData::context() const
 {
-	ensureCreated();
-	return m_ctx;    
+    ensureCreated();
+    return m_ctx;    
 }
 
 QSize QEglGLPixmapData::size() const
 {
-	return QSize(w, h);    
-}
-
-QGLContext* QEglGLPixmapData::sharedContext()
-{
-	static QGLContext* qCtxt = 0;
-	
-	if (!qCtxt) {
-        qCtxt = new QGLContext(QGLFormat::defaultFormat(), qt_gl_share_widget());
-		qCtxt->create();
-	}
-
-	return qCtxt;
-    
+    return QSize(w, h);    
 }
 
 QT_END_NAMESPACE

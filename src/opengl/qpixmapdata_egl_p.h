@@ -23,12 +23,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QEglGLPixmapData : public QPixmapData, public QGLPaintDevice
+class Q_OPENGL_EXPORT  QEglGLPixmapData : public QPixmapData, public QGLPaintDevice
 {
 public:
 
-	QEglGLPixmapData(PixelType type);
-	virtual ~QEglGLPixmapData();
+    QEglGLPixmapData(PixelType type);
+    virtual ~QEglGLPixmapData();
 
     // Re-implemented from QPixmapData:
     void resize(int width, int height);
@@ -50,24 +50,26 @@ public:
     GLuint bind() const;
     QGLTexture *texture() const;
 
+    // For accessing as a target:
+    QGLPaintDevice *glDevice() const;
+
     // Re-implemented from QGLPaintDevice
     virtual void beginPaint();
     virtual void endPaint();
 
-	QGLContext* context() const;
+    QGLContext* context() const;
     QSize size() const;
-	
+    
 private:
 
-	bool isValid() const;
-	void ensureCreated() const;
-	QImage fillImage(const QColor &color) const;
-	static QGLContext* sharedContext();
+    bool isValid() const;
+    void ensureCreated() const;
+    QImage fillImage(const QColor &color) const;
 
     mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
-	mutable QImage m_source;
-	mutable QGLTexture m_texture;
+    mutable QImage m_source;
+    mutable QGLTexture m_texture;
 
     // the texture is not in sync with the source image
     mutable bool m_dirty;
@@ -79,7 +81,7 @@ private:
 
     mutable bool m_hasAlpha;
 
-	mutable unsigned int m_fbo;
+    mutable unsigned int m_fbo;
 };
 
 

@@ -90,6 +90,7 @@
 #include <private/qimage_p.h>
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmapdata_gl_p.h>
+#include <private/qpixmapdata_egl_p.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
 #include "qcolormap.h"
@@ -2613,10 +2614,14 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     QPixmapData *pd = pixmap.pixmapData();
 #if !defined(QT_OPENGL_ES_1)
     if (target == GL_TEXTURE_2D && pd->classId() == QPixmapData::OpenGLClass) {
+#if defined(QT_OPENGL_ES_2)		
+        const QEglGLPixmapData *data = static_cast<const QEglGLPixmapData *>(pd);
+#else
         const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pd);
+#endif
 
         if (data->isValidContext(q)) {
-            data->bind();
+			data->bind();
             return data->texture();
         }
     }
@@ -2883,6 +2888,25 @@ void QGLContext::deleteTexture(GLuint id)
         return;
     glDeleteTextures(1, &id);
 }
+
+void QGLContext::setTextureOptions(const QPixmap& pixmap, BindOptions options)
+{
+    QPixmapData *pd = pixmap.pixmapData();
+
+#if defined(QT_OPENGL_ES_2)     
+    if (pd->classId() == QPixmapData::OpenGLClass) {
+        const QEglGLPixmapData *data = static_cast<const QEglGLPixmapData *>(pd);
+        if (data->isValidContext(this)) {
+            data->bind();
+            data->texture()->options = options;
+        }
+    }
+#else
+    Q_UNUSED(pd);
+    Q_UNUSED(q);
+#endif
+}
+
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
 /*! \internal */

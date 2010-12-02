@@ -55,6 +55,7 @@
 
 #include <QtGui/private/qgraphicssystem_qws_p.h>
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
+#include <QtOpenGL/private/qpixmapdata_egl_p.h>
 
 #include "eglwindowsurface.h"
 
@@ -63,7 +64,8 @@ class EglScreenPrivate : public QWSGraphicsSystem
 public:
 
     virtual QPixmapData* createPixmapData(QPixmapData::PixelType type) const {
-        return new QGLPixmapData(type);
+        //return new QGLPixmapData(type);
+		return new QEglGLPixmapData(type);
     }
 
 };
