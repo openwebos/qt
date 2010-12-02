@@ -327,7 +327,7 @@ GLuint QEglGLPixmapData::bind() const
     if (m_hasFillColor) {
         m_hasFillColor = false;
 
-        GLenum format = qt_gl_preferredTextureFormat();
+        const GLenum format = GL_RGBA;
         QImage tx(w, h, QImage::Format_ARGB32_Premultiplied);
         tx.fill(qt_gl_convertToGLFormat(m_fillColor.rgba(), format));
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, GL_UNSIGNED_BYTE, tx.bits());
