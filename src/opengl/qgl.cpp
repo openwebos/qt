@@ -2903,7 +2903,6 @@ void QGLContext::setTextureOptions(const QPixmap& pixmap, BindOptions options)
     }
 #else
     Q_UNUSED(pd);
-    Q_UNUSED(q);
 #endif
 }
 

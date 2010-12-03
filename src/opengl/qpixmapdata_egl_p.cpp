@@ -10,6 +10,7 @@
 #include <private/qimage_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qpaintengineex_opengl2_p.h>
+#include <private/qgl_p.h>
 #include <private/qegl_p.h>
 
 #include <qdesktopwidget.h>
@@ -50,8 +51,10 @@ QEglGLPixmapData::~QEglGLPixmapData()
 
     delete m_engine;
 
-    if (m_fbo)
+    if (m_fbo) {
+        QGLShareContextScope ctx(shareWidget->context());
         glDeleteFramebuffers(1, &m_fbo);
+    }
 
     if (m_texture.id) {
         QGLShareContextScope ctx(shareWidget->context());
@@ -252,6 +255,8 @@ QPaintEngine* QEglGLPixmapData::paintEngine() const
     ensureCreated();
 
     TRACE();
+
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     glGenFramebuffers(1, &m_fbo);   
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture.id, 0);
@@ -424,7 +429,7 @@ QImage QEglGLPixmapData::fillImage(const QColor &color) const
 
 QGLPaintDevice* QEglGLPixmapData::glDevice() const
 {
-    return this;
+    return (QGLPaintDevice*)(this);
 }
 
 void QEglGLPixmapData::beginPaint()
