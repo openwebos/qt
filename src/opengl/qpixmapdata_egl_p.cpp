@@ -258,11 +258,11 @@ QPaintEngine* QEglGLPixmapData::paintEngine() const
 
     QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     glGenFramebuffers(1, &m_fbo);   
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture.id, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_texture.id, 0);
 
-    int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
+    int status = glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
+    if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
 
         printf("FBO generation failed with error: 0x%08x\n", status);
         return 0;
