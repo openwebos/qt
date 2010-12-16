@@ -22,6 +22,8 @@
 **
 ****************************************************************************/
 
+#if defined(QT_WEBOS)
+
 #include "qpixmapatlas.h"
 #include "qareaallocator_p.h"
 #include "qdrawutil.h"
@@ -781,3 +783,5 @@ const QAreaAllocator* QPixmapAtlas::allocator() const
 
     return d->allocator();
 }
+
+#endif
