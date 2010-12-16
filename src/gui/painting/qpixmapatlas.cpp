@@ -22,8 +22,6 @@
 **
 ****************************************************************************/
 
-#if defined(QT_WEBOS)
-
 #include "qpixmapatlas.h"
 #include "qareaallocator_p.h"
 #include "qdrawutil.h"
@@ -36,6 +34,9 @@
 #include <QtCore/QTemporaryFile>
 
 #include <QDebug>
+
+#if defined(QT_WEBOS)
+
 
 QT_BEGIN_NAMESPACE
 
