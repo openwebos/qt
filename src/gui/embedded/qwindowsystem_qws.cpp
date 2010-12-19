@@ -3467,7 +3467,11 @@ void QWSServerPrivate::update_regions()
 
     for (int i = 0; i < windows.count(); ++i) {
         QWSWindow *w = windows.at(i);
+#if defined(QT_WEBOS)
+        QRegion r = w->requested_region;
+#else
         QRegion r = (w->requested_region & available);
+#endif
 
 #ifndef QT_NO_QWSEMBEDWIDGET
         // Subtract regions needed for embedded windows
