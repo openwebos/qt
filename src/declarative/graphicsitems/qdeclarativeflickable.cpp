@@ -612,7 +612,11 @@ void QDeclarativeFlickable::setInteractive(bool interactive)
     Q_D(QDeclarativeFlickable);
     if (interactive != d->interactive) {
         d->interactive = interactive;
-        if (!interactive && (d->hData.flicking || d->vData.flicking)) {
+#ifdef QT_WEBOS
+        if (!interactive)
+            d->pressed = false;
+#endif
+        if (!interactive && (d->flickingHorizontally || d->flickingVertically)) {
             d->timeline.clear();
             d->vTime = d->timeline.time();
             d->hData.flicking = false;
