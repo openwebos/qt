@@ -1824,6 +1824,20 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     \internal
 */
 
+#ifdef QT_WEBOS
+void QPixmap::setHasAlpha(bool val)
+{
+    if (paintingActive()) {
+        qWarning("QPixmap::setHasAlpha: "
+                 "Cannot set alpha while pixmap is being painted on");
+        return;
+    }
+
+    detach();
+    data->setHasAlpha(val);
+}
+#endif
+
 /*!
     Returns true if this pixmap has an alpha channel, \e or has a
     mask, otherwise returns false.

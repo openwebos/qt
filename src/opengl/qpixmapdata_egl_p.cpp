@@ -214,6 +214,12 @@ void QEglGLPixmapData::fill(const QColor &color)
     m_fillColor = color;
 }
 
+void QEglGLPixmapData::setHasAlpha(bool val)
+{
+    TRACE();
+    m_hasAlpha = val;
+}
+
 bool QEglGLPixmapData::hasAlphaChannel() const
 {
     TRACE();

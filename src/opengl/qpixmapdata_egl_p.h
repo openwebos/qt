@@ -40,6 +40,7 @@ public:
     void copy(const QPixmapData *data, const QRect &rect);
     bool scroll(int dx, int dy, const QRect &rect);
     void fill(const QColor &color);
+    void setHasAlpha(bool val);
     bool hasAlphaChannel() const;
     QImage toImage() const;
     QPaintEngine *paintEngine() const;

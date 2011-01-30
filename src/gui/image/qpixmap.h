@@ -117,6 +117,10 @@ public:
     bool hasAlpha() const;
     bool hasAlphaChannel() const;
 
+#ifdef QT_WEBOS
+    void setHasAlpha(bool);
+#endif
+
 #ifndef QT_NO_IMAGE_HEURISTIC_MASK
     QBitmap createHeuristicMask(bool clipTight = true) const;
 #endif
