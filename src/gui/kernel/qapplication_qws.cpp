@@ -3547,6 +3547,13 @@ bool QETWidget::translateKeyEvent(const QWSKeyEvent *event, bool grab) /* grab i
     Qt::KeyboardModifiers state = oldstate;
     oldstate = event->simpleData.modifiers;
 
+#if defined(QT_WEBOS)
+    if (event->simpleData.modifiers & Qt::ExternalKeyboardModifier)
+        state |= Qt::ExternalKeyboardModifier;
+    else
+        state &= ~Qt::ExternalKeyboardModifier;
+#endif
+
     if (sm_blockUserInput) // block user interaction during session management
         return true;
 

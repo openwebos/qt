@@ -74,7 +74,8 @@ public:
         : m_handler(h), m_modifiers(0), m_composing(0), m_dead_unicode(0xffff),
           m_no_zap(false), m_do_compose(false),
 #ifdef QT_WEBOS
-		  m_capslock_on (false),
+          m_capslock_on (false),
+          m_isExternalKeyboard(false),
 #endif // QT_WEBOS
           m_keymap(0), m_keymap_size(0), m_keycompose(0), m_keycompose_size(0)
     {
@@ -169,6 +170,7 @@ private:
     bool m_do_compose;
 #ifdef QT_WEBOS
     bool m_capslock_on;
+    bool m_isExternalKeyboard;
 #endif // QT_WEBOS
 
     const QWSKeyboard::Mapping *m_keymap;
@@ -653,7 +655,11 @@ QWSKeyboardHandler::KeycodeAction QWSKeyboardHandler::processKeycode(quint16 key
 
     if (!skip) {
         // a normal key was pressed
+#if defined(QT_WEBOS)
+        const int modmask = Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier | Qt::ExternalKeyboardModifier;
+#else
         const int modmask = Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier | Qt::KeypadModifier;
+#endif
 
         // we couldn't find a specific mapping for the current modifiers,
         // or that mapping didn't have special modifiers:
@@ -715,12 +721,24 @@ QWSKeyboardHandler::KeycodeAction QWSKeyboardHandler::processKeycode(quint16 key
             qWarning("Processing: uni=%04x, qt=%08x, qtmod=%08x", unicode, qtcode & ~modmask, (qtcode & modmask));
 #endif
 
+#if defined(QT_WEBOS)
+            if (d->m_isExternalKeyboard)
+                qtcode |= Qt::ExternalKeyboardModifier;
+#endif
+
             // send the result to the QWS server
             processKeyEvent(unicode, qtcode & ~modmask, Qt::KeyboardModifiers(qtcode & modmask), pressed, autorepeat);
         }
     }
     return result;
 }
+
+#if defined(QT_WEBOS)
+void QWSKeyboardHandler::setIsExternalKeyboard(bool val)
+{
+    d->m_isExternalKeyboard = val;
+}
+#endif
 
 QT_END_NAMESPACE
 

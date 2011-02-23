@@ -84,6 +84,9 @@ public:
     };
 
     KeycodeAction processKeycode(quint16 keycode, bool pressed, bool autorepeat);
+#if defined(QT_WEBOS)
+    void setIsExternalKeyboard(bool val);
+#endif
 
 protected:
     int transformDirKey(int key);
