@@ -133,8 +133,7 @@ public:
         KeypadModifier       = 0x20000000,
         GroupSwitchModifier  = 0x40000000,
         // --> Palm
-        ExternalKeyboardModifier = 0x00000001,
-        KeyCancelModifier        = 0x00000002,
+        ExternalKeyboardModifier = 0x80000000,
         // <-- Palm
         // Do not extend the mask to include 0x01000000
         KeyboardModifierMask = 0xfe000000
