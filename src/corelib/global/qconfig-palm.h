@@ -193,12 +193,6 @@
 #ifndef QT_NO_COP
 #  define QT_NO_COP
 #endif
-#ifndef QT_NO_HOSTINFO
-#  define QT_NO_HOSTINFO
-#endif
-#ifndef QT_NO_HTTP
-#  define QT_NO_HTTP
-#endif
 #ifndef QT_NO_NETWORKPROXY
 #  define QT_NO_NETWORKPROXY
 #endif
