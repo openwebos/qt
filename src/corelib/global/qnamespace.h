@@ -1145,13 +1145,14 @@ public:
         Key_HeadsetButton = 0x01200104,
         Key_Headset = 0x01200105,
         Key_HeadsetMic = 0x01200106,
-	
-	// keys for avrcp
-	Key_MediaRepeatAll = 0x01200200,
-	Key_MediaRepeatTrack = 0x01200201,
-	Key_MediaRepeatNone = 0x01200202,
-	Key_MediaShuffleOn = 0x01200203,
-	Key_MediaShuffleOff = 0x01200204,
+        Key_Keyboard = 0x01200107,
+
+        // keys for avrcp
+        Key_MediaRepeatAll = 0x01200200,
+        Key_MediaRepeatTrack = 0x01200201,
+        Key_MediaRepeatNone = 0x01200202,
+        Key_MediaShuffleOn = 0x01200203,
+        Key_MediaShuffleOff = 0x01200204,
 
 #endif // QT_WEBOS
 

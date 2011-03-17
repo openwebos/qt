@@ -282,6 +282,21 @@ static const struct symbol_map_t symbol_map[] = {
     { "Help",          Qt::Key_Help },
     { "Pause",         Qt::Key_Pause },
 
+    { "Search",             Qt::Key_Search },
+    { "MonBrightnessDown",  Qt::Key_MonBrightnessDown },
+    { "MonBrightnessUp",    Qt::Key_MonBrightnessUp },
+    { "Rewind",             Qt::Key_MediaPrevious },
+    { "Play",               Qt::Key_MediaPlay },
+    { "FastForward",        Qt::Key_MediaNext },
+    { "Mute",               Qt::Key_VolumeMute },
+    { "VolumeDown",         Qt::Key_VolumeDown },
+    { "VolumeUp",           Qt::Key_VolumeUp },
+    { "Meta",               Qt::Key_Meta },
+#ifdef QT_WEBOS
+    { "Sleep",              Qt::Key_Power },
+    { "Keyboard",           Qt::Key_Keyboard },
+#endif
+
     { "KP_0",        Qt::Key_0 | Qt::KeypadModifier },
     { "KP_1",        Qt::Key_1 | Qt::KeypadModifier },
     { "KP_2",        Qt::Key_2 | Qt::KeypadModifier },
