@@ -292,6 +292,7 @@ static const struct symbol_map_t symbol_map[] = {
     { "VolumeDown",         Qt::Key_VolumeDown },
     { "VolumeUp",           Qt::Key_VolumeUp },
     { "Meta",               Qt::Key_Meta },
+    { "SuperL",               Qt::Key_Super_L },
 #ifdef QT_WEBOS
     { "Sleep",              Qt::Key_Power },
     { "Keyboard",           Qt::Key_Keyboard },
