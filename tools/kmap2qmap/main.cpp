@@ -854,7 +854,13 @@ bool KeymapParser::parseCompose(const QByteArray &str, const QTextCodec *codec, 
             return false;
         unicode = temp[0].unicode();
         return true;
-    } else {
+	} else if (str.startsWith(('+'))) {
+		bool ok = false;
+		QByteArray sym = str.right(str.length() - 1);
+		if (sym.length() == 6 && sym[1] == '+' && (sym[0] == 'U' || sym[0] == 'u'))
+			unicode = sym.mid(2).toUInt(&ok, 16);
+		return ok;
+	} else {
         quint32 code = str.toUInt();
         if (code > 255)
             return false;
