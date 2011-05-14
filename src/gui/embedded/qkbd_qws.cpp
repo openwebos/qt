@@ -703,6 +703,9 @@ QWSKeyboardHandler::KeycodeAction QWSKeyboardHandler::processKeycode(quint16 key
                 if (idx < d->m_keycompose_size) {
                     quint16 composed = d->m_keycompose[idx].result;
                     if (composed != 0xffff) {
+#ifdef QT_DEBUG_KEYMAP
+						qWarning("Composing: '%s' + '%s' = '%s' (%04x + %04x = %04x)", QString(d->m_dead_unicode).toLatin1().data(), QString(unicode).toLatin1().data(), QString(composed).toLatin1().data(), (int) d->m_dead_unicode, (int) unicode, (int) composed);
+#endif
                         unicode = composed;
                         qtcode = Qt::Key_unknown;
                         valid = true;
@@ -717,17 +720,24 @@ QWSKeyboardHandler::KeycodeAction QWSKeyboardHandler::processKeycode(quint16 key
         }
 
         if (!skip) {
+			int qtkey = qtcode & ~modmask;
+			int qtmod = qtcode & modmask;
+
+			// when we generate a unicode character than has no Qt::Key equivalent, just use the unicode value
+			if (qtkey == Qt::Key_unknown && unicode >= Qt::Key_Space && unicode < 0xe000)
+				qtkey = unicode;
+
 #ifdef QT_DEBUG_KEYMAP
-            qWarning("Processing: uni=%04x, qt=%08x, qtmod=%08x", unicode, qtcode & ~modmask, (qtcode & modmask));
+			qWarning("Processing: uni=%04x '%s', qt=%08x, qtmod=%08x", unicode, QString(unicode).toLatin1().data(), qtkey, qtmod);
 #endif
 
 #if defined(QT_WEBOS)
             if (d->m_isExternalKeyboard)
-                qtcode |= Qt::ExternalKeyboardModifier;
+                qtmod |= Qt::ExternalKeyboardModifier;
 #endif
 
             // send the result to the QWS server
-            processKeyEvent(unicode, qtcode & ~modmask, Qt::KeyboardModifiers(qtcode & modmask), pressed, autorepeat);
+            processKeyEvent(unicode, qtkey, Qt::KeyboardModifiers(qtmod), pressed, autorepeat);
         }
     }
     return result;
