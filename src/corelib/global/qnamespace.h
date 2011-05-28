@@ -1804,6 +1804,8 @@ public:
 
 #ifdef QT_WEBOS
    		SysMgrGestureFlick = CustomGesture + 1,
+        SysMgrGestureSingleClick,
+        SysMgrGestureScreenEdgeFlick,
 #endif // QT_WEBOS
 
         LastGestureType   = ~0u

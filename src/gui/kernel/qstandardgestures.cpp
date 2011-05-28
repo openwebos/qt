@@ -485,6 +485,11 @@ QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
 			result = QGestureRecognizer::CancelGesture;
 			break;
 		}
+        g = static_cast<QGestureEvent*>(event)->gesture(Qt::SysMgrGestureScreenEdgeFlick);
+        if (g && g->state() == Qt::GestureFinished && q->state() != Qt::NoGesture ) {
+            result = QGestureRecognizer::CancelGesture;
+            break;
+        }
     }
     // fall through
 #endif // QT_WEBOS
