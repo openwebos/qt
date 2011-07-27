@@ -112,16 +112,19 @@ QWSKeyboardHandler *QKbdDriverFactory::create(const QString& key, const QString&
         return new QWSIntKeyboardHandler(device);
 #endif
 #ifndef QT_NO_QWS_KEYBOARD
+#if 0
 # ifndef QT_NO_QWS_KBD_TTY
     if (driver == QLatin1String("tty") || driver.isEmpty())
         return new QWSTtyKeyboardHandler(device);
 # endif
+#endif
 # ifndef QT_NO_QWS_KBD_LINUXINPUT
     if (driver == QLatin1String("linuxinput") || \
         driver == QLatin1String("usb") || \
         driver == QLatin1String("linuxis"))
         return new QWSLinuxInputKeyboardHandler(device);
 # endif
+#if 0
 # ifndef QT_NO_QWS_KBD_UM
     if (driver == QLatin1String("um") || driver == QLatin1String("qvfbkeyboard"))
         return new QWSUmKeyboardHandler(device);
@@ -132,6 +135,7 @@ QWSKeyboardHandler *QKbdDriverFactory::create(const QString& key, const QString&
         || driver == QLatin1String("qvfb"))
         return new QVFbKeyboardHandler(device);
 # endif
+#endif
 #endif
 
 #if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)

@@ -262,7 +262,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         // Standard OpenGL ES 2.0 spec says only supported option for npot textures is CLAMP_TO_EDGE.
         // GL_OES_Texture_npot extension is supposed to allow the other modes, but SGX driver 1.5
         // still has issues with it.
-        if (!isPowerOfTwo(texPixmap.width()) || !isPowerOfTwo(texPixmap.height()))
+        if (!isPowerOfTwo(currentBrushPixmap.width()) || !isPowerOfTwo(currentBrushPixmap.height()))
             wrapMode = GL_CLAMP_TO_EDGE;
 #endif
         updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
@@ -1879,7 +1879,6 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
 #endif // QT_WEBOS
 
     shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::MaskTexture), QT_MASK_TEXTURE_UNIT);
->>>>>>> Rebased off qt v4.7.0-rc1.
 
 #if defined(QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO)
     glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, 0);
@@ -1888,8 +1887,8 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     glDrawElements(GL_TRIANGLE_STRIP, 6 * numGlyphs, GL_UNSIGNED_SHORT, elementIndices.data());
 #endif
 
-    if (srgbFrameBufferEnabled)
-        glDisable(FRAMEBUFFER_SRGB_EXT);
+//    if (srgbFrameBufferEnabled)
+  //      glDisable(FRAMEBUFFER_SRGB_EXT);
 
 }
 

@@ -1369,7 +1369,8 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     }
 #else
     data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,640,480);
-#endif  
+#endif
+#endif
 #endif // QT_WEBOS
 
     focus_next = focus_prev = q;

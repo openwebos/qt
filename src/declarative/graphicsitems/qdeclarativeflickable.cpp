@@ -616,7 +616,7 @@ void QDeclarativeFlickable::setInteractive(bool interactive)
         if (!interactive)
             d->pressed = false;
 #endif
-        if (!interactive && (d->flickingHorizontally || d->flickingVertically)) {
+        if (!interactive && (d->hData.flicking || d->vData.flicking)) {
             d->timeline.clear();
             d->vTime = d->timeline.time();
             d->hData.flicking = false;

@@ -165,8 +165,9 @@ void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType typ
     QMap<ObjectGesture, QList<QGesture *> >::Iterator iter = m_objectGestures.begin();
     while (iter != m_objectGestures.end()) {
         ObjectGesture objectGesture = iter.key();
-        if (objectGesture.gesture == type && target == objectGesture.object.data()) {
+        if (objectGesture.gesture == type && target == objectGesture.object) {
 #if 1 // #ifndef QT_WEBOS // REBASE_CHECK_REQUIRED WebOS code doesn't compile anymore. Using new qt 4.7.0-beta2 code that seems to do what we added to 4.6.1...
+
             QSet<QGesture *> gestures = iter.value().toSet();
             for (QHash<QGestureRecognizer *, QSet<QGesture *> >::iterator
                  it = m_obsoleteGestures.begin(), e = m_obsoleteGestures.end(); it != e; ++it) {

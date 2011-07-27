@@ -2614,11 +2614,12 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     QPixmapData *pd = pixmap.pixmapData();
 #if !defined(QT_OPENGL_ES_1)
     if (target == GL_TEXTURE_2D && pd->classId() == QPixmapData::OpenGLClass) {
-#if defined(QT_OPENGL_ES_2)		
+
+/*#if defined(QT_OPENGL_ES_2)		
         const QEglGLPixmapData *data = static_cast<const QEglGLPixmapData *>(pd);
-#else
+#else*/
         const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pd);
-#endif
+//#endif
 
         if (data->isValidContext(q)) {
 			data->bind();

@@ -450,6 +450,10 @@
 #  define QT_NO_VALIDATOR
 #endif
 
+#ifndef QT_NO_IDENTITYPROXYMODEL
+#define QT_NO_IDENTITYPROXYMODEL
+#endif
+
 /* Windows */
 #ifndef QT_NO_WIN_ACTIVEQT
 #  define QT_NO_WIN_ACTIVEQT

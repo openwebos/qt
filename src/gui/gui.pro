@@ -18,6 +18,19 @@ x11:include(kernel/x11.pri)
 mac:include(kernel/mac.pri)
 win32:include(kernel/win.pri)
 embedded:include(embedded/embedded.pri)
+
+		HEADERS +=	embedded/qkbd_qws.h \
+		    embedded/qkbd_qws_p.h \
+		    embedded/qkbd_defaultmap_qws_p.h \
+		    embedded/qkbddriverplugin_qws.h \
+		    embedded/qkbddriverfactory_qws.h \
+            embedded/qkbdlinuxinput_qws.h
+		SOURCES +=embedded/qkbdlinuxinput_qws.cpp \
+        embedded/qkbd_qws.cpp \
+		    embedded/qkbddriverplugin_qws.cpp \
+		    embedded/qkbddriverfactory_qws.cpp 
+
+
 symbian {
     include(kernel/symbian.pri)
     include(s60framework/s60framework.pri)
