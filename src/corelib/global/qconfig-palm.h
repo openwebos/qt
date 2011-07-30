@@ -51,9 +51,10 @@
 #define QT_NO_EXCEPTIONS
 #endif
 
-#ifndef QT_NO_DYNAMIC_CAST
+/*#ifndef QT_NO_DYNAMIC_CAST
 #define QT_NO_DYNAMIC_CAST
 #endif
+*/
 
 /* Dialogs */
 #ifndef QT_NO_COLORDIALOG
@@ -383,9 +384,9 @@
 #ifndef QT_NO_SPLITTER
 #  define QT_NO_SPLITTER
 #endif
-#ifndef QT_NO_SIGNALMAPPER
+/*#ifndef QT_NO_SIGNALMAPPER
 #  define QT_NO_SIGNALMAPPER
-#endif
+#endif*/
 #ifndef QT_NO_SIZEGRIP
 #  define QT_NO_SIZEGRIP
 #endif

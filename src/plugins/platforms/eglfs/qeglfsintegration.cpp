@@ -49,16 +49,16 @@
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QPlatformWindowFormat>
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
-
+#include <QDir>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
+
 
 QEglFSIntegration::QEglFSIntegration()
     : mFontDb(new QGenericUnixFontDatabase())
 {
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
-
     mScreens.append(m_primaryScreen);
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration\n");

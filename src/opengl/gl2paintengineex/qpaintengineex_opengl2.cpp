@@ -64,6 +64,9 @@
 
 // #define QT_OPENGL_CACHE_AS_VBOS
 
+#undef QT_NO_DEBUG
+#define QT_OPENGL_ES_2
+
 #include "qglgradientcache_p.h"
 #include "qpaintengineex_opengl2_p.h"
 
@@ -87,6 +90,7 @@
 #include "qtextureglyphcache_gl_p.h"
 
 #include <QDebug>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -136,13 +140,14 @@ void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMod
 
     lastTextureUsed = id;
 
-    if (smoothPixmapTransform) {
+/*    if (smoothPixmapTransform) {
         glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    } else {
+    } else {*/
         glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    }
+//    }
+    wrapMode = GL_CLAMP_TO_EDGE;
     glTexParameterf(target, GL_TEXTURE_WRAP_S, wrapMode);
     glTexParameterf(target, GL_TEXTURE_WRAP_T, wrapMode);
 }
@@ -222,7 +227,8 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
             qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
         }
 #endif
-        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+//        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
         // Gradiant brush: All the gradiants use the same texture
@@ -236,11 +242,11 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         glBindTexture(GL_TEXTURE_2D, texId);
 
-        if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
+        /*if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         else if (g->spread() == QGradient::ReflectSpread)
             updateTextureFilter(GL_TEXTURE_2D, GL_MIRRORED_REPEAT_IBM, q->state()->renderHints & QPainter::SmoothPixmapTransform);
-        else
+        else*/
             updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style == Qt::TexturePattern) {
@@ -262,7 +268,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         // Standard OpenGL ES 2.0 spec says only supported option for npot textures is CLAMP_TO_EDGE.
         // GL_OES_Texture_npot extension is supposed to allow the other modes, but SGX driver 1.5
         // still has issues with it.
-        if (!isPowerOfTwo(currentBrushPixmap.width()) || !isPowerOfTwo(currentBrushPixmap.height()))
+//        if (!isPowerOfTwo(currentBrushPixmap.width()) || !isPowerOfTwo(currentBrushPixmap.height()))
             wrapMode = GL_CLAMP_TO_EDGE;
 #endif
         updateTextureFilter(GL_TEXTURE_2D, wrapMode, q->state()->renderHints & QPainter::SmoothPixmapTransform);
@@ -1453,12 +1459,15 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
 {
     Q_D(QGL2PaintEngineEx);
-
+    //qWarning("QGL2PaintEngineEx::drawStaticTextItem");
     ensureActive();
 
     QPainterState *s = state();
     float det = s->matrix.determinant();
-
+    
+/*    int align;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &align);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     // don't try to cache huge fonts or vastly transformed fonts
     QFontEngine *fontEngine = textItem->fontEngine();
     const qreal pixelSize = fontEngine->fontDef.pixelSize;
@@ -1477,9 +1486,10 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
         }
 
         d->drawCachedGlyphs(glyphType, textItem);
-    } else {
+    } else {*/
         QPaintEngineEx::drawStaticTextItem(textItem);
-    }
+//    }
+  //  glPixelStorei(GL_UNPACK_ALIGNMENT, align);
 }
 
 bool QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
@@ -1539,7 +1549,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
         }
     }
 
-    if (drawCached) {
+/*    if (drawCached) {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> glyphs;
         QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
@@ -1557,7 +1567,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
             d->drawCachedGlyphs(glyphType, &staticTextItem);
         }
         return;
-    }
+    }*/
 
     QPaintEngineEx::drawTextItem(p, ti);
 }

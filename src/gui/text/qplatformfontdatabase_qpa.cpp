@@ -249,7 +249,7 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, QUnicode
     Q_UNUSED(handle);
     QByteArray *fileDataPtr = static_cast<QByteArray *>(handle);
     QFontEngineQPA *engine = new QFontEngineQPA(fontDef,*fileDataPtr);
-    //qDebug() << fontDef.pixelSize << fontDef.weight << fontDef.style << fontDef.stretch << fontDef.styleHint << fontDef.styleStrategy << fontDef.family << script;
+    qWarning() << fontDef.pixelSize << fontDef.weight << fontDef.style << fontDef.stretch << fontDef.styleHint << fontDef.styleStrategy << fontDef.family << script;
     return engine;
 }
 
@@ -311,8 +311,17 @@ QString QPlatformFontDatabase::fontDir() const
     QString fontpath = QString::fromLocal8Bit(qgetenv("QT_QPA_FONTDIR"));
     if (fontpath.isEmpty()) {
 #ifndef QT_NO_SETTINGS
+#ifndef QT_WEBOS
         fontpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
         fontpath += QLatin1String("/fonts");
+#else
+#ifndef PALM_DEVICE
+        fontpath = QLibraryInfo::location(QLibraryInfo::LibrariesPath);
+        fontpath += QLatin1String("/fonts");
+#else
+        fontpath = QLatin1String("/usr/share/fonts");
+#endif
+#endif
 #endif
     }
 

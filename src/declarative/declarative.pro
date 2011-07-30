@@ -29,7 +29,7 @@ symbian: {
     LIBS += -lefsrv -lhal
 
     contains(QT_CONFIG, freetype) {
-        DEFINES += QT_NO_FONTCONFIG
+#        DEFINES += QT_NO_FONTCONFIG
         INCLUDEPATH += \
             ../3rdparty/freetype/src \
             ../3rdparty/freetype/include

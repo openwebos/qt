@@ -134,8 +134,7 @@ embedded {
 		text/qabstractfontengine_p.h
 	DEFINES += QT_NO_FONTCONFIG
 }
-
-qpa {
+qpa{
 	SOURCES += \
                 text/qfont_qpa.cpp \
                 text/qfontengine_qpa.cpp \
@@ -169,7 +168,7 @@ symbian {
 	LIBS += -lfntstr -lecom
 }
 
-!qpa {
+embedded {
 contains(QT_CONFIG, freetype) {
     SOURCES += \
 	../3rdparty/freetype/src/base/ftbase.c \
@@ -235,7 +234,7 @@ contains(QT_CONFIG, freetype) {
     embedded:CONFIG += opentype
 } else:contains(QT_CONFIG, system-freetype) {
     embedded:CONFIG += opentype
-    # pull in the proper freetype2 include directory
+   # pull in the proper freetype2 include directory
     include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
     LIBS_PRIVATE += -lfreetype
 }

@@ -62,7 +62,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#if (defined(Q_WS_QWS)|| defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_QPA) || defined(Q_WS_QWS)|| defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 #  include <ft2build.h>
 #  include FT_TRUETYPE_TABLES_H
 #endif
@@ -171,7 +171,7 @@ struct  QtFontSize
     unsigned short count : 16;
 #endif // Q_WS_X11
 
-#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
+#if defined(Q_WS_QPA) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     QByteArray fileName;
     int fileIndex;
 #endif // defined(Q_WS_QWS) || defined(Q_WS_QPA) || defined(Q_OS_SYMBIAN)
@@ -658,7 +658,7 @@ class QFontDatabasePrivate
 public:
     QFontDatabasePrivate()
         : count(0), families(0), reregisterAppFonts(false)
-#if defined(Q_WS_QWS)
+#if defined(Q_WS_QWS) | defined(Q_WS_QPA)
           , stream(0)
 #endif
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
@@ -728,11 +728,11 @@ public:
 
     void invalidate();
 
-#if defined(Q_WS_QWS)
+#if defined(Q_WS_QWS) | defined(Q_WS_QPA)
     bool loadFromCache(const QString &fontPath);
     void addQPF2File(const QByteArray &file);
 #endif // Q_WS_QWS
-#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QPA) || defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
 #ifndef QT_WEBOS
     void addFont(const QString &familyname, const char *foundryname, int weight,
                  bool italic, int pixelSize, const QByteArray &file, int fileIndex,
@@ -748,7 +748,7 @@ public:
     QStringList addTTFile(const QByteArray &file, const QByteArray &fontData = QByteArray());
 #endif // QT_NO_FREETYPE
 #endif
-#if defined(Q_WS_QWS)
+#if defined(Q_WS_QWS) | defined(Q_WS_QPA)
     QDataStream *stream;
 #elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
     QSymbianFontDatabaseExtras *symbianExtras;
@@ -804,7 +804,7 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
     return families[pos];
 }
 
-#if defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
+#if defined(Q_WS_QPA) || defined(Q_WS_QWS) ||   defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
 #ifndef QT_WEBOS
 void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundryname, int weight, bool italic, int pixelSize,
                                    const QByteArray &file, int fileIndex, bool antialiased,
@@ -847,7 +847,7 @@ void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundr
     size->fileName = file;
     size->fileIndex = fileIndex;
 
-#if defined(Q_WS_QWS)
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     if (stream) {
 #ifndef QT_WEBOS
         *stream << familyname << foundry->name << weight << quint8(italic) << pixelSize
@@ -867,7 +867,7 @@ void QFontDatabasePrivate::addFont(const QString &familyname, const char *foundr
 }
 #endif
 
-#if (defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_QPA) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 QStringList QFontDatabasePrivate::addTTFile(const QByteArray &file, const QByteArray &fontData)
 {
     QStringList families;

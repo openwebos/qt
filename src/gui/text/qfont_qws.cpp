@@ -52,9 +52,9 @@
 //#include "qmemorymanager_qws.h"
 #include "qtextengine_p.h"
 #include "qfontengine_p.h"
-#if !defined(QT_NO_FREETYPE)
+//#if !defined(QT_NO_FREETYPE)
 #include "qfontengine_ft_p.h"
-#endif
+//#endif
 
 QT_BEGIN_NAMESPACE
 
