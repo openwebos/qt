@@ -1465,9 +1465,6 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
     QPainterState *s = state();
     float det = s->matrix.determinant();
     
-/*    int align;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &align);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     // don't try to cache huge fonts or vastly transformed fonts
     QFontEngine *fontEngine = textItem->fontEngine();
     const qreal pixelSize = fontEngine->fontDef.pixelSize;
@@ -1486,10 +1483,9 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
         }
 
         d->drawCachedGlyphs(glyphType, textItem);
-    } else {*/
+    } else {
         QPaintEngineEx::drawStaticTextItem(textItem);
-//    }
-  //  glPixelStorei(GL_UNPACK_ALIGNMENT, align);
+    }
 }
 
 bool QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
@@ -1549,7 +1545,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
         }
     }
 
-/*    if (drawCached) {
+    if (drawCached) {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> glyphs;
         QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
@@ -1567,7 +1563,7 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
             d->drawCachedGlyphs(glyphType, &staticTextItem);
         }
         return;
-    }*/
+    }
 
     QPaintEngineEx::drawTextItem(p, ti);
 }

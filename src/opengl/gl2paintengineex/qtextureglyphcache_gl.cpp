@@ -346,7 +346,7 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph, QFixed sub
             ctx->d_ptr->workaround_brokenAlphaTexSubImage_init = true;
         }
 
-        if (ctx->d_ptr->workaround_brokenAlphaTexSubImage) {
+        if (true/*ctx->d_ptr->workaround_brokenAlphaTexSubImage*/) {
             for (int i = 0; i < maskHeight; ++i)
                 glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
         } else {
