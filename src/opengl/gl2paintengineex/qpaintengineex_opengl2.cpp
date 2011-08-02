@@ -64,8 +64,6 @@
 
 // #define QT_OPENGL_CACHE_AS_VBOS
 
-#undef QT_NO_DEBUG
-#define QT_OPENGL_ES_2
 
 #include "qglgradientcache_p.h"
 #include "qpaintengineex_opengl2_p.h"

@@ -6120,8 +6120,7 @@ QSize QGLTexture::bindCompressedTexturePVR(const char *buf, int len)
     }
 
     // Restore the default pixel alignment for later texture uploads.
-//    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
     // Set the invert flag for the texture.  The "vertical flip"
     // flag in PVR is the opposite sense to our sense of inversion.

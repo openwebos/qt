@@ -57,7 +57,6 @@ Q_GUI_EXPORT  void qt_registerFont(const QString &familyName, const QString &fou
                                    const QSupportedWritingSystems &writingSystems, void *handle)
 {
     QFontDatabasePrivate *d = privateDb();
-    //    qDebug() << "Adding font" << familyname << weight << italic << pixelSize << file << fileIndex << antialiased;
         QtFontStyle::Key styleKey;
         styleKey.style = style;
         styleKey.weight = weight;
@@ -246,7 +245,6 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
                         const QFontDef &request)
 {
     QMutexLocker locker(fontDatabaseMutex());
-
     const int force_encoding_id = -1;
 
     if (!privateDb()->count)
@@ -263,7 +261,6 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
     QString family_name, foundry_name;
 
     parseFontName(request.family, foundry_name, family_name);
-
     if (qt_enable_test_font && request.family == QLatin1String("__Qt__Box__Engine__")) {
         engine =new QTestFontEngine(request.pixelSize);
         engine->fontDef = request;
@@ -323,7 +320,6 @@ QFontDatabase::findFont(int script, const QFontPrivate *fp,
     } else {
         engine->fontDef.pointSize = request.pointSize;
     }
-
     return engine;
 }
 
