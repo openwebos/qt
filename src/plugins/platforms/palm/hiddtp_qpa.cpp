@@ -519,7 +519,6 @@ void QPAHiddTpHandler::generateTouchEvent()
 	if(!widget) {
 	    widget = QApplication::activeWindow();
 	}
-	g_debug("%d", widget);
 	Qt::KeyboardModifiers keyboardModifiers = QApplication::keyboardModifiers();
 
 	if (widget && m_sendPenCancel) {

@@ -229,6 +229,5 @@ int main(int argc, char *argv[])
     list.show();
 #endif
 
-    QApplication::setActiveWindow(&list);
     return app.exec();
 }
