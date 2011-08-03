@@ -138,14 +138,13 @@ void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMod
 
     lastTextureUsed = id;
 
-/*    if (smoothPixmapTransform) {
+    if (smoothPixmapTransform) {
         glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    } else {*/
+    } else {
         glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    }
-    wrapMode = GL_CLAMP_TO_EDGE;
+    }
     glTexParameterf(target, GL_TEXTURE_WRAP_S, wrapMode);
     glTexParameterf(target, GL_TEXTURE_WRAP_T, wrapMode);
 }
@@ -225,8 +224,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
             qWarning("GL2 Paint Engine: This system does not support the REPEAT wrap mode for non-power-of-two textures.");
         }
 #endif
-//        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
-        updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
+        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
         // Gradiant brush: All the gradiants use the same texture
@@ -240,11 +238,11 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         glBindTexture(GL_TEXTURE_2D, texId);
 
-        /*if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
+        if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
             updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         else if (g->spread() == QGradient::ReflectSpread)
             updateTextureFilter(GL_TEXTURE_2D, GL_MIRRORED_REPEAT_IBM, q->state()->renderHints & QPainter::SmoothPixmapTransform);
-        else*/
+        else
             updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style == Qt::TexturePattern) {

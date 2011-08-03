@@ -116,8 +116,8 @@
 #ifndef QT_NO_IMAGEFORMAT_XBM
 #  define QT_NO_IMAGEFORMAT_XBM
 #endif
-#ifndef QT_NO_IMAGEFORMAT_XPM
-#  define QT_NO_IMAGEFORMAT_XPM
+#ifdef QT_NO_IMAGEFORMAT_XPM
+#  undef QT_NO_IMAGEFORMAT_XPM
 #endif
 #ifndef QT_NO_IMAGE_TEXT
 #  define QT_NO_IMAGE_TEXT
@@ -186,8 +186,8 @@
 #ifndef QT_NO_TEXTHTMLPARSER
 #  define QT_NO_TEXTHTMLPARSER
 #endif
-#ifndef QT_NO_WHEELEVENT
-#  define QT_NO_WHEELEVENT
+#ifdef QT_NO_WHEELEVENT
+#  undef QT_NO_WHEELEVENT
 #endif
 
 /* Networking */

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,39 +39,29 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtOpenGL>
-#include <QDeclarativeView>
-#include <QDeclarativeEngine>
+#ifndef QEGLWINDOWSURFACE_H
+#define QEGLWINDOWSURFACE_H
 
-int main(int argc, char *argv[])
+#include "qeglfsintegration.h"
+#include "qeglfswindow.h"
+
+#include <QtGui/private/qwindowsurface_p.h>
+
+QT_BEGIN_NAMESPACE
+
+class QEglFSWindowSurface : public QWindowSurface
 {
-// Depending on which is the recommended way for the platform, either use
-// opengl graphics system or paint into QGLWidget.
-#ifdef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QApplication::setGraphicsSystem("opengl");
-#endif
+public:
+    QEglFSWindowSurface(QEglFSScreen *screen, QWidget *window);
+    ~QEglFSWindowSurface() {}
 
-    QApplication app(argc, argv);
-    QDeclarativeView view;
+    QPaintDevice *paintDevice() { return m_paintDevice; }
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void resize(const QSize &size);
+private:
+    QPaintDevice *m_paintDevice;
+};
 
-#ifndef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QGLFormat format = QGLFormat::defaultFormat();
-    format.setSampleBuffers(false);
-    format.setSwapInterval(1);
-    QGLWidget* glWidget = new QGLWidget(format);
-    glWidget->setAutoFillBackground(false);
-    view.setViewport(glWidget);
-#endif
+QT_END_NAMESPACE
 
-    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setAttribute(Qt::WA_OpaquePaintEvent);
-    view.setAttribute(Qt::WA_NoSystemBackground);
-    view.setSource(QUrl::fromLocalFile(QLatin1String("qml/main.qml")));
-    QObject::connect(view.engine(), SIGNAL(quit()), &view, SLOT(close()));
-
-    view.show();
-    QApplication::setActiveWindow(glWidget);
-
-    return app.exec();
-}
+#endif // QEGLWINDOWSURFACE_H

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,39 +39,63 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtOpenGL>
-#include <QDeclarativeView>
-#include <QDeclarativeEngine>
+#include "qeglfswindowsurface.h"
 
-int main(int argc, char *argv[])
+#include <QtGui/QPlatformGLContext>
+
+#include <QtOpenGL/private/qgl_p.h>
+#include <QtOpenGL/private/qglpaintdevice_p.h>
+
+QT_BEGIN_NAMESPACE
+
+class QEglFSPaintDevice : public QGLPaintDevice
 {
-// Depending on which is the recommended way for the platform, either use
-// opengl graphics system or paint into QGLWidget.
-#ifdef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QApplication::setGraphicsSystem("opengl");
+public:
+    QEglFSPaintDevice(QEglFSScreen *screen, QWidget *widget)
+        :QGLPaintDevice(), m_screen(screen)
+    {
+    #ifdef QEGL_EXTRA_DEBUG
+        qWarning("QEglPaintDevice %p, %p, %p",this, screen, widget);
+    #endif
+    }
+
+    QSize size() const { return m_screen->geometry().size(); }
+    QGLContext* context() const { return QGLContext::fromPlatformGLContext(m_screen->platformContext());}
+
+    QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
+
+    void  beginPaint(){
+        QGLPaintDevice::beginPaint();
+    }
+private:
+    QEglFSScreen *m_screen;
+    QGLContext *m_context;
+};
+
+
+QEglFSWindowSurface::QEglFSWindowSurface( QEglFSScreen *screen, QWidget *window )
+    :QWindowSurface(window)
+{
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QEglWindowSurface %p, %p", window, screen);
 #endif
-
-    QApplication app(argc, argv);
-    QDeclarativeView view;
-
-#ifndef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QGLFormat format = QGLFormat::defaultFormat();
-    format.setSampleBuffers(false);
-    format.setSwapInterval(1);
-    QGLWidget* glWidget = new QGLWidget(format);
-    glWidget->setAutoFillBackground(false);
-    view.setViewport(glWidget);
-#endif
-
-    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setAttribute(Qt::WA_OpaquePaintEvent);
-    view.setAttribute(Qt::WA_NoSystemBackground);
-    view.setSource(QUrl::fromLocalFile(QLatin1String("qml/main.qml")));
-    QObject::connect(view.engine(), SIGNAL(quit()), &view, SLOT(close()));
-
-    view.show();
-    QApplication::setActiveWindow(glWidget);
-
-    return app.exec();
+    m_paintDevice = new QEglFSPaintDevice(screen,window);
 }
+
+void QEglFSWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(widget);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QEglWindowSurface::flush %p",widget);
+#endif
+    widget->platformWindow()->glContext()->swapBuffers();
+}
+
+void QEglFSWindowSurface::resize(const QSize &size)
+{
+    Q_UNUSED(size);
+}
+
+QT_END_NAMESPACE

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,39 +39,42 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtOpenGL>
-#include <QDeclarativeView>
-#include <QDeclarativeEngine>
+#ifndef QEGLSCREEN_H
+#define QEGLSCREEN_H
 
-int main(int argc, char *argv[])
+#include <QPlatformScreen>
+
+#include <QtCore/QTextStream>
+
+#include <EGL/egl.h>
+
+QT_BEGIN_NAMESPACE
+
+class QPlatformGLContext;
+
+class QEglFSScreen : public QPlatformScreen //huh: FullScreenScreen ;) just to follow namespace
 {
-// Depending on which is the recommended way for the platform, either use
-// opengl graphics system or paint into QGLWidget.
-#ifdef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QApplication::setGraphicsSystem("opengl");
-#endif
+public:
+    QEglFSScreen(EGLNativeDisplayType display);
+    ~QEglFSScreen() {}
 
-    QApplication app(argc, argv);
-    QDeclarativeView view;
+    QRect geometry() const;
+    int depth() const;
+    QImage::Format format() const;
 
-#ifndef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QGLFormat format = QGLFormat::defaultFormat();
-    format.setSampleBuffers(false);
-    format.setSwapInterval(1);
-    QGLWidget* glWidget = new QGLWidget(format);
-    glWidget->setAutoFillBackground(false);
-    view.setViewport(glWidget);
-#endif
+    QPlatformGLContext *platformContext() const;
 
-    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setAttribute(Qt::WA_OpaquePaintEvent);
-    view.setAttribute(Qt::WA_NoSystemBackground);
-    view.setSource(QUrl::fromLocalFile(QLatin1String("qml/main.qml")));
-    QObject::connect(view.engine(), SIGNAL(quit()), &view, SLOT(close()));
+private:
+    void createAndSetPlatformContext() const;
+    void createAndSetPlatformContext();
 
-    view.show();
-    QApplication::setActiveWindow(glWidget);
+    QRect m_geometry;
+    int m_depth;
+    QImage::Format m_format;
+    QPlatformGLContext *m_platformContext;
+    EGLDisplay m_dpy;
+    EGLSurface m_surface;
+};
 
-    return app.exec();
-}
+QT_END_NAMESPACE
+#endif // QEGLSCREEN_H

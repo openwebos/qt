@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,39 +39,41 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtOpenGL>
-#include <QDeclarativeView>
-#include <QDeclarativeEngine>
+#ifndef EGLINTEGRATION_H
+#define EGLINTEGRATION_H
 
-int main(int argc, char *argv[])
+#include "qeglfsscreen.h"
+#include "hiddtp_qpa.h"
+
+#include <QtGui/QPlatformIntegration>
+#include <QtGui/QPlatformScreen>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+class QEglFSIntegration : public QPlatformIntegration
 {
-// Depending on which is the recommended way for the platform, either use
-// opengl graphics system or paint into QGLWidget.
-#ifdef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QApplication::setGraphicsSystem("opengl");
+public:
+    QEglFSIntegration();
+
+    bool hasCapability(QPlatformIntegration::Capability cap) const;
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
+    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+
+    QList<QPlatformScreen *> screens() const { return mScreens; }
+
+    QPlatformFontDatabase *fontDatabase() const;
+
+private:
+    QPlatformFontDatabase *mFontDb;
+    QList<QPlatformScreen *> mScreens;
+    QEglFSScreen *m_primaryScreen;
+    QPAHiddTpHandler *m_tpHandler;
+};
+
+QT_END_NAMESPACE
+QT_END_HEADER
+
 #endif
-
-    QApplication app(argc, argv);
-    QDeclarativeView view;
-
-#ifndef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QGLFormat format = QGLFormat::defaultFormat();
-    format.setSampleBuffers(false);
-    format.setSwapInterval(1);
-    QGLWidget* glWidget = new QGLWidget(format);
-    glWidget->setAutoFillBackground(false);
-    view.setViewport(glWidget);
-#endif
-
-    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setAttribute(Qt::WA_OpaquePaintEvent);
-    view.setAttribute(Qt::WA_NoSystemBackground);
-    view.setSource(QUrl::fromLocalFile(QLatin1String("qml/main.qml")));
-    QObject::connect(view.engine(), SIGNAL(quit()), &view, SLOT(close()));
-
-    view.show();
-    QApplication::setActiveWindow(glWidget);
-
-    return app.exec();
-}

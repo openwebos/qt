@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,39 +39,34 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtOpenGL>
-#include <QDeclarativeView>
-#include <QDeclarativeEngine>
+#include <QtGui/QPlatformIntegrationPlugin>
+#include "qeglfsintegration.h"
 
-int main(int argc, char *argv[])
+QT_BEGIN_NAMESPACE
+
+class QEglIntegrationPlugin : public QPlatformIntegrationPlugin
 {
-// Depending on which is the recommended way for the platform, either use
-// opengl graphics system or paint into QGLWidget.
-#ifdef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QApplication::setGraphicsSystem("opengl");
-#endif
+public:
+    QStringList keys() const;
+    QPlatformIntegration *create(const QString&, const QStringList&);
+};
 
-    QApplication app(argc, argv);
-    QDeclarativeView view;
-
-#ifndef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QGLFormat format = QGLFormat::defaultFormat();
-    format.setSampleBuffers(false);
-    format.setSwapInterval(1);
-    QGLWidget* glWidget = new QGLWidget(format);
-    glWidget->setAutoFillBackground(false);
-    view.setViewport(glWidget);
-#endif
-
-    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setAttribute(Qt::WA_OpaquePaintEvent);
-    view.setAttribute(Qt::WA_NoSystemBackground);
-    view.setSource(QUrl::fromLocalFile(QLatin1String("qml/main.qml")));
-    QObject::connect(view.engine(), SIGNAL(quit()), &view, SLOT(close()));
-
-    view.show();
-    QApplication::setActiveWindow(glWidget);
-
-    return app.exec();
+QStringList QEglIntegrationPlugin::keys() const
+{
+    QStringList list;
+    list << "Palm";
+    return list;
 }
+
+QPlatformIntegration* QEglIntegrationPlugin::create(const QString& system, const QStringList& paramList)
+{
+    Q_UNUSED(paramList);
+    if (system.toLower() == "palm")
+        return new QEglFSIntegration;
+
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(eglintegration, QEglIntegrationPlugin)
+
+QT_END_NAMESPACE

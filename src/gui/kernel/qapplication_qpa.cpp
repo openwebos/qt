@@ -774,7 +774,7 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
 
 void QApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::WheelEvent *e)
 {
-
+#ifndef QT_NO_WHEELEVENT
     if (!e->widget)
         return;
 
@@ -809,10 +809,10 @@ void QApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wheel
          p = mouseWidget->mapFromGlobal(globalPoint);
      }
 
-     /*QWheelEvent ev(p, globalPoint, e->delta, buttons, QApplication::keyboardModifiers(),
+     QWheelEvent ev(p, globalPoint, e->delta, buttons, QApplication::keyboardModifiers(),
                    e->orient);
      QApplication::sendSpontaneousEvent(mouseWidget, &ev);
-     */
+#endif
 }
 
 

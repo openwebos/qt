@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -39,39 +39,49 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QApplication>
-#include <QtOpenGL>
-#include <QDeclarativeView>
-#include <QDeclarativeEngine>
+#include "qeglfswindow.h"
 
-int main(int argc, char *argv[])
+#include <QtGui/QWindowSystemInterface>
+
+QT_BEGIN_NAMESPACE
+
+QEglFSWindow::QEglFSWindow(QWidget *w, QEglFSScreen *screen)
+    : QPlatformWindow(w), m_screen(screen)
 {
-// Depending on which is the recommended way for the platform, either use
-// opengl graphics system or paint into QGLWidget.
-#ifdef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QApplication::setGraphicsSystem("opengl");
+    static int serialNo = 0;
+    m_winid  = ++serialNo;
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QEglWindow %p: %p %p 0x%x\n", this, w, screen, uint(m_winid));
 #endif
-
-    QApplication app(argc, argv);
-    QDeclarativeView view;
-
-#ifndef SHADEREFFECTS_USE_OPENGL_GRAPHICSSYSTEM
-    QGLFormat format = QGLFormat::defaultFormat();
-    format.setSampleBuffers(false);
-    format.setSwapInterval(1);
-    QGLWidget* glWidget = new QGLWidget(format);
-    glWidget->setAutoFillBackground(false);
-    view.setViewport(glWidget);
-#endif
-
-    view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    view.setAttribute(Qt::WA_OpaquePaintEvent);
-    view.setAttribute(Qt::WA_NoSystemBackground);
-    view.setSource(QUrl::fromLocalFile(QLatin1String("qml/main.qml")));
-    QObject::connect(view.engine(), SIGNAL(quit()), &view, SLOT(close()));
-
-    view.show();
-    QApplication::setActiveWindow(glWidget);
-
-    return app.exec();
 }
+
+
+void QEglFSWindow::setGeometry(const QRect &)
+{
+    // We only support full-screen windows
+    QRect rect(m_screen->availableGeometry());
+    QWindowSystemInterface::handleGeometryChange(this->widget(), rect);
+
+    // Since toplevels are fullscreen, propegate the screen size back to the widget
+    widget()->setGeometry(rect);
+
+    QPlatformWindow::setGeometry(rect);
+}
+
+WId QEglFSWindow::winId() const
+{
+    return m_winid;
+}
+
+
+
+QPlatformGLContext *QEglFSWindow::glContext() const
+{
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QEglWindow::glContext %p\n", m_screen->platformContext());
+#endif
+    Q_ASSERT(m_screen);
+     return m_screen->platformContext();
+}
+
+QT_END_NAMESPACE
