@@ -623,7 +623,7 @@ void QPAHiddTpHandler::generateTouchEvent()
 					//printf("Mouse Up: %d, %d\n", mousePos.x(), mousePos.y());
 					QMouseEvent ev(QEvent::MouseButtonRelease, mousePos, mousePos,
 								   Qt::LeftButton, Qt::NoButton, keyboardModifiers);
-					qt_sendSpontaneousEvent((QObject*) widget, &ev);							
+					qt_sendSpontaneousEvent((QObject*) widget, &ev);			
 				}
 			}
 		}

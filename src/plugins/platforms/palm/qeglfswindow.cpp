@@ -50,7 +50,7 @@ QEglFSWindow::QEglFSWindow(QWidget *w, QEglFSScreen *screen)
 {
     static int serialNo = 0;
     m_winid  = ++serialNo;
-    QApplication::setActiveWindow(w);
+  //  QApplication::setActiveWindow(w);
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglWindow %p: %p %p 0x%x\n", this, w, screen, uint(m_winid));
 #endif
