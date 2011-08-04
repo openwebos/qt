@@ -13,6 +13,8 @@
 #include "hiddtp_qpa.h"
 #include "InputControl.h"
 #include "HalInputControl.h"
+#include "FlickGesture.h"
+#include "ScreenEdgeFlickGesture.h" 
 
 // One page worth of events (4096/16)
 #define MAX_HIDD_EVENTS 256
@@ -30,7 +32,12 @@ QPAHiddTpHandler::QPAHiddTpHandler()
 	, m_sendPenCancel (false)
 	, m_penCancelPoint (0,0)
 	, m_isSuspended (false)
+	, m_deviceWidth(1024)
+	, m_deviceHeight(768)
 {
+
+	flickGesture = new FlickGesture;
+	m_screenEdgeFlickGesture = new ScreenEdgeFlickGesture;
 	/* initial HAL support: veng */
 	/* fine-tuning  support for HAL: dk 12/22/2010 */
 	InputControl* ic = new HalInputControl(HAL_DEVICE_TOUCHPANEL, "Main");
@@ -223,7 +230,7 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 				//QWSServer::processKeyEvent(-1, touch.gestureKey, Qt::NoModifier, true, false);
 				//QWSServer::processKeyEvent(-1, touch.gestureKey, Qt::NoModifier, false, false);
 			}
-/*			if (touch.gestureKey == Qt::Key_Flick
+			if (touch.gestureKey == Qt::Key_Flick
 #if !defined(TARGET_DESKTOP)
 		   || touch.gestureKey == Qt::Key_CoreNavi_SwipeDown
 #endif
@@ -231,7 +238,7 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 
 				m_screenEdgeFlickGesture->m_edge = ScreenEdgeFlickGesture::EdgeUnknown;
 				
-				if (Preferences::instance()->sysUiEnableNextPrevGestures()) {
+				if (true)/*Preferences::instance()->sysUiEnableNextPrevGestures())*/ {
 
 					const int INVALID_COORD = 0xFFFFFFFF;
 					int xDown = INVALID_COORD;
@@ -336,7 +343,7 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 					QList<QGesture *> gestureFinishedList;
 
 					flickGesture->m_endPos = QPoint(touch.x, touch.y);
-					flickGesture->m_velocity = HostBase::instance()->map(QPoint(touch.xVelocity, touch.yVelocity));
+					//flickGesture->m_velocity = HostBase::instance()->map(QPoint(touch.xVelocity, touch.yVelocity));
 					flickGesture->setHotSpot(m_lastTouchDown);
 					
 					flickGesture->setState(Qt::GestureStarted);
@@ -360,7 +367,7 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 					}
 				}
 			}
-	    */
+	    
 	    }
 
 	}

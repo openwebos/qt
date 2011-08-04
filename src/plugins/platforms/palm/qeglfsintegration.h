@@ -44,6 +44,7 @@
 
 #include "qeglfsscreen.h"
 #include "hiddtp_qpa.h"
+#include "hiddkbd_qpa.h"
 
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
@@ -71,6 +72,7 @@ private:
     QList<QPlatformScreen *> mScreens;
     QEglFSScreen *m_primaryScreen;
     QPAHiddTpHandler *m_tpHandler;
+    QPAHiddKbdHandler *m_kbdHandler;
 };
 
 QT_END_NAMESPACE

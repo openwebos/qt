@@ -2,7 +2,6 @@
 #define QHIDDTP_QPA_H
 
 #include "hidd_qpa.h"
-
 #include <QList>
 #include <QTouchEvent>
 
@@ -12,6 +11,8 @@
 
 #include <hid/IncsPublic/HidLib.h>
 #include <hal/hal.h>
+#include "FlickGesture.h"
+#include "ScreenEdgeFlickGesture.h"
 
 #define EV_GESTURE 0x06
 
@@ -106,7 +107,10 @@ private:
 	bool updateTouch (struct Touch touch);
 
 	static gboolean ioCallback(GIOChannel* channel, GIOCondition condition, gpointer arg);
-										 
+	FlickGesture* flickGesture;
+	ScreenEdgeFlickGesture* m_screenEdgeFlickGesture;
+	int m_deviceWidth;
+	int m_deviceHeight;
 private Q_SLOTS:
 	void readHiddData();
 };

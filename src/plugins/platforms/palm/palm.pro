@@ -13,7 +13,8 @@ SOURCES =   main.cpp \
             qeglfswindowsurface.cpp \
             qeglfsscreen.cpp \
             hiddtp_qpa.cpp \
-            HalInputControl.cpp
+            HalInputControl.cpp \
+            hiddkbd_qpa.cpp
 
 HEADERS =   qeglfsintegration.h \
             ../eglconvenience/qeglconvenience.h \
@@ -24,12 +25,15 @@ HEADERS =   qeglfsintegration.h \
             hidd_qpa.h \
             hiddtp_qpa.h \
             InputControl.h \
-            HalInputControl.h
+            HalInputControl.h \
+            FlickGesture.h \
+            ScreenEdgeFlickGesture.h \
+            hiddkbd_qpa.h
 
 include(../fontdatabases/genericunix/genericunix.pri)
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
 LIBS_PRIVATE +=$$QT_LIBS_GLIB
-LIBS_PRIVATE += -lhal -lhid
+LIBS_PRIVATE += -lhal -lhid -lLunaKeymaps
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

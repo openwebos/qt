@@ -59,6 +59,7 @@ QEglFSIntegration::QEglFSIntegration()
 {
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
     m_tpHandler = new QPAHiddTpHandler;
+    m_kbdHandler = new QPAHiddKbdHandler;
 
     mScreens.append(m_primaryScreen);
 #ifdef QEGL_EXTRA_DEBUG
