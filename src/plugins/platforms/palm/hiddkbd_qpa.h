@@ -5,7 +5,7 @@
 
 #include <qsocketnotifier.h>
 #include <map>
-#include "webosDeviceKeymap.h"
+#include <webosDeviceKeymap.h>
 #include <hid/IncsPublic/HidLib.h>
 
 #include <hal/hal.h>
