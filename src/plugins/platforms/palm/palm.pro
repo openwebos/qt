@@ -28,12 +28,13 @@ HEADERS =   qeglfsintegration.h \
             HalInputControl.h \
             FlickGesture.h \
             ScreenEdgeFlickGesture.h \
-            hiddkbd_qpa.h
+            hiddkbd_qpa.h \
+            webosDeviceKeymap.h
 
 include(../fontdatabases/genericunix/genericunix.pri)
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
 LIBS_PRIVATE +=$$QT_LIBS_GLIB
-LIBS_PRIVATE += -lhal -lhid -lLunaKeymaps
+LIBS_PRIVATE += -lhal -lhid -ldl
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

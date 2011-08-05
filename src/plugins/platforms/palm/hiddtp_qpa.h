@@ -13,9 +13,9 @@
 #include <hal/hal.h>
 #include "FlickGesture.h"
 #include "ScreenEdgeFlickGesture.h"
+#include "InputControl.h"
 
 #define EV_GESTURE 0x06
-
 
 class QPAHiddTpHandler: public QObject {
 Q_OBJECT
@@ -27,7 +27,6 @@ public:
 	void resume();
 	int setupHiddSocket(const char* path);
 	void parseHiddData(struct input_event* inputEvents, int numEvents);
-
 private:
 	Qt::Key lookupGesture(uint16_t value);
 

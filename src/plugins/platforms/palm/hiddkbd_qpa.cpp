@@ -9,6 +9,8 @@
 #include <hid/IncsPublic/HidLib.h>
 #include "InputControl.h"
 #include "HalInputControl.h"
+#include "webosDeviceKeymap.h"
+#include <dlfcn.h>
 
 #include <QWSKeyboardHandler>
 #include <QKbdDriverFactory>
@@ -22,7 +24,15 @@ QPAHiddKbdHandler::QPAHiddKbdHandler() :
     , m_sendHomeDoubleClick(false)
     , m_curDeviceId (-1)
 {
-	m_keyMap = webosGetDeviceKeymap();
+	m_keyMap = NULL;
+	void* handle = dlopen("libLunaKeymaps.so", RTLD_LAZY);
+	if(handle) {
+	    const KeyMapType* (*webosGetDeviceKeymap)(void);
+	    *(void**)(&webosGetDeviceKeymap) = dlsym(handle, "webosGetDeviceKeymap");
+	    if(dlerror() == NULL) {
+		m_keyMap = (*webosGetDeviceKeymap)();
+	    }
+	}
 
 	/* initial HAL support: veng */
 	/* fine-tuning  support for HAL: dk 12/22/2010 */
@@ -350,6 +360,7 @@ Qt::Key QPAHiddKbdHandler::lookupKey(int keyCode, int keyValue, bool* consumeKey
 			break;
 	}
 
+	if(m_keyMap) {
 #ifdef TARGET_EMULATOR
 	// this should be the last valid key in luna-keymaps
 	if (keyCode > 0 && keyCode <= KEY_PAUSE) {
@@ -366,6 +377,7 @@ Qt::Key QPAHiddKbdHandler::lookupKey(int keyCode, int keyValue, bool* consumeKey
 			key = m_keyMap[keyCode].qtKey;
 	}
 #endif
+	}
 
 	return (Qt::Key) key;
 }

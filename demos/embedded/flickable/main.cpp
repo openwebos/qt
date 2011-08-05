@@ -228,6 +228,6 @@ int main(int argc, char *argv[])
     list.resize(320, 320);
     list.show();
 #endif
-
+    QApplication::setActiveWindow(&list);
     return app.exec();
 }

@@ -24,6 +24,11 @@ extern void qt_translateRawTouchEvent(QWidget *window, QTouchEvent::DeviceType d
 
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 
+extern "C" {
+InputControl* m_tpInput = NULL;
+InputControl* getTouchpanel() { return m_tpInput; }
+}
+
 QPAHiddTpHandler::QPAHiddTpHandler()
 	: m_mousePressTime(0)
 	, m_halPenHandle(0)
@@ -41,6 +46,7 @@ QPAHiddTpHandler::QPAHiddTpHandler()
 	/* initial HAL support: veng */
 	/* fine-tuning  support for HAL: dk 12/22/2010 */
 	InputControl* ic = new HalInputControl(HAL_DEVICE_TOUCHPANEL, "Main");
+	m_tpInput = ic;
 	if (ic)
 	{
 		m_halPenHandle = ic->getHandle();
@@ -62,7 +68,6 @@ QPAHiddTpHandler::QPAHiddTpHandler()
 		}
 	}
 }
-
 
 QPAHiddTpHandler::~QPAHiddTpHandler() {
 	if (m_penFd >= 0)
