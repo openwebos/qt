@@ -67,14 +67,14 @@
 #  include FT_TRUETYPE_TABLES_H
 #endif
 
-#define QFONTDATABASE_DEBUG
+//#define QFONTDATABASE_DEBUG
 #ifdef QFONTDATABASE_DEBUG
 #  define FD_DEBUG qDebug
 #else
 #  define FD_DEBUG if (false) qDebug
 #endif
 
-#define FONT_MATCH_DEBUG
+//#define FONT_MATCH_DEBUG
 #ifdef FONT_MATCH_DEBUG
 #  define FM_DEBUG qDebug
 #else

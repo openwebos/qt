@@ -154,7 +154,7 @@ void QEglFSScreen::createAndSetPlatformContext()
         platformFormat.setGreenBufferSize(8);
         platformFormat.setBlueBufferSize(8);
         m_depth = 32;
-        m_format = QImage::Format_RGB32;
+        m_format = QImage::Format_ARGB32_Premultiplied;
     }
     if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty()) {
         platformFormat.setSampleBuffers(true);

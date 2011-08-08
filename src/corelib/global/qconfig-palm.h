@@ -191,18 +191,18 @@
 #endif
 
 /* Networking */
-#ifndef QT_NO_COP
-#  define QT_NO_COP
-#endif
-#ifndef QT_NO_NETWORKPROXY
-#  define QT_NO_NETWORKPROXY
-#endif
-#ifndef QT_NO_SOCKS5
-#  define QT_NO_SOCKS5
-#endif
-#ifndef QT_NO_UDPSOCKET
-#  define QT_NO_UDPSOCKET
-#endif
+//#ifndef QT_NO_COP
+//#  define QT_NO_COP
+//#endif
+//#ifndef QT_NO_NETWORKPROXY
+//#  define QT_NO_NETWORKPROXY
+//#endif
+//#ifndef QT_NO_SOCKS5
+//#  define QT_NO_SOCKS5
+//#endif
+//#ifndef QT_NO_UDPSOCKET
+//#  define QT_NO_UDPSOCKET
+//#endif
 #ifndef QT_NO_FTP
 #  define QT_NO_FTP
 #endif

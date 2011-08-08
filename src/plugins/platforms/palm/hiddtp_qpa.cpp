@@ -530,6 +530,10 @@ void QPAHiddTpHandler::generateTouchEvent()
 	}
 	if(!widget) {
 	    widget = QApplication::activeWindow();
+	    if(QApplication::focusWidget())
+	    {
+		widget = QApplication::focusWidget();
+	    }
 	}
 	Qt::KeyboardModifiers keyboardModifiers = QApplication::keyboardModifiers();
 
