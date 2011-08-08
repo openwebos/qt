@@ -51,6 +51,18 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+    EGLDisplay* disp = NULL;
+    void setEglSwapInterval(int interval) {
+        printf("Turning vsync %s\n", interval ? "on" : "off");
+        eglSwapInterval(disp, interval);
+    }
+#ifdef __cplusplus
+}
+#endif
+
 // #define QEGL_EXTRA_DEBUG
 
 #ifdef QEGL_EXTRA_DEBUG
@@ -106,6 +118,7 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
     }
 
     m_dpy = eglGetDisplay(display);
+    disp = m_dpy;
     if (m_dpy == EGL_NO_DISPLAY) {
         qWarning("Could not open egl display\n");
         qFatal("EGL error");
@@ -240,5 +253,7 @@ QPlatformGLContext *QEglFSScreen::platformContext() const
     }
     return m_platformContext;
 }
+
+
 
 QT_END_NAMESPACE

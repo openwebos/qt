@@ -29,6 +29,7 @@ InputControl* m_tpInput = NULL;
 InputControl* getTouchpanel() { return m_tpInput; }
 }
 
+
 QPAHiddTpHandler::QPAHiddTpHandler()
 	: m_mousePressTime(0)
 	, m_halPenHandle(0)
@@ -348,6 +349,7 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 					QList<QGesture *> gestureFinishedList;
 
 					flickGesture->m_endPos = QPoint(touch.x, touch.y);
+					flickGesture->m_velocity = QPoint(touch.xVelocity, touch.yVelocity);
 					//flickGesture->m_velocity = HostBase::instance()->map(QPoint(touch.xVelocity, touch.yVelocity));
 					flickGesture->setHotSpot(m_lastTouchDown);
 					
@@ -361,13 +363,15 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 						if (widget) {
 
 							QGestureEvent gestureStartedEvent(gestureStartedList);
-							QApplication::sendEvent((QObject*) widget, &gestureStartedEvent);
+//							QApplication::sendEvent((QObject*) widget, &gestureStartedEvent);
+							QApplication::sendEvent((QObject*)widget, &gestureStartedEvent);
 
 							flickGesture->setState(Qt::GestureFinished);
 							gestureFinishedList.append(flickGesture);
 
 							QGestureEvent gestureFinishedEvent(gestureFinishedList);
-							QApplication::sendEvent((QObject*) widget, &gestureFinishedEvent);
+//							QApplication::sendEvent((QObject*) widget, &gestureFinishedEvent);
+							QApplication::sendEvent((QObject*)widget, &gestureFinishedEvent);
 						}
 					}
 				}

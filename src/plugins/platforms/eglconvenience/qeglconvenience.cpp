@@ -304,6 +304,7 @@ QPlatformWindowFormat qt_qPlatformWindowFormatFromConfig(EGLDisplay display, con
     format.setRgba(true);            // EGL doesn't support colour index rendering
     format.setStereo(false);         // EGL doesn't support stereo buffers
     format.setAccumBufferSize(0);    // EGL doesn't support accululation buffers
+    format.setDoubleBuffer(true);
 
     // Clear the EGL error state because some of the above may
     // have errored out because the attribute is not applicable
