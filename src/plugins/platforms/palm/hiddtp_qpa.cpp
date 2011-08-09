@@ -9,6 +9,7 @@
 #include <QInputEvent>
 #include <QTouchEvent>
 #include <QWidget>
+#include <QTransform>
 
 #include "hiddtp_qpa.h"
 #include "InputControl.h"
@@ -25,8 +26,17 @@ extern void qt_translateRawTouchEvent(QWidget *window, QTouchEvent::DeviceType d
 extern bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 
 extern "C" {
-InputControl* m_tpInput = NULL;
-InputControl* getTouchpanel() { return m_tpInput; }
+    InputControl* m_tpInput = NULL;
+    InputControl* getTouchpanel() { return m_tpInput; }
+    QTransform* m_trans = NULL;
+    void setTransform(QTransform* t) { m_trans = t; }
+    QPoint transMap(QPoint p) 
+    {
+	if(!m_trans)
+	    return QPoint(0,0);
+
+	return m_trans->map(p);
+    }
 }
 
 
@@ -349,7 +359,7 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 					QList<QGesture *> gestureFinishedList;
 
 					flickGesture->m_endPos = QPoint(touch.x, touch.y);
-					flickGesture->m_velocity = QPoint(touch.xVelocity, touch.yVelocity);
+					flickGesture->m_velocity = transMap(QPoint(touch.xVelocity, touch.yVelocity));
 					//flickGesture->m_velocity = HostBase::instance()->map(QPoint(touch.xVelocity, touch.yVelocity));
 					flickGesture->setHotSpot(m_lastTouchDown);
 					
@@ -361,17 +371,14 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 					if (window) {
 						QWidget* widget = window->childAt(window->mapFromGlobal(m_lastTouchDown));
 						if (widget) {
-
 							QGestureEvent gestureStartedEvent(gestureStartedList);
-//							QApplication::sendEvent((QObject*) widget, &gestureStartedEvent);
-							QApplication::sendEvent((QObject*)widget, &gestureStartedEvent);
+							QApplication::sendEvent((QObject*) widget, &gestureStartedEvent);
 
 							flickGesture->setState(Qt::GestureFinished);
 							gestureFinishedList.append(flickGesture);
 
 							QGestureEvent gestureFinishedEvent(gestureFinishedList);
-//							QApplication::sendEvent((QObject*) widget, &gestureFinishedEvent);
-							QApplication::sendEvent((QObject*)widget, &gestureFinishedEvent);
+							QApplication::sendEvent((QObject*) widget, &gestureFinishedEvent);
 						}
 					}
 				}
