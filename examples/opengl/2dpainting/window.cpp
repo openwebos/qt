@@ -54,6 +54,8 @@ Window::Window()
     QLabel *openGLLabel = new QLabel(tr("OpenGL"));
     openGLLabel->setAlignment(Qt::AlignHCenter);
 
+    qWarning() << (openGL->doubleBuffer() ? "true" : "false");
+
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(native, 0, 0);
     layout->addWidget(openGL, 0, 1);

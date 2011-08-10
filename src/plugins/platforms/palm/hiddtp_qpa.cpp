@@ -16,6 +16,7 @@
 #include "HalInputControl.h"
 #include "FlickGesture.h"
 #include "ScreenEdgeFlickGesture.h" 
+#include "qeglfsscreen.h"
 
 // One page worth of events (4096/16)
 #define MAX_HIDD_EVENTS 256
@@ -40,7 +41,7 @@ extern "C" {
 }
 
 
-QPAHiddTpHandler::QPAHiddTpHandler()
+QPAHiddTpHandler::QPAHiddTpHandler(QEglFSScreen*  m_screen)
 	: m_mousePressTime(0)
 	, m_halPenHandle(0)
 	, m_penFd(0)
@@ -48,10 +49,9 @@ QPAHiddTpHandler::QPAHiddTpHandler()
 	, m_sendPenCancel (false)
 	, m_penCancelPoint (0,0)
 	, m_isSuspended (false)
-	, m_deviceWidth(1024)
-	, m_deviceHeight(768)
 {
-
+	m_deviceWidth = m_screen->geometry().width();
+	m_deviceHeight = m_screen->geometry().height();
 	flickGesture = new FlickGesture;
 	m_screenEdgeFlickGesture = new ScreenEdgeFlickGesture;
 	/* initial HAL support: veng */

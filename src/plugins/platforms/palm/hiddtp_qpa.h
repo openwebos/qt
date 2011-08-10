@@ -14,13 +14,14 @@
 #include "FlickGesture.h"
 #include "ScreenEdgeFlickGesture.h"
 #include "InputControl.h"
+#include "qeglfsscreen.h"
 
 #define EV_GESTURE 0x06
 
 class QPAHiddTpHandler: public QObject {
 Q_OBJECT
 public:
-	QPAHiddTpHandler();
+	QPAHiddTpHandler(QEglFSScreen*);
 	~QPAHiddTpHandler();
 
 	void suspend();

@@ -49,7 +49,8 @@
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QPlatformWindowFormat>
 #include <QtGui/private/qpixmap_raster_p.h>
-
+#include <QtOpenGL/private/qpixmapdata_gl_p.h>
+#include <QtOpenGL/private/qpixmapdata_egl_p.h>
 #include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
@@ -58,7 +59,7 @@ QEglFSIntegration::QEglFSIntegration()
     : mFontDb(new QGenericUnixFontDatabase())
 {
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
-    m_tpHandler = new QPAHiddTpHandler;
+    m_tpHandler = new QPAHiddTpHandler(m_primaryScreen);
     m_kbdHandler = new QPAHiddKbdHandler;
 
     mScreens.append(m_primaryScreen);
@@ -80,7 +81,9 @@ QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) co
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration::createPixmapData %d\n", type);
 #endif
-    return new QRasterPixmapData(type);
+//    return new QRasterPixmapData(type);
+//      return new QGLPixmapData(type);
+      return new QEglGLPixmapData(type);
 }
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWidget *widget, WId winId) const

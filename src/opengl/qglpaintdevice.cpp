@@ -224,11 +224,11 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
 #if !defined(QT_OPENGL_ES_1)
             QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
             if (pmd->classId() == QPixmapData::OpenGLClass)
-//#if defined(QT_OPENGL_ES_2)
-//				glpd = static_cast<QEglGLPixmapData*>(pmd)->glDevice();			
-//#else				
+#if defined(QT_OPENGL_ES_2)
+	    	glpd = static_cast<QEglGLPixmapData*>(pmd)->glDevice();			
+#else				
                 glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
-//#endif			
+#endif			
 #ifdef Q_WS_X11
             else if (pmd->classId() == QPixmapData::X11Class)
                 glpd = static_cast<QX11GLPixmapData*>(pmd);
