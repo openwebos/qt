@@ -106,7 +106,7 @@ extern bool qt_applefontsmoothing_enabled;
 #endif
 
 #if !defined(QT_MAX_CACHED_GLYPH_SIZE)
-#  define QT_MAX_CACHED_GLYPH_SIZE 64
+#  define QT_MAX_CACHED_GLYPH_SIZE 200
 #endif
 
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
@@ -1858,6 +1858,28 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
         shaderManager->setMaskType(QGLEngineShaderManager::PixelMask);
         prepareForDraw(false); // Text always causes src pixels to be transparent
     }
+
+    QGLTextureGlyphCache::FilterMode filterMode = (s->matrix.type() > QTransform::TxTranslate)?QGLTextureGlyphCache::Linear:QGLTextureGlyphCache::Nearest;
+    if (lastMaskTextureUsed != cache->texture() || cache->filterMode() != filterMode) {
+
+        glActiveTexture(GL_TEXTURE0 + QT_MASK_TEXTURE_UNIT);
+        if (lastMaskTextureUsed != cache->texture()) {
+            glBindTexture(GL_TEXTURE_2D, cache->texture());
+            lastMaskTextureUsed = cache->texture();
+        }
+
+        if (cache->filterMode() != filterMode) {
+            if (filterMode == QGLTextureGlyphCache::Linear) {
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            } else {
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            }
+            cache->setFilterMode(filterMode);
+        }
+    }
+
 
 #ifdef QT_WEBOS
     GLenum wrapMode = GL_REPEAT;
