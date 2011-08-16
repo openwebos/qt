@@ -4,7 +4,7 @@
 #include "hidd_qpa.h"
 #include <QList>
 #include <QTouchEvent>
-
+#include <QElapsedTimer>
 #include <stdint.h>
 #include <stdio.h>
 #include <glib.h>
@@ -78,8 +78,9 @@ private:
 	QList<HiddTouch> m_touches;
 	QPoint m_lastTouchDown;
 	QPoint m_mousePress;
-	uint32_t m_mousePressTime;
-
+	QElapsedTimer m_touchTimer;
+	qint64 m_mousePressTime;
+	
     	/* fine-tuning  support for HAL: dk 12/22/2010 */
 	hal_device_handle_t m_halPenHandle;
 	int m_penFd;

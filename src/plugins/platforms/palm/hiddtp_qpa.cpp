@@ -54,6 +54,7 @@ QPAHiddTpHandler::QPAHiddTpHandler(QEglFSScreen*  m_screen)
 	m_deviceHeight = m_screen->geometry().height();
 	flickGesture = new FlickGesture;
 	m_screenEdgeFlickGesture = new ScreenEdgeFlickGesture;
+	m_touchTimer.start();
 	/* initial HAL support: veng */
 	/* fine-tuning  support for HAL: dk 12/22/2010 */
 	InputControl* ic = new HalInputControl(HAL_DEVICE_TOUCHPANEL, "Main");
@@ -592,13 +593,13 @@ void QPAHiddTpHandler::generateTouchEvent()
 			if (widget) {
 				
 				if (it->state == QPAHiddTpHandler::FingerDown) {
-/*
-					uint32_t currTime = Time::curTimeMs();
+
+					uint32_t currTime = m_touchTimer.elapsed();
 					int dx = mousePos.x() - m_mousePress.x();
 					int dy = mousePos.y() - m_mousePress.y();
 					
 					if (((currTime - m_mousePressTime) < (uint32_t) QApplication::doubleClickInterval()) &&
-						((dx * dx + dy * dy) <= Settings::LunaSettings()->tapRadiusSquared)) {
+						((dx * dx + dy * dy) <= 144)) {
 
 						//printf("Mouse Double Click: %d, %d\n", mousePos.x(), mousePos.y());
 						QMouseEvent ev(QEvent::MouseButtonDblClick, mousePos, mousePos,
@@ -608,17 +609,17 @@ void QPAHiddTpHandler::generateTouchEvent()
 						m_mousePressTime = 0;
 					}
 					else {
-*/
+
 						//printf("Mouse Down: %d, %d\n", mousePos.x(), mousePos.y());
 						QMouseEvent ev(QEvent::MouseButtonPress, mousePos, mousePos,
 									   Qt::LeftButton, Qt::LeftButton, keyboardModifiers);
 						qt_sendSpontaneousEvent((QObject*) widget, &ev);
 
 						m_mousePress = mousePos;
-/*
+
 						m_mousePressTime = currTime;
 					}
-*/
+
 				} else if (it->state == QPAHiddTpHandler::FingerMove) {
 					//printf("Mouse Move: %d, %d\n", mousePos.x(), mousePos.y());
 					QMouseEvent ev(QEvent::MouseMove, mousePos, mousePos,
