@@ -55,12 +55,13 @@
 
 QT_BEGIN_NAMESPACE
 
-QEglFSIntegration::QEglFSIntegration()
+QEglFSIntegration::QEglFSIntegration(bool soft)
     : mFontDb(new QGenericUnixFontDatabase())
 {
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
     m_tpHandler = new QPAHiddTpHandler(m_primaryScreen);
     m_kbdHandler = new QPAHiddKbdHandler;
+    this->soft = soft;
 
     mScreens.append(m_primaryScreen);
 #ifdef QEGL_EXTRA_DEBUG
@@ -81,8 +82,9 @@ QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) co
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration::createPixmapData %d\n", type);
 #endif
-//    return new QRasterPixmapData(type);
-//      return new QGLPixmapData(type);
+    if(soft)
+      return new QRasterPixmapData(type);
+    else
       return new QEglGLPixmapData(type);
 }
 

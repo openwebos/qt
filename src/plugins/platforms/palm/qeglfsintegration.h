@@ -56,8 +56,7 @@ QT_BEGIN_NAMESPACE
 class QEglFSIntegration : public QPlatformIntegration
 {
 public:
-    QEglFSIntegration();
-
+    QEglFSIntegration(bool soft);
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
@@ -73,6 +72,7 @@ private:
     QEglFSScreen *m_primaryScreen;
     QPAHiddTpHandler *m_tpHandler;
     QPAHiddKbdHandler *m_kbdHandler;
+    bool soft;
 };
 
 QT_END_NAMESPACE

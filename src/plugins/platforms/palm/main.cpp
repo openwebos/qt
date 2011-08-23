@@ -55,14 +55,19 @@ QStringList QEglIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "Palm";
+    list << "Palm-soft";
     return list;
 }
 
 QPlatformIntegration* QEglIntegrationPlugin::create(const QString& system, const QStringList& paramList)
 {
     Q_UNUSED(paramList);
-    if (system.toLower() == "palm")
-        return new QEglFSIntegration;
+    if (system.toLower() == "palm") {
+        return new QEglFSIntegration(false);
+    }
+    else if(system.toLower() == "palm-soft") {
+        return new QEglFSIntegration(true);
+    }
 
     return 0;
 }
