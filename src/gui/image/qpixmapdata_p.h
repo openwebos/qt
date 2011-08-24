@@ -112,7 +112,7 @@ public:
                                 Qt::TransformationMode mode) const;
     virtual void setAlphaChannel(const QPixmap &alphaChannel);
     virtual QPixmap alphaChannel() const;
-    virtual void setHasAlpha(bool val) {}
+    virtual void setHasAlpha(bool val) { Q_UNUSED(val) }
     virtual QImage toImage() const = 0;
     virtual QImage toImage(const QRect &rect) const;
     virtual QPaintEngine* paintEngine() const = 0;
