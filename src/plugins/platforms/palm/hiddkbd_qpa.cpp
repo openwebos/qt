@@ -15,6 +15,12 @@
 #include <QWSKeyboardHandler>
 #include <QKbdDriverFactory>
 
+
+extern "C" {
+    void (*setBluetoothKeyboardActive)(bool) = NULL;
+    void setBluetoothCallback(void (*fun)(bool)) { setBluetoothKeyboardActive = fun; }
+}
+
 QPAHiddKbdHandler::QPAHiddKbdHandler() :
       m_halKeysHandle(0)
     , m_shiftKeyDown(false)
@@ -122,8 +128,10 @@ void QPAHiddKbdHandler::readInputDevData()
 					m_curDeviceId = -1;
 					g_debug("QPAHiddKbdHandler: Removed BT input device id: %d", data.value);
 					if (m_deviceIdMap.empty()) {
-			
-                    }
+					    //Tell sysmgr we don't have keyboards
+					    if(setBluetoothKeyboardActive)
+						(*setBluetoothKeyboardActive)(false);
+		                        }
 				} 
 				break;
             case HAL_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_KEYBOARD_TYPE:
@@ -160,7 +168,10 @@ void QPAHiddKbdHandler::readInputDevData()
 					QWSKeyboardHandler* handler = QKbdDriverFactory::create("LinuxInput", optionStr);
 					handler->setIsExternalKeyboard(true);
 					m_deviceIdMap.insert(std::pair<int, DeviceInfo*>(m_curDeviceId, new DeviceInfo(handler)));
-		    
+					//tell sysmgr we have keyboards
+					printf("bluetooth is active\n");
+					if(setBluetoothKeyboardActive)
+						(*setBluetoothKeyboardActive)(true);
 			    }
 				break;
 
