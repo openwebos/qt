@@ -216,7 +216,7 @@ QFontEngine *QBasicUnixFontDatabase::fontEngine(const QFontDef &fontDef, QUnicod
     engine = new QFontEngineFT(fontDef);
 
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    QFontEngineFT::GlyphFormat format = antialias? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono;
+    QFontEngineFT::GlyphFormat format = antialias? QFontEngineFT::Format_A32 : QFontEngineFT::Format_Mono;
     if (!engine->init(fid,antialias,format)) {
         delete engine;
         engine = 0;
