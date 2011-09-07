@@ -631,7 +631,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     antialias = true;
     freetype = 0;
     default_load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
-    default_hint_style = HintFull;
+    default_hint_style = HintLight;
     subpixelType = Subpixel_None;
     lcdFilterType = 0;
 #if defined(FT_LCD_FILTER_H)
