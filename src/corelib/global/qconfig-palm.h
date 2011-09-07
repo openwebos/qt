@@ -162,9 +162,6 @@
 #endif
 
 /* Kernel */
-#ifndef QT_NO_ACTION
-#  define QT_NO_ACTION
-#endif
 #ifndef QT_NO_CLIPBOARD
 #  define QT_NO_CLIPBOARD
 #endif
