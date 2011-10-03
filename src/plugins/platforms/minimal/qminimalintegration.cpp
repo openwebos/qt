@@ -41,11 +41,13 @@
 
 #include "qminimalintegration.h"
 #include "qminimalwindowsurface.h"
+#include "qgenericunixfontdatabase.h"
 
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
 
 QMinimalIntegration::QMinimalIntegration()
+    : mFontDb(new QGenericUnixFontDatabase())
 {
     QMinimalScreen *mPrimaryScreen = new QMinimalScreen();
 
@@ -80,3 +82,9 @@ QWindowSurface *QMinimalIntegration::createWindowSurface(QWidget *widget, WId wi
     Q_UNUSED(winId);
     return new QMinimalWindowSurface(widget);
 }
+
+QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
+{
+    return mFontDb;
+}
+

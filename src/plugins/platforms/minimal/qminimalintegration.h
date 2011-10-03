@@ -64,7 +64,7 @@ public:
     QSize mPhysicalSize;
 };
 
-class QMinimalIntegration : public QPlatformIntegration
+class QMinimalIntegration : public QPlatformIntegration 
 {
 public:
     QMinimalIntegration();
@@ -74,11 +74,12 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
     QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
+    QPlatformFontDatabase* fontDatabase() const;
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
 private:
     QList<QPlatformScreen *> mScreens;
+    QPlatformFontDatabase *mFontDb;
 };
 
 QT_END_NAMESPACE

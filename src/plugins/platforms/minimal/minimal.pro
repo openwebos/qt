@@ -9,5 +9,7 @@ SOURCES =   main.cpp \
 HEADERS =   qminimalintegration.h \
             qminimalwindowsurface.h
 
+include(../fontdatabases/genericunix/genericunix.pri)
+
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target
