@@ -268,6 +268,7 @@ QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const 
     do {
         FT_Face face;
         FT_Error error;
+
         if (!fontData.isEmpty()) {
             error = FT_New_Memory_Face(library, (const FT_Byte *)fontData.constData(), fontData.size(), index, &face);
         } else {
@@ -312,6 +313,8 @@ QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const 
         }
 
         QString family = QString::fromAscii(face->family_name);
+        if(family.isEmpty())
+            family = QString::fromLocal8Bit(file);
         FontFile *fontFile = new FontFile;
         fontFile->fileName = file;
         fontFile->indexValue = index;

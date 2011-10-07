@@ -2677,10 +2677,10 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     registerFont(&font);
     if (font.families.isEmpty())
         return -1;
-
     applicationFonts[i] = font;
 
-    invalidate();
+    //Invalidating the cache after loading an app font causes the font database to purge itself :(
+    //invalidate();
     return i;
 }
 
