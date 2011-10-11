@@ -996,6 +996,7 @@ void DumpRenderTreeSupportQt::addURLToRedirect(const QString& origin, const QStr
     FrameLoaderClientQt::URLsToRedirect[origin] = destination;
 }
 
+#ifndef QT_NO_CONTEXTMENU
 static QStringList iterateContextMenu(QMenu* menu)
 {
     if (!menu)
@@ -1013,6 +1014,7 @@ static QStringList iterateContextMenu(QMenu* menu)
     }
     return items;
 }
+#endif
 
 QStringList DumpRenderTreeSupportQt::contextMenu(QWebPage* page)
 {
