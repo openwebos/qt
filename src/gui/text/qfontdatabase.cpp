@@ -2679,8 +2679,10 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
         return -1;
     applicationFonts[i] = font;
 
+#ifndef QT_WEBOS
     //Invalidating the cache after loading an app font causes the font database to purge itself :(
-    //invalidate();
+    invalidate();
+#endif
     return i;
 }
 
