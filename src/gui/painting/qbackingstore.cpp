@@ -756,7 +756,12 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
         }
 
         // Alien widgets with native parent != tlw.
-        QWidgetPrivate *nativeParentPrivate = nativeParent->d_func();
+        QWidgetPrivate* nativeParentPrivate;
+        if(nativeParent)
+            nativeParentPrivate = nativeParent->d_func();
+        else
+            return;
+
         if (!nativeParentPrivate->needsFlush)
             nativeParentPrivate->needsFlush = new QRegion;
         const QPoint nativeParentOffset = widget->mapTo(nativeParent, QPoint());
