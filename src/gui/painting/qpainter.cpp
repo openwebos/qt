@@ -6096,6 +6096,9 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
 */
 void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justificationPadding)
 {
+    //Strip zero-width spaces
+    const_cast<QString&>(str).remove(QChar(0x200b));
+
 #ifdef QT_DEBUG_DRAW
     if (qt_show_painter_debug_output)
         printf("QPainter::drawText(), pos=[%.2f,%.2f], str='%s'\n", p.x(), p.y(), str.toLatin1().constData());
