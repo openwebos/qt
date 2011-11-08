@@ -201,7 +201,6 @@ void QBasicUnixFontDatabase::populateFontDatabase()
     dir.refresh();
     for (int i = 0; i < int(dir.count()); ++i) {
         const QByteArray file = QFile::encodeName(dir.absoluteFilePath(dir[i]));
-//        qDebug() << "looking at" << file;
         addTTFile(QByteArray(), file);
     }
 }
@@ -240,15 +239,33 @@ QStringList QBasicUnixFontDatabase::fallbacksForFamily(const QString family, con
 {
     Q_UNUSED(family);
     Q_UNUSED(style);
-    Q_UNUSED(styleHint);
     Q_UNUSED(script);
-
-    return (QStringList() << "Hei S" << "HeiT" << "Heisei Kaku Gothic" << "Dotum");
+    QStringList fallback;
+    switch(styleHint) {
+        case QFont::SansSerif:
+            fallback << "Arial";
+            break;
+        case QFont::Serif:
+            fallback << "Georgia";
+            break;
+        case QFont::TypeWriter:
+            fallback << "Courier New";
+            break;
+        case QFont::Monospace:
+            fallback << "Courier New";
+            break;
+        default:
+            fallback << "Verdana";
+            break;
+    }
+    return fallback << "Hei S" << "HeiT" << "Heisei Kaku Gothic" << "Dotum";
 }
 
 QStringList QBasicUnixFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
 {
-    return addTTFile(fontData,fileName.toLocal8Bit());
+    QStringList added;
+    added = addTTFile(fontData,fileName.toLocal8Bit());
+    return added;
 }
 
 void QBasicUnixFontDatabase::releaseHandle(void *handle)
@@ -320,7 +337,6 @@ QStringList QBasicUnixFontDatabase::addTTFile(const QByteArray &fontData, const 
         fontFile->indexValue = index;
 
         QFont::Stretch stretch = QFont::Unstretched;
-
         registerFont(family,"",weight,style,stretch,true,true,0,writingSystems,fontFile);
 
         families.append(family);

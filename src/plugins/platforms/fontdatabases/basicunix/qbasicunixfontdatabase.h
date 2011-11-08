@@ -55,6 +55,7 @@ struct FontFile
 class QBasicUnixFontDatabase : public QPlatformFontDatabase
 {
 public:
+    QBasicUnixFontDatabase() {}
     void populateFontDatabase();
     QFontEngine *fontEngine(const QFontDef &fontDef, QUnicodeTables::Script script, void *handle);
     QStringList fallbacksForFamily(const QString family, const QFont::Style &style, const QFont::StyleHint &styleHint, const QUnicodeTables::Script &script) const;
