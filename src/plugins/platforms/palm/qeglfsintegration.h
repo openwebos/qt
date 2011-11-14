@@ -45,7 +45,7 @@
 #include "qeglfsscreen.h"
 #include "hiddtp_qpa.h"
 #include "hiddkbd_qpa.h"
-
+#include "qwebosclipboard.h"
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 
@@ -65,6 +65,7 @@ public:
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
     QPlatformFontDatabase *fontDatabase() const;
+    virtual QPlatformClipboard *clipboard() const;
 
 private:
     QPlatformFontDatabase *mFontDb;
@@ -73,6 +74,7 @@ private:
     QPAHiddTpHandler *m_tpHandler;
     QPAHiddKbdHandler *m_kbdHandler;
     bool soft;
+    QWebOSClipboard* m_clipboard;
 };
 
 QT_END_NAMESPACE

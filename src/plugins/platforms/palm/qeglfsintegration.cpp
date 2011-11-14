@@ -55,8 +55,13 @@
 
 QT_BEGIN_NAMESPACE
 
+QPlatformClipboard* QEglFSIntegration::clipboard() const {
+    return (QWebOSClipboard*)m_clipboard;
+}
+
 QEglFSIntegration::QEglFSIntegration(bool soft)
-    : mFontDb(new QGenericUnixFontDatabase())
+    : mFontDb(new QGenericUnixFontDatabase()),
+      m_clipboard(new QWebOSClipboard())
 {
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
     m_tpHandler = new QPAHiddTpHandler(m_primaryScreen);

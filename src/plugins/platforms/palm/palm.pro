@@ -31,6 +31,11 @@ HEADERS =   qeglfsintegration.h \
             hiddkbd_qpa.h \
             webosDeviceKeymap.h
 
+INCLUDEPATH += ../clipboards
+SOURCES += ../clipboards/qwebosclipboard.cpp
+HEADERS += ../clipboards/qwebosclipboard.h
+
+
 include(../fontdatabases/genericunix/genericunix.pri)
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
