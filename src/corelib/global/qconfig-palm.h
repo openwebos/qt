@@ -162,9 +162,9 @@
 #endif
 
 /* Kernel */
-#ifndef QT_NO_CLIPBOARD
+/*#ifndef QT_NO_CLIPBOARD
 #  define QT_NO_CLIPBOARD
-#endif
+#endif*/
 #ifndef QT_NO_CSSPARSER
 #  define QT_NO_CSSPARSER
 #endif
