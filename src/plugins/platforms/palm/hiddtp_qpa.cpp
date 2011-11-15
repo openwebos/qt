@@ -38,6 +38,11 @@ extern "C" {
 
 	return m_trans->map(p);
     }
+
+    int advancedGestures = 0;
+    void setAdvancedGestures(int gestures) {
+	advancedGestures = gestures;
+    }
 }
 
 
@@ -255,7 +260,7 @@ bool QPAHiddTpHandler::updateTouchEvents(QList<QPAHiddTpHandler::HiddTouch>& hid
 
 				m_screenEdgeFlickGesture->m_edge = ScreenEdgeFlickGesture::EdgeUnknown;
 				
-				if (true)/*Preferences::instance()->sysUiEnableNextPrevGestures())*/ {
+				if (advancedGestures)/*Preferences::instance()->sysUiEnableNextPrevGestures())*/ {
 
 					const int INVALID_COORD = 0xFFFFFFFF;
 					int xDown = INVALID_COORD;
