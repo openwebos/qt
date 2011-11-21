@@ -205,12 +205,6 @@
 #endif
 
 /* Painting */
-#ifndef QT_NO_PICTURE
-#  define QT_NO_PICTURE
-#endif
-#ifndef QT_NO_PRINTER
-#  define QT_NO_PRINTER
-#endif
 #ifndef QT_NO_CUPS
 #  define QT_NO_CUPS
 #endif
