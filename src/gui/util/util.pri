@@ -9,7 +9,9 @@ HEADERS += \
         util/qundogroup.h \
         util/qundostack.h \
         util/qundostack_p.h \
-        util/qundoview.h
+        util/qundoview.h \ 
+        util/qabstractkineticscroller_p.h \
+        util/qabstractkineticscroller.h
 
 SOURCES += \
         util/qsystemtrayicon.cpp \
@@ -17,7 +19,8 @@ SOURCES += \
         util/qdesktopservices.cpp \
         util/qundogroup.cpp \
         util/qundostack.cpp \
-        util/qundoview.cpp
+        util/qundoview.cpp \
+        util/qabstractkineticscroller.cpp
 
 
 wince* {
