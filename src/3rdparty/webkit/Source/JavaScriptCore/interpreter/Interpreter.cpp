@@ -71,6 +71,11 @@
 
 #define WTF_USE_GCC_COMPUTED_GOTO_WORKAROUND (ENABLE(COMPUTED_GOTO_INTERPRETER) && !defined(__llvm__))
 
+#if defined(Q_CC_GNU) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406)
+# pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
+
+
 using namespace std;
 
 namespace JSC {
