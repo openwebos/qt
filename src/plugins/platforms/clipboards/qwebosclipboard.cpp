@@ -1,6 +1,5 @@
 #include "qwebosclipboard.h"
 
-
 #define CLIPBOARD_SIZE 16*1024
 
 QWebOSClipboard::QWebOSClipboard() {
