@@ -22,13 +22,9 @@
 #include <QtOpenGL/private/qglpaintdevice_p.h>
 #include <QWindowSystemInterface>
 #include <QDebug>
-#include <PIpcChannel.h>
-#include <palmimedefines.h>
+//#include <palmimedefines.h>
 #include "qweboswindow_p.h"
 #include "qweboswindowevents.h"
-
-#define MESSAGES_INTERNAL_FILE "SysMgrMessagesInternal.h"
-#include <PIpcMessageMacros.h>
 
 QT_BEGIN_NAMESPACE
 

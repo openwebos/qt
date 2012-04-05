@@ -30,7 +30,6 @@
 
 #include <glib.h>
 #include <QApplication>
-//#include "qwebosstyle.h"
 
 QT_BEGIN_NAMESPACE
 

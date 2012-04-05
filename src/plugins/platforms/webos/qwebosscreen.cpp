@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include "NWindowBuffer.h"
+//#include "NWindowBuffer.h"
 #include "qwebosscreen.h"
 
 #include "../eglconvenience/qeglconvenience.h"

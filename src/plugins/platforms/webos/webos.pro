@@ -53,7 +53,7 @@ INCLUDEPATH += $$(STAGING_INCDIR)/napp \
                $$(STAGING_INCDIR)/sysmgr-ipc \
                $$(STAGING_INCDIR)/ime
 
-LIBS += -lnapp -lnrwindow
+#LIBS += -lnapp -lnrwindow
 
 QMAKE_CXXFLAGS += -fno-rtti -fno-exceptions
 
