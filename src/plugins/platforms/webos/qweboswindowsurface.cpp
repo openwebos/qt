@@ -23,8 +23,6 @@
 #include <QWindowSystemInterface>
 #include <QDebug>
 //#include <palmimedefines.h>
-#include "qweboswindow_p.h"
-#include "qweboswindowevents.h"
 
 QT_BEGIN_NAMESPACE
 

@@ -20,8 +20,6 @@
 #include "../eglconvenience/qeglconvenience.h"
 #include "../eglconvenience/qeglplatformcontext.h"
 
-#include "qweboswindow_p.h"
-
 #include <GLES2/gl2.h>
 
 #include <QDebug>
