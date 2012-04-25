@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -163,14 +163,15 @@ QObjectPrivate::~QObjectPrivate()
 {
     if (pendTimer) {
         // unregister pending timers
-        if (threadData->eventDispatcher)
+        if (threadData && threadData->eventDispatcher)
             threadData->eventDispatcher->unregisterTimers(q_ptr);
     }
 
     if (postedEvents)
         QCoreApplication::removePostedEvents(q_ptr, 0);
 
-    threadData->deref();
+    if (threadData)
+        threadData->deref();
 
     delete static_cast<QAbstractDynamicMetaObject*>(metaObject);
 #ifdef QT_JAMBI_BUILD
@@ -2512,7 +2513,7 @@ static inline void check_and_warn_compat(const QMetaObject *sender, const QMetaM
     call qRegisterMetaType() to register the data type before you
     establish the connection.
 
-    \sa disconnect(), sender(), qRegisterMetaType()
+    \sa disconnect(), sender(), qRegisterMetaType(), Q_DECLARE_METATYPE()
 */
 
 bool QObject::connect(const QObject *sender, const char *signal,
@@ -3002,7 +3003,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         }
         const void *cbdata[] = { sender, signal.mobj ? signalSignature.constData() : 0,
                                  receiver, method.mobj ? methodSignature.constData() : 0 };
-        if (QInternal::activateCallbacks(QInternal::ConnectCallback, (void **) cbdata))
+        if (QInternal::activateCallbacks(QInternal::DisconnectCallback, (void **) cbdata))
             return true;
     }
 

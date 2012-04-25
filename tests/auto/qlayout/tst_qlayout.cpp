@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,6 +58,10 @@
 
 #ifdef Q_OS_MAC
 # include <QtGui/QMacStyle>
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR "."
 #endif
 
 //TESTED_CLASS=

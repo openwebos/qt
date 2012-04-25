@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 extern void qt_x11_wait_for_window_manager(QWidget *w);
 #endif
 #if !defined(Q_WS_WIN)
-extern bool qt_tab_all_widgets;
+extern Q_GUI_EXPORT bool qt_tab_all_widgets;
 #endif
 QT_END_NAMESPACE
 

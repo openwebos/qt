@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,8 @@
 #include "qelapsedtimer.h"
 #include <windows.h>
 
+#include <private/qsystemlibrary_p.h>
+
 typedef ULONGLONG (WINAPI *PtrGetTickCount64)(void);
 static PtrGetTickCount64 ptrGetTickCount64 = 0;
 
@@ -52,21 +54,17 @@ static quint64 counterFrequency = 0;
 
 static void resolveLibs()
 {
-    static bool done = false;
+    static volatile bool done = false;
     if (done)
         return;
 
     // try to get GetTickCount64 from the system
-    HMODULE kernel32 = GetModuleHandleW(L"kernel32");
-    if (!kernel32)
+    QSystemLibrary kernel32(QLatin1String("kernel32"));
+    if (!kernel32.load())
         return;
 
-#if defined(Q_OS_WINCE)
     // does this function exist on WinCE, or will ever exist?
-    ptrGetTickCount64 = (PtrGetTickCount64)GetProcAddress(kernel32, L"GetTickCount64");
-#else
-    ptrGetTickCount64 = (PtrGetTickCount64)GetProcAddress(kernel32, "GetTickCount64");
-#endif
+    ptrGetTickCount64 = (PtrGetTickCount64)kernel32.resolve("GetTickCount64");
 
     // Retrieve the number of high-resolution performance counter ticks per second
     LARGE_INTEGER frequency;
@@ -83,7 +81,9 @@ static inline qint64 ticksToNanoseconds(qint64 ticks)
 {
     if (counterFrequency > 0) {
         // QueryPerformanceCounter uses an arbitrary frequency
-        return ticks * 1000000000 / counterFrequency;
+        qint64 seconds = ticks / counterFrequency;
+        qint64 nanoSeconds = (ticks - seconds * counterFrequency) * 1000000000 / counterFrequency;
+        return seconds * 1000000000 + nanoSeconds;
     } else {
         // GetTickCount(64) return milliseconds
         return ticks * 1000000;

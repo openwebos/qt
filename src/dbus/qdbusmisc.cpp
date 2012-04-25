@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -89,11 +89,11 @@ QString qDBusInterfaceFromMetaObject(const QMetaObject *mo)
         interface.replace(QLatin1String("::"), QLatin1String("."));
 
         if (interface.startsWith(QLatin1String("QDBus"))) {
-            interface.prepend(QLatin1String("com.trolltech.QtDBus."));
+            interface.prepend(QLatin1String("org.qtproject.QtDBus."));
         } else if (interface.startsWith(QLatin1Char('Q')) &&
                    interface.length() >= 2 && interface.at(1).isUpper()) {
             // assume it's Qt
-            interface.prepend(QLatin1String("com.trolltech.Qt."));
+            interface.prepend(QLatin1String("org.qtproject.Qt."));
         } else if (!QCoreApplication::instance()||
                    QCoreApplication::instance()->applicationName().isEmpty()) {
             interface.prepend(QLatin1String("local."));

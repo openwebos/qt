@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -115,7 +115,7 @@ private:
 private:
     QString m_fragment_code;
     QString m_vertex_code;
-    QGLShaderProgram m_program;
+    QGLShaderProgram* m_program;
     QVector<const char *> m_attributeNames;
     QSet<QByteArray> m_uniformNames;
     QSize m_meshResolution;
@@ -143,6 +143,8 @@ private:
     bool m_hasShaderPrograms : 1;
     bool m_mirrored : 1;
     bool m_defaultVertexShader : 1;
+
+    QGLFramebufferObject* m_contextObserver;
 };
 
 QT_END_HEADER

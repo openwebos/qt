@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2454,7 +2454,11 @@ void PaintCommands::command_gradient_setRadialExtended(QRegExp re)
                "focal radius=%.2f, spread=%d\n",
                cx, cy, rad, fx, fy, frad, m_gradientSpread);
 
+#if QT_VERSION >= 0x040800
     QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy), frad);
+#else
+    QRadialGradient rg(QPointF(cx, cy), rad, QPointF(fx, fy));
+#endif
     rg.setStops(m_gradientStops);
     rg.setSpread(m_gradientSpread);
     rg.setCoordinateMode(m_gradientCoordinate);

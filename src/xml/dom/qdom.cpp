@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2959,7 +2959,7 @@ QDomElement QDomNode::firstChildElement(const QString &tagName) const
 
 /*!
     Returns the last child element with tag name \a tagName if tagName is non-empty;
-    otherwise returns the first child element. Returns a null element if no
+    otherwise returns the last child element. Returns a null element if no
     such child exists.
 
     \sa firstChildElement() previousSiblingElement() nextSiblingElement()
@@ -3487,10 +3487,10 @@ QDomDocumentTypePrivate::QDomDocumentTypePrivate(QDomDocumentTypePrivate* n, boo
     QDomNodePrivate* p = first;
     while (p) {
         if (p->isEntity())
-            // Dont use normal insert function since we would create infinite recursion
+            // Don't use normal insert function since we would create infinite recursion
             entities->map.insertMulti(p->nodeName(), p);
         if (p->isNotation())
-            // Dont use normal insert function since we would create infinite recursion
+            // Don't use normal insert function since we would create infinite recursion
             notations->map.insertMulti(p->nodeName(), p);
         p = p->next;
     }
@@ -5725,7 +5725,7 @@ static QByteArray encodeEntity(const QByteArray& str)
             len += 4;
             i += 5;
         } else if (d[i] == '&' && i + 1 < len && d[i+1] == '#') {
-            // Dont encode &lt; or &quot; or &custom;.
+            // Don't encode &lt; or &quot; or &custom;.
             // Only encode character references
             tmp.replace(i, 1, "&#38;");
             d = tmp;
@@ -6569,6 +6569,10 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     creates the DOM tree that represents the document. The root
     element is available using documentElement(). The textual
     representation of the document can be obtained using toString().
+
+    \note The DOM tree might end up reserving a lot of memory if the XML
+    document is big. For big XML documents, the QXmlStreamReader or the QXmlQuery
+    classes might be better solutions.
 
     It is possible to insert a node from another document into the
     document using importNode().
@@ -7461,6 +7465,7 @@ bool QDomHandler::characters(const QString&  ch)
         QScopedPointer<QDomEntityPrivate> e(new QDomEntityPrivate(doc, 0, entityName,
                 QString(), QString(), QString()));
         e->value = ch;
+        e->ref.deref();
         doc->doctype()->appendChild(e.data());
         e.take();
         n.reset(doc->createEntityReference(entityName));
@@ -7545,6 +7550,8 @@ bool QDomHandler::unparsedEntityDecl(const QString &name, const QString &publicI
 {
     QDomEntityPrivate* e = new QDomEntityPrivate(doc, 0, name,
             publicId, systemId, notationName);
+    // keep the refcount balanced: appendChild() does a ref anyway.
+    e->ref.deref();
     doc->doctype()->appendChild(e);
     return true;
 }
@@ -7557,6 +7564,8 @@ bool QDomHandler::externalEntityDecl(const QString &name, const QString &publicI
 bool QDomHandler::notationDecl(const QString & name, const QString & publicId, const QString & systemId)
 {
     QDomNotationPrivate* n = new QDomNotationPrivate(doc, 0, name, publicId, systemId);
+    // keep the refcount balanced: appendChild() does a ref anyway.
+    n->ref.deref();
     doc->doctype()->appendChild(n);
     return true;
 }

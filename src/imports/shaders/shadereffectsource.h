@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -99,7 +99,7 @@ public:
     void setWrapMode(WrapMode mode);
 
     bool isActive() const { return m_refs; }
-    void bind() const;
+    void bind();
     void refFromEffectItem();
     void derefFromEffectItem();
     void updateBackbuffer();
@@ -124,6 +124,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     void markSceneGraphDirty();
     void markSourceSizeDirty();
+    void markSourceItemDirty();
 
 private:
     void updateSizeAndTexture();

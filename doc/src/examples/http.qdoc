@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example network/http
     \title HTTP Example
 
-    The HTTP example demonstrates a simple HTTP client that shows how to fetch files
+    \brief The HTTP example demonstrates a simple HTTP client that shows how to fetch files
     specified by URLs from remote hosts.
 
     \image http-example.png

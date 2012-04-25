@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -139,11 +139,6 @@ private slots:
 
 void tst_QObjectRace::moveToThreadRace()
 {
-#if defined(Q_OS_SYMBIAN)
-    // ### FIXME: task 257411 - remove xfail once this is fixed
-    QEXPECT_FAIL("", "Symbian event dispatcher can't handle this kind of race, see task: 257411", Abort);
-    QVERIFY(false);
-#endif
     RaceObject *object = new RaceObject;
 
     enum { ThreadCount = 6 };
@@ -229,13 +224,6 @@ public:
 
 void tst_QObjectRace::destroyRace()
 {
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-    // ### FIXME: task 257411 - remove xfail once this is fixed.
-	// Oddly enough, this seems to work properly in HW, if given enough time and memory.
-    QEXPECT_FAIL("", "Symbian event dispatcher can't handle this kind of race on emulator, see task: 257411", Abort);
-    QVERIFY(false);
-#endif
-
     enum { ThreadCount = 10, ObjectCountPerThread = 733,
            ObjectCount = ThreadCount * ObjectCountPerThread };
 

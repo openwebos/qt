@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,7 +44,17 @@
 
 #include <private/qfontengine_p.h>
 
+#ifdef QT_NO_CORESERVICES
+#include <CoreText/CoreText.h>
+#include <CoreGraphics/CoreGraphics.h>
+#include <private/qcore_mac_p.h>
+#endif
+
 #if !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 class QRawFontPrivate;
 class QCoreTextFontEngineMulti;
@@ -136,9 +146,14 @@ private:
     mutable QCFType<CFMutableDictionaryRef> attributeDict;
     CGAffineTransform transform;
     friend class QFontDialogPrivate;
+    bool transformAdvances;
 };
 
 CGAffineTransform qt_transform_from_fontdef(const QFontDef &fontDef);
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif// !defined(Q_WS_MAC) || (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 

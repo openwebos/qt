@@ -1668,7 +1668,7 @@ IntPoint QWebPagePrivate::TouchAdjuster::findCandidatePointForTouch(const IntPoi
    changes the behaviour to a case sensitive find operation.
    \value FindWrapsAroundDocument Makes findText() restart from the beginning of the document if the end
    was reached and the text was not found.
-   \value HighlightAllOccurrences Highlights all existing occurrences of a specific string.
+   \value HighlightAllOccurrences Highlights all existing occurrences of a specific string. (This value was introduced in 4.6.)
 */
 
 /*!
@@ -3972,7 +3972,7 @@ quint64 QWebPage::bytesReceived() const
 }
 
 /*!
-    \since 4.7
+    \since 4.8
     \fn void QWebPage::viewportChangeRequested()
 
     Page authors can provide the supplied values by using the viewport meta tag. More information

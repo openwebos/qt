@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,25 @@ QT_BEGIN_NAMESPACE
 
 #define WAKE_UP_PRIORITY CActive::EPriorityStandard
 #define TIMER_PRIORITY CActive::EPriorityHigh
+#define COMPLETE_DEFERRED_ACTIVE_OBJECTS_PRIORITY CActive::EPriorityIdle
+
+class Incrementer {
+    int &variable;
+public:
+    inline Incrementer(int &variable) : variable(variable)
+    { ++variable; }
+    inline ~Incrementer()
+    { --variable; }
+};
+
+class Decrementer {
+    int &variable;
+public:
+    inline Decrementer(int &variable) : variable(variable)
+    { --variable; }
+    inline ~Decrementer()
+    { ++variable; }
+};
 
 static inline int qt_pipe_write(int socket, const char *data, qint64 len)
 {
@@ -122,17 +141,50 @@ private:
 };
 
 /*
- * This class can be used as a base class for Qt active objects.
+ * This class is designed to aid in implementing event handling in a more round robin fashion,
+ * when Qt active objects are used outside of QtRRActiveScheduler.
+ * We cannot change active objects that we do not own, but active objects that Qt owns may use
+ * this as a base class with convenience functions.
+ *
+ * Here is how it works: On every RunL, the deriving class should call maybeQueueForLater().
+ * This will return whether the active object has been queued, or whether it should run immediately.
+ * Queued objects will run again after other events have been processed.
+ *
+ * The QCompleteDeferredAOs class is a special object that runs after all others, which will
+ * reactivate the objects that were previously not run.
  * Socket active objects can use it to defer their activity.
  */
 QActiveObject::QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher)
     : CActive(priority),
-      m_dispatcher(dispatcher)
+      m_dispatcher(dispatcher),
+      m_threadData(QThreadData::current()),
+      m_hasAlreadyRun(false),
+      m_hasRunAgain(false),
+      m_iterationCount(1)
 {
 }
 
 QActiveObject::~QActiveObject()
 {
+    if (m_hasRunAgain)
+        m_dispatcher->removeDeferredActiveObject(this);
+}
+
+bool QActiveObject::maybeQueueForLater()
+{
+    Q_ASSERT(!m_hasRunAgain);
+
+    if (!m_hasAlreadyRun || m_dispatcher->iterationCount() != m_iterationCount) {
+        // First occurrence of this event in this iteration.
+        m_hasAlreadyRun = true;
+        m_iterationCount = m_dispatcher->iterationCount();
+        return false;
+    } else {
+        // The event has already occurred.
+        m_dispatcher->addDeferredActiveObject(this);
+        m_hasRunAgain = true;
+        return true;
+    }
 }
 
 bool QActiveObject::maybeDeferSocketEvent()
@@ -152,6 +204,9 @@ void QActiveObject::reactivateAndComplete()
     SetActive();
     TRequestStatus *status = &iStatus;
     QEventDispatcherSymbian::RequestComplete(status, error);
+
+    m_hasRunAgain = false;
+    m_hasAlreadyRun = false;
 }
 
 QWakeUpActiveObject::QWakeUpActiveObject(QEventDispatcherSymbian *dispatcher)
@@ -190,12 +245,12 @@ void QWakeUpActiveObject::RunL()
 {
     iStatus = KRequestPending;
     SetActive();
-    QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled());
+    QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled(this));
 }
 
 QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, SymbianTimerInfo *timerInfo)
-    : CActive(TIMER_PRIORITY),
-      m_dispatcher(dispatcher), m_timerInfo(timerInfo), m_expectedTimeSinceLastEvent(0)
+    : QActiveObject(TIMER_PRIORITY, dispatcher),
+      m_timerInfo(timerInfo), m_expectedTimeSinceLastEvent(0)
 {
     // start the timeout timer to ensure initialisation
     m_timeoutTimer.start();
@@ -204,18 +259,32 @@ QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, Symb
 QTimerActiveObject::~QTimerActiveObject()
 {
     Cancel();
-    m_rTimer.Close(); //close of null handle is safe
+    // deletion in the wrong thread (eg adoptedThreadMonitor thread) must avoid using the RTimer, which is local
+    // to the thread it was created in.
+    if (QThreadData::current() == m_threadData)
+        m_rTimer.Close(); //close of null handle is safe
 }
 
 void QTimerActiveObject::DoCancel()
 {
-    if (m_timerInfo->interval > 0) {
-        m_rTimer.Cancel();
-    } else {
-        if (iStatus.Int() == KRequestPending) {
-            TRequestStatus *status = &iStatus;
-            QEventDispatcherSymbian::RequestComplete(status, KErrNone);
+    // RTimer is thread local and cannot be cancelled outside of the thread it was created in
+    if (QThreadData::current() == m_threadData) {
+        if (m_timerInfo->interval > 0) {
+            m_rTimer.Cancel();
+        } else {
+            if (iStatus.Int() == KRequestPending) {
+                TRequestStatus *status = &iStatus;
+                QEventDispatcherSymbian::RequestComplete(status, KErrNone);
+            }
         }
+    } else {
+        // Cancel requires a signal to continue, we're in the wrong thread to use the RTimer
+        if (m_threadData->symbian_thread_handle.ExitType() == EExitPending) {
+            // owner thread is still running, it will receive a stray event if the timer fires now.
+            qFatal("QTimerActiveObject cancelled from wrong thread");
+        }
+        TRequestStatus *status = &iStatus;
+        User::RequestComplete(status, KErrCancel);
     }
 }
 
@@ -272,12 +341,15 @@ void QTimerActiveObject::Run()
         return;
     }
 
+    if (maybeQueueForLater())
+        return;
+
     if (m_timerInfo->interval > 0) {
         // Start a new timer immediately so that we don't lose time.
         m_timerInfo->msLeft = m_timerInfo->interval;
         StartTimer();
 
-        m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId);
+        m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId, this);
     } else {
         // However, we only complete zero timers after the event has finished,
         // in order to prevent busy looping when doing nested loops.
@@ -285,7 +357,7 @@ void QTimerActiveObject::Run()
         // Keep the refpointer around in order to avoid deletion until the end of this function.
         SymbianTimerInfoPtr timerInfoPtr(m_timerInfo);
 
-        m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId);
+        m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId, this);
 
         iStatus = KRequestPending;
         SetActive();
@@ -301,6 +373,7 @@ void QTimerActiveObject::Start()
     if (m_timerInfo->interval > 0) {
         if (!m_rTimer.Handle()) {
             qt_symbian_throwIfError(m_rTimer.CreateLocal());
+            m_threadData = QThreadData::current();
         }
         m_timeoutTimer.start();
         m_expectedTimeSinceLastEvent = 0;
@@ -321,6 +394,44 @@ SymbianTimerInfo::SymbianTimerInfo()
 SymbianTimerInfo::~SymbianTimerInfo()
 {
     delete timerAO;
+}
+
+QCompleteDeferredAOs::QCompleteDeferredAOs(QEventDispatcherSymbian *dispatcher)
+    : CActive(COMPLETE_DEFERRED_ACTIVE_OBJECTS_PRIORITY),
+      m_dispatcher(dispatcher)
+{
+    CActiveScheduler::Add(this);
+    iStatus = KRequestPending;
+    SetActive();
+}
+
+QCompleteDeferredAOs::~QCompleteDeferredAOs()
+{
+    Cancel();
+}
+
+void QCompleteDeferredAOs::complete()
+{
+    if (iStatus.Int() == KRequestPending) {
+        TRequestStatus *status = &iStatus;
+        QEventDispatcherSymbian::RequestComplete(status, KErrNone);
+    }
+}
+
+void QCompleteDeferredAOs::DoCancel()
+{
+    if (iStatus.Int() == KRequestPending) {
+        TRequestStatus *status = &iStatus;
+        QEventDispatcherSymbian::RequestComplete(status, KErrNone);
+    }
+}
+
+void QCompleteDeferredAOs::RunL()
+{
+    iStatus = KRequestPending;
+    SetActive();
+
+    QT_TRYCATCH_LEAVING(m_dispatcher->reactivateDeferredActiveObjects());
 }
 
 QSelectThread::QSelectThread()
@@ -654,8 +765,9 @@ public:
         ObjectRun,
         ObjectDelayed
     };
-    static RunResult RunMarkedIfReady(TInt &runPriority, TInt minimumPriority);
+    static RunResult RunMarkedIfReady(TInt &runPriority, TInt minimumPriority, QEventDispatcherSymbian *dispatcher);
     static bool UseRRActiveScheduler();
+    static bool TestAndClearActiveObjectRunningInRRScheduler(CActive* ao);
 
 private:
     // active scheduler access kit, for gaining access to the internals of active objects for
@@ -675,9 +787,10 @@ private:
         TPriQueLink iLink;
         enum TMarks
         {
-            ENewObject,     // CBase zero initialization sets this, new objects cannot be run in the processEvents in which they are created
-            ENotRun,        // This object has not yet run in the current processEvents call
-            ERan            // This object has run in the current processEvents call
+            ENewObject,         // CBase zero initialization sets this, new objects cannot be run in the processEvents in which they are created
+            ENotRun,            // This object has not yet run in the current processEvents call
+            ERunUnchecked,      // This object is run in the current processEvents call, as yet unacknowledged by the event dispatcher
+            ERunChecked         // This object is run in a processEvents call, the event dispatcher knows which loop level
         };
         int iMark;      //TAny* iSpare;
     };
@@ -713,7 +826,7 @@ void QtRRActiveScheduler::MarkReadyToRun()
     }
 }
 
-QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPriority, TInt minimumPriority)
+QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPriority, TInt minimumPriority, QEventDispatcherSymbian *dispatcher)
 {
     RunResult result = NothingFound;
     TInt error=KErrNone;
@@ -725,16 +838,20 @@ QtRRActiveScheduler::RunResult QtRRActiveScheduler::RunMarkedIfReady(TInt &runPr
             if (active->IsActive() && (active->iStatus!=KRequestPending)) {
                 int& mark = dataAccess->iMark;
                 if (mark == CActiveDataAccess::ENotRun && active->Priority()>=minimumPriority) {
-                    mark = CActiveDataAccess::ERan;
+                    mark = CActiveDataAccess::ERunUnchecked;
                     runPriority = active->Priority();
                     dataAccess->iStatus.iFlags&=~TRequestStatusAccess::ERequestActiveFlags;
                     int vptr = *(int*)active;       // vptr can be used to identify type when debugging leaves
-                    TRAP(error, active->RunL());
-                    if (error!=KErrNone)
-                        error=active->RunError(error);
+                    TRAP(error, QT_TRYCATCH_LEAVING(active->RunL()));
+                    if (error!=KErrNone) {
+                        if (vptr != *(int*)active)
+                            qWarning("Active object vptr change from 0x%08x to 0x%08x. Error %i not handled.", vptr, *(int*)active, error);
+                        else
+                            error=active->RunError(error);
+                    }
                     if (error) {
                         qWarning("Active object (ptr=0x%08x, vptr=0x%08x) leave: %i\n", active, vptr, error);
-                        pS->Error(error);
+                        dispatcher->activeObjectError(error);
                     }
                     return ObjectRun;
                 }
@@ -756,6 +873,16 @@ bool QtRRActiveScheduler::UseRRActiveScheduler()
     TAny* schedulerCompatibilityNumber;
     access->Extension_(0x2001B2DC, schedulerCompatibilityNumber, NULL);
     return schedulerCompatibilityNumber == NULL;
+}
+
+bool QtRRActiveScheduler::TestAndClearActiveObjectRunningInRRScheduler(CActive* ao)
+{
+    CActiveDataAccess *dataAccess = (CActiveDataAccess*)ao;
+    if (dataAccess->iMark == CActiveDataAccess::ERunUnchecked) {
+        dataAccess->iMark = CActiveDataAccess::ERunChecked;
+        return true;
+    }
+    return false;
 }
 
 #ifdef QT_SYMBIAN_PRIORITY_DROP
@@ -828,10 +955,15 @@ private:
 
     void IdleLoop()
     {
+        // Create cleanup stack. 
+        // Mutex handling may contain cleanupstack usage.
+        CTrapCleanup *cleanup = CTrapCleanup::New();
+        q_check_ptr(cleanup);
         while (!m_stop) {
             m_kick.acquire();
             m_state = STATE_RUN;
         }
+        delete cleanup;
     }
 
     static void StopIdleDetectorThread();
@@ -861,17 +993,20 @@ QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
       m_selectThread(0),
       m_activeScheduler(0),
       m_wakeUpAO(0),
+      m_completeDeferredAOs(0),
       m_interrupt(false),
       m_wakeUpDone(0),
       m_iterationCount(0),
       m_insideTimerEvent(false),
-      m_noSocketEvents(false)
+      m_noSocketEvents(false),
+      m_oomErrorCount(0)
 {
 #ifdef QT_SYMBIAN_PRIORITY_DROP
     m_delay = baseDelay;
     m_avgEventTime = 0;
     idleDetectorThread();
 #endif
+    m_oomErrorTimer.start();
 }
 
 QEventDispatcherSymbian::~QEventDispatcherSymbian()
@@ -885,6 +1020,7 @@ void QEventDispatcherSymbian::startingUp()
         CActiveScheduler::Install(m_activeScheduler);
     }
     m_wakeUpAO = q_check_ptr(new QWakeUpActiveObject(this));
+    m_completeDeferredAOs = q_check_ptr(new QCompleteDeferredAOs(this));
     // We already might have posted events, wakeup once to process them
     wakeUp();
 }
@@ -903,6 +1039,7 @@ void QEventDispatcherSymbian::closingDown()
     delete m_selectThread;
     m_selectThread = 0;
 
+    delete m_completeDeferredAOs;
     delete m_wakeUpAO;
     if (m_activeScheduler) {
         delete m_activeScheduler;
@@ -951,6 +1088,8 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
 #endif
 
         while (1) {
+            //native active object callbacks are logically part of the event loop, so inc nesting level
+            Incrementer inc(d->threadData->loopLevel);
             if (block) {
                 // This is where Qt will spend most of its time.
                 CActiveScheduler::Current()->WaitForAnyRequest();
@@ -993,7 +1132,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 // Standard or above priority AOs are scheduled round robin.
                 // Lower priority AOs can only run if nothing higher priority has run.
                 int runPriority = minPriority;
-                handledSymbianEvent = QtRRActiveScheduler::RunMarkedIfReady(runPriority, minPriority);
+                handledSymbianEvent = QtRRActiveScheduler::RunMarkedIfReady(runPriority, minPriority, this);
                 minPriority = qMin(runPriority, int(CActive::EPriorityStandard));
             } else {
                 TInt error;
@@ -1043,8 +1182,9 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
     return handledAnyEvent;
 }
 
-void QEventDispatcherSymbian::timerFired(int timerId)
+void QEventDispatcherSymbian::timerFired(int timerId, QTimerActiveObject *ao)
 {
+    Q_D(QAbstractEventDispatcher);
     QHash<int, SymbianTimerInfoPtr>::iterator i = m_timerList.find(timerId);
     if (i == m_timerList.end()) {
         // The timer has been deleted. Ignore this event.
@@ -1063,7 +1203,13 @@ void QEventDispatcherSymbian::timerFired(int timerId)
     m_insideTimerEvent = true;
 
     QTimerEvent event(timerInfo->timerId);
-    QCoreApplication::sendEvent(timerInfo->receiver, &event);
+    if (QtRRActiveScheduler::TestAndClearActiveObjectRunningInRRScheduler(ao)) {
+        //undo the added nesting level around RunIfReady, since Qt's event system also nests
+        Decrementer dec(d->threadData->loopLevel);
+        QCoreApplication::sendEvent(timerInfo->receiver, &event);
+    } else {
+        QCoreApplication::sendEvent(timerInfo->receiver, &event);
+    }
 
     m_insideTimerEvent = oldInsideTimerEventValue;
     timerInfo->inTimerEvent = false;
@@ -1071,8 +1217,9 @@ void QEventDispatcherSymbian::timerFired(int timerId)
     return;
 }
 
-void QEventDispatcherSymbian::wakeUpWasCalled()
+void QEventDispatcherSymbian::wakeUpWasCalled(QWakeUpActiveObject *ao)
 {
+    Q_D(QAbstractEventDispatcher);
     // The reactivation should happen in RunL, right before the call to this function.
     // This is because m_wakeUpDone is the "signal" that the object can be completed
     // once more.
@@ -1082,7 +1229,13 @@ void QEventDispatcherSymbian::wakeUpWasCalled()
     // the sendPostedEvents was done, but before the object was ready to be completed
     // again. This could deadlock the application if there are no other posted events.
     m_wakeUpDone.fetchAndStoreOrdered(0);
-    sendPostedEvents();
+    if (QtRRActiveScheduler::TestAndClearActiveObjectRunningInRRScheduler(ao)) {
+        //undo the added nesting level around RunIfReady, since Qt's event system also nests
+        Decrementer dec(d->threadData->loopLevel);
+        sendPostedEvents();
+    } else {
+        sendPostedEvents();
+    }
 }
 
 void QEventDispatcherSymbian::interrupt()
@@ -1125,6 +1278,35 @@ bool QEventDispatcherSymbian::sendPostedEvents()
 inline void QEventDispatcherSymbian::addDeferredSocketActiveObject(QActiveObject *object)
 {
     m_deferredSocketEvents.append(object);
+}
+
+inline void QEventDispatcherSymbian::addDeferredActiveObject(QActiveObject *object)
+{
+    queueDeferredActiveObjectsCompletion();
+    m_deferredActiveObjects.append(object);
+}
+
+inline void QEventDispatcherSymbian::removeDeferredActiveObject(QActiveObject *object)
+{
+    m_deferredActiveObjects.removeAll(object);
+}
+
+void QEventDispatcherSymbian::queueDeferredActiveObjectsCompletion()
+{
+    m_completeDeferredAOs->complete();
+}
+
+void QEventDispatcherSymbian::reactivateDeferredActiveObjects()
+{
+    while (!m_deferredActiveObjects.isEmpty()) {
+        QActiveObject *object = m_deferredActiveObjects.takeFirst();
+        object->reactivateAndComplete();
+    }
+
+    // We do this because we want to return from processEvents. This is because
+    // each invocation of processEvents should only run each active object once.
+    // The active scheduler should run them continously, however.
+    m_interrupt = true;
 }
 
 bool QEventDispatcherSymbian::sendDeferredSocketEvents()
@@ -1202,6 +1384,14 @@ void QEventDispatcherSymbian::registerTimer ( int timerId, int interval, QObject
     m_timerList.insert(timerId, timer);
 
     timer->timerAO->Start();
+
+    if (m_insideTimerEvent)
+        // If we are inside a timer event, we need to prevent event starvation
+        // by preventing newly created timers from running in the same event processing
+        // iteration. Do this by calling the maybeQueueForLater() function to "fake" that we have
+        // already run once. This will cause the next run to be added to the deferred
+        // queue instead.
+        timer->timerAO->maybeQueueForLater();
 }
 
 bool QEventDispatcherSymbian::unregisterTimer ( int timerId )
@@ -1246,6 +1436,19 @@ QList<QEventDispatcherSymbian::TimerInfo> QEventDispatcherSymbian::registeredTim
     }
 
     return list;
+}
+
+void QEventDispatcherSymbian::activeObjectError(int error)
+{
+    if (error == KErrNoMemory) {
+        // limit the number of reported out of memory errors, as the disappearance of the warning
+        // dialog can trigger further OOM errors causing a loop.
+        if (m_oomErrorTimer.restart() > 60000)  // 1 minute
+            m_oomErrorCount = 0;
+        if (m_oomErrorCount++ >= 5)
+            return;
+    }
+    CActiveScheduler::Current()->Error(error);
 }
 
 /*

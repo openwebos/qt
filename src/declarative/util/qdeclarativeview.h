@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,6 +47,7 @@
 #include <QtGui/qgraphicssceneevent.h>
 #include <QtGui/qgraphicsview.h>
 #include <QtGui/qwidget.h>
+#include <QtDeclarative/qdeclarativedebug.h>
 
 QT_BEGIN_HEADER
 

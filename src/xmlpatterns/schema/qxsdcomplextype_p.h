@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -385,7 +385,7 @@ namespace QPatternist
             virtual bool isDefinedBySchema() const;
 
         private:
-            SchemaType::Ptr           m_superType;
+            SchemaType                *m_superType;
             NamedSchemaComponent      *m_context;
             DerivationMethod          m_derivationMethod;
             bool                      m_isAbstract;

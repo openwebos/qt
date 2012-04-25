@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,9 +29,10 @@
     \example itemviews/simpletreemodel
     \title Simple Tree Model Example
 
-    The Simple Tree Model example shows how to create a basic, read-only
-    hierarchical model to use with Qt's standard view classes. For a
-    description of simple non-hierarchical list and table models, see the
+    \brief The Simple Tree Model example shows how to create a basic, read-only
+    hierarchical model to use with Qt's standard view classes.
+    
+    For a description of simple non-hierarchical list and table models, see the
     \l{Model/View Programming} overview.
 
     \image simpletreemodel-example.png

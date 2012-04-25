@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,7 +52,7 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-extern int qt_defaultDpi();
+extern Q_GUI_EXPORT int qt_defaultDpi();
 QT_END_NAMESPACE
 
 class tst_qdeclarativevaluetypes : public QObject

@@ -1,13 +1,12 @@
 TARGET    = configure
 DESTDIR   = $$PWD/../..  # build directly in source dir
 
-CONFIG   += console flat
+CONFIG   += console flat stl rtti_off
 CONFIG   -= moc qt
-DEFINES  = UNICODE QT_NODLL QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_STL QT_NO_COMPRESS QT_NO_THREAD QT_NO_QOBJECT _CRT_SECURE_NO_DEPRECATE
+DEFINES  = UNICODE QT_NODLL QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_STL QT_NO_COMPRESS QT_NO_THREAD QT_NO_QOBJECT QT_NO_GEOM_VARIANT _CRT_SECURE_NO_DEPRECATE
 DEFINES  += QT_BOOTSTRAPPED
 
 win32 : LIBS += -lole32 -ladvapi32
-win32-msvc.net | win32-msvc2* : QMAKE_CXXFLAGS += /EHsc
 win32-g++* : LIBS += -luuid
 
 win32-msvc* {
@@ -24,8 +23,6 @@ win32-msvc* {
 PRECOMPILED_HEADER = configure_pch.h
 
 INCLUDEPATH += \
-           $$QT_SOURCE_TREE/src/corelib/arch/generic \
-           $$QT_SOURCE_TREE/src/corelib/global \
            $$QT_BUILD_TREE/include \
            $$QT_BUILD_TREE/include/QtCore \
            $$QT_SOURCE_TREE/tools/shared
@@ -116,10 +113,6 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qvariant.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qsystemerror.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qurl.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qline.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qsize.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qpoint.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qrect.cpp \
            $$QT_SOURCE_TREE/src/corelib/kernel/qmetatype.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qmalloc.cpp \
            $$QT_SOURCE_TREE/src/corelib/xml/qxmlstream.cpp \
@@ -128,7 +121,3 @@ SOURCES  = main.cpp configureapp.cpp environment.cpp tools.cpp \
            $$QT_SOURCE_TREE/tools/shared/windows/registry.cpp
 
 DEFINES += COMMERCIAL_VERSION
-
-INCLUDEPATH += $$QT_SOURCE_TREE/src/corelib/arch/generic \
-               $$QT_SOURCE_TREE/include/QtCore \
-               $$QT_SOURCE_TREE/tools/shared

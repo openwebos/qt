@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -125,6 +125,7 @@ namespace QPatternist
     private:
         static DynamicContext::Ptr topFocusContext(const DynamicContext::Ptr &context);
         const VariableDeclaration* m_declaration;
+        bool m_declarationUsedByMany;
         /**
          * This variable must not be called m_slot. If it so, a compiler bug on
          * HP-UX-aCC-64 is triggered in the constructor initializor. See the

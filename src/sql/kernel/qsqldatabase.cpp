@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -138,10 +138,7 @@ public:
         port(-1)
     {
         ref = 1;
-        if(driver)
-            precisionPolicy = driver->numericalPrecisionPolicy();
-        else
-            precisionPolicy= QSql::LowPrecisionDouble;
+        precisionPolicy= QSql::LowPrecisionDouble;
     }
     QSqlDatabasePrivate(const QSqlDatabasePrivate &other);
     ~QSqlDatabasePrivate();

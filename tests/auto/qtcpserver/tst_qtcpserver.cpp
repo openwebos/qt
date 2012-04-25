@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -112,6 +112,8 @@ private slots:
     void proxyFactory();
 
     void qtbug14268_peek();
+
+    void qtbug6305();
 
 private:
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -786,6 +788,21 @@ void tst_QTcpServer::qtbug14268_peek()
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(helper.lastDataPeeked == QByteArray("6162630a6465660a6768690a"));
+}
+
+// on OS X, calling listen() multiple times would succeed each time, which is
+// most definitely not wanted.
+void tst_QTcpServer::qtbug6305()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QTcpServer server;
+    QVERIFY2(server.listen(QHostAddress::Any), qPrintable(server.errorString()));
+
+    QTcpServer server2;
+    QVERIFY(!server2.listen(QHostAddress::Any, server.serverPort())); // second listen should fail
 }
 
 QTEST_MAIN(tst_QTcpServer)

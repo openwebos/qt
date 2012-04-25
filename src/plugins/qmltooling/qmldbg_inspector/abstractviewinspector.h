@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,7 +61,6 @@ QT_END_NAMESPACE
 namespace QmlJSDebugger {
 
 class AbstractTool;
-class ToolBox;
 
 /*
  * The common code between QSGView and QDeclarativeView inspectors lives here,
@@ -157,10 +156,6 @@ private:
     void animationSpeedChangeRequested(qreal factor);
     void animationPausedChangeRequested(bool paused);
 
-    void setToolBoxVisible(bool visible);
-    void createToolBox();
-
-    ToolBox *m_toolBox;
     AbstractTool *m_currentTool;
 
     bool m_showAppOnTop;

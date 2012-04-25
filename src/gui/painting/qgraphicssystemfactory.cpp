@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,6 @@
 #include "qmutex.h"
 
 #include "qapplication.h"
-#include <private/qapplication_p.h>
 #include "qgraphicssystem_raster_p.h"
 #include "qgraphicssystem_runtime_p.h"
 #include "qdebug.h"
@@ -80,7 +79,6 @@ QGraphicsSystem *QGraphicsSystemFactory::create(const QString& key)
     }
 #endif
 
-    QApplicationPrivate::graphics_system_name = system;
     if (system == QLatin1String("raster"))
         return new QRasterGraphicsSystem;
     else if (system == QLatin1String("runtime"))

@@ -135,10 +135,10 @@ Heap::Heap(JSGlobalData* globalData)
     , m_registeredThreads(0)
     , m_currentThreadRegistrar(0)
 #endif
-    , m_globalData(globalData)
 #if OS(SYMBIAN)
-    , m_blockallocator(JSCCOLLECTOR_VIRTUALMEM_RESERVATION, BLOCK_SIZE)
+    , m_blockallocator(WTF::AlignedBlockAllocator::instance(JSCCOLLECTOR_VIRTUALMEM_RESERVATION, BLOCK_SIZE))
 #endif
+    , m_globalData(globalData)
 {
     ASSERT(globalData);
     memset(&m_heap, 0, sizeof(CollectorHeap));
@@ -182,9 +182,6 @@ void Heap::destroy()
         delete t;
         t = next;
     }
-#endif
-#if OS(SYMBIAN)
-    m_blockallocator.destroy();
 #endif
     m_globalData = 0;
 }
@@ -581,6 +578,15 @@ static inline void* currentThreadStackBase()
 #if OS(DARWIN)
     pthread_t thread = pthread_self();
     return pthread_get_stackaddr_np(thread);
+#elif OS(WINCE)
+    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
+    MutexLocker locker(mutex);
+    if (g_stackBase)
+        return g_stackBase;
+    else {
+        int dummy;
+        return getStackBase(&dummy);
+    }
 #elif OS(WINDOWS) && CPU(X86) && COMPILER(MSVC)
     // offset 0x18 from the FS segment register gives a pointer to
     // the thread information block for the current thread
@@ -662,15 +668,6 @@ static inline void* currentThreadStackBase()
         stackThread = thread;
     }
     return static_cast<char*>(stackBase) + stackSize;
-#elif OS(WINCE)
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
-    MutexLocker locker(mutex);
-    if (g_stackBase)
-        return g_stackBase;
-    else {
-        int dummy;
-        return getStackBase(&dummy);
-    }
 #else
 #error Need a way to get the stack base on this platform
 #endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -357,7 +357,7 @@ QMenuPrivate::QSymbianMenuPrivate::QSymbianMenuPrivate()
 
 QMenuPrivate::QSymbianMenuPrivate::~QSymbianMenuPrivate()
 {
-
+    qDeleteAll(actionItems);
 }
 
 void QMenuPrivate::QSymbianMenuPrivate::addAction(QAction *a, QSymbianMenuAction *before)
@@ -398,12 +398,12 @@ void QMenuPrivate::QSymbianMenuPrivate::rebuild(bool)
 {
 }
 
-void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QAction *a, QSymbianMenuAction *before)
+void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QAction *a, QAction *before)
 {
     QSymbianMenuAction *action = new QSymbianMenuAction;
     action->action = a;
     action->command = qt_symbian_menu_static_cmd_id++;
-    addAction(action, before);
+    addAction(action, findAction(before));
 }
 
 void QMenuBarPrivate::QSymbianMenuBarPrivate::addAction(QSymbianMenuAction *action, QSymbianMenuAction *before)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,6 +48,7 @@
 #include "qsqlresult.h"
 #include "qvector.h"
 #include "qsqldriver.h"
+#include "qpointer.h"
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
@@ -64,7 +65,7 @@ class QSqlResultPrivate
 {
 public:
     QSqlResultPrivate(QSqlResult* d)
-    : q(d), sqldriver(0), idx(QSql::BeforeFirstRow), active(false),
+    : q(d), idx(QSql::BeforeFirstRow), active(false),
       isSel(false), forwardOnly(false), precisionPolicy(QSql::LowPrecisionDouble), bindCount(0), binds(QSqlResult::PositionalBinding)
     {}
 
@@ -98,7 +99,7 @@ public:
 
 public:
     QSqlResult* q;
-    const QSqlDriver* sqldriver;
+    QPointer<QSqlDriver> sqldriver;
     int idx;
     QString sql;
     bool active;
@@ -183,7 +184,7 @@ QString QSqlResultPrivate::namedToPositionalBinding()
         QChar ch = sql.at(i);
         if (ch == QLatin1Char(':') && !inQuote
                 && (i == 0 || sql.at(i - 1) != QLatin1Char(':'))
-                && (i < n - 1 && qIsAlnum(sql.at(i + 1)))) {
+                && (i + 1 < n && qIsAlnum(sql.at(i + 1)))) {
             int pos = i + 2;
             while (pos < n && qIsAlnum(sql.at(pos)))
                 ++pos;
@@ -250,7 +251,7 @@ QString QSqlResultPrivate::namedToPositionalBinding()
 QSqlResult::QSqlResult(const QSqlDriver *db)
 {
     d = new QSqlResultPrivate(this);
-    d->sqldriver = db;
+    d->sqldriver = const_cast<QSqlDriver *>(db);
     if(db) {
         setNumericalPrecisionPolicy(db->numericalPrecisionPolicy());
     }
@@ -618,7 +619,7 @@ bool QSqlResult::prepare(const QString& query)
         QChar ch = query.at(i);
         if (ch == QLatin1Char(':') && !inQuote
                 && (i == 0 || query.at(i - 1) != QLatin1Char(':'))
-                && (i < n - 1 && qIsAlnum(query.at(i + 1)))) {
+                && (i + 1 < n && qIsAlnum(query.at(i + 1)))) {
             int pos = i + 2;
             while (pos < n && qIsAlnum(query.at(pos)))
                 ++pos;

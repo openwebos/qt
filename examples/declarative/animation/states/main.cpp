@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
 
     QmlApplicationViewer viewer;
     viewer.setOrientation(QmlApplicationViewer::ScreenOrientationAuto);
-    viewer.setMainQmlFile(QLatin1String("qml/qml/states.qml"));
+
+    //Uncomment the following line to open the states.qml example and comment the transitions.qml line.
+    //viewer.setMainQmlFile(QLatin1String("qml/states/states.qml"));
+    viewer.setMainQmlFile(QLatin1String("qml/states/transitions.qml"));
     viewer.showExpanded();
 
     return app.exec();

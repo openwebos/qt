@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -221,6 +221,11 @@ void tst_XmlPatternsValidator::xsdSupport_data() const
         << 0
         << (QStringList() << QLatin1String("files/dateTime-with-microseconds.xml")
                           << QLatin1String("files/dateTime-with-microseconds.xsd"))
+        << QString();
+
+    QTest::newRow("QTBUG-21375 A schema with a xs:double based simple type with non-numeric restrictions")
+        << 0
+        << (QStringList() << QLatin1String("files/schema-with-restrictions.xsd"))
         << QString();
 }
 

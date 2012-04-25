@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -113,6 +113,7 @@ private slots:
     void signalOverride();
     void signalOverrideCrash();
     void signalOverrideCrash2();
+    void signalOverrideCrash3();
     void parentChange();
     void parentChangeErrors();
     void anchorChanges();
@@ -516,6 +517,22 @@ void tst_qdeclarativestates::signalOverrideCrash2()
     QDeclarativeItemPrivate::get(rect)->setState("state1");
     QDeclarativeItemPrivate::get(rect)->setState("state2");
     QDeclarativeItemPrivate::get(rect)->setState("state1");
+
+    delete rect;
+}
+
+void tst_qdeclarativestates::signalOverrideCrash3()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent rectComponent(&engine, SRCDIR "/data/signalOverrideCrash3.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QDeclarativeItemPrivate::get(rect)->setState("state1");
+    QDeclarativeItemPrivate::get(rect)->setState("");
+    QDeclarativeItemPrivate::get(rect)->setState("state2");
+    QDeclarativeItemPrivate::get(rect)->setState("");
 
     delete rect;
 }

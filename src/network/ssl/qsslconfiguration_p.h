@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -82,7 +82,8 @@ public:
     QSslConfigurationPrivate()
         : protocol(QSsl::SecureProtocols),
           peerVerifyMode(QSslSocket::AutoVerifyPeer),
-          peerVerifyDepth(0)
+          peerVerifyDepth(0),
+          sslOptions(QSsl::SslOptionDisableEmptyFragments|QSsl::SslOptionDisableLegacyRenegotiation)
     { }
 
     QSslCertificate peerCertificate;
@@ -97,6 +98,8 @@ public:
     QSsl::SslProtocol protocol;
     QSslSocket::PeerVerifyMode peerVerifyMode;
     int peerVerifyDepth;
+
+    QSsl::SslOptions sslOptions;
 
     // in qsslsocket.cpp:
     static QSslConfiguration defaultConfiguration();

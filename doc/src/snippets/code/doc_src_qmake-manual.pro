@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1023,3 +1023,7 @@ packagesExist(sqlite3 QtNetwork QtDeclarative) {
     // Use the fancy UI, as we have extra packages available
 #endif
 #! [158]
+
+#! [159]
+RSS_RULES += "graphics_memory=12288;"
+#! [159]

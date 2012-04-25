@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -665,9 +665,9 @@ bool QVariantToVARIANT(const QVariant &var, VARIANT &arg, const QByteArray &type
             static PGetRecordInfoFromTypeInfo pGetRecordInfoFromTypeInfo = 0;
             static bool resolved = false;
             if (!resolved) {
+                QSystemLibrary oleaut32(QLatin1String("oleaut32"));
+                pGetRecordInfoFromTypeInfo = (PGetRecordInfoFromTypeInfo)oleaut32.resolve("GetRecordInfoFromTypeInfo");
                 resolved = true;
-                pGetRecordInfoFromTypeInfo = (PGetRecordInfoFromTypeInfo)QSystemLibrary::resolve(QLatin1String("oleaut32"),
-                                              "GetRecordInfoFromTypeInfo");
             }
             if (!pGetRecordInfoFromTypeInfo)
                 break;

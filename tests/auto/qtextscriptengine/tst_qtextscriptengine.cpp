@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -111,6 +111,12 @@ private slots:
 
     void mirroredChars_data();
     void mirroredChars();
+
+    void thaiIsolatedSaraAm();
+    void thaiWithZWJ();
+    void thaiLineSplitting();
+    void thaiSaraAM();
+    void thaiMultipleVowels();
 };
 
 tst_QTextScriptEngine::tst_QTextScriptEngine()
@@ -1122,6 +1128,10 @@ void tst_QTextScriptEngine::greek()
 void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
 {
 #if defined(Q_WS_X11)
+    if (QFontDatabase().families(QFontDatabase::Devanagari).isEmpty()) {
+        QSKIP("Devanagari font required", SkipAll);
+        return;
+    }
     QString s;
     s.append(QChar(0x0915));
     s.append(QChar(0x094d));
@@ -1133,7 +1143,7 @@ void tst_QTextScriptEngine::controlInSyllable_qtbug14204()
     e->itemize();
     e->shape(0);
 
-    QVERIFY(e->layoutData->items[0].num_glyphs == 2);
+    QCOMPARE(e->layoutData->items[0].num_glyphs, (unsigned short)2);
     QVERIFY(e->layoutData->glyphLayout.advances_x[1] != 0);
 #else
     QSKIP("X11 specific test", SkipAll);
@@ -1238,6 +1248,141 @@ void tst_QTextScriptEngine::mirroredChars()
         QCOMPARE(glyphLayout.glyphs[1], leftParenthesis);
     }
 }
+
+void tst_QTextScriptEngine::thaiIsolatedSaraAm()
+{
+    if (QFontDatabase().families(QFontDatabase::Any).contains("Waree")) {
+        QString s;
+        s.append(QChar(0x0e33));
+
+        QTextLayout layout(s, QFont("Waree"));
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        QTextEngine *e = layout.engine();
+        e->itemize();
+        e->shape(0);
+
+        QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(3));
+
+        unsigned short *logClusters = e->layoutData->logClustersPtr;
+        QCOMPARE(logClusters[0], ushort(0));
+    } else
+        QSKIP("Cannot find Waree.", SkipAll);
+}
+
+void tst_QTextScriptEngine::thaiWithZWJ()
+{
+    QString s(QString::fromUtf8("ร‍ร‌.ร.“ร…ร”ร\xA0ร本ร") + QChar(0x0363)/*superscript 'a', for testing Inherited class*/);
+    QTextLayout layout(s);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QTextEngine *e = layout.engine();
+    e->width(0, s.length()); //force itemize and shape
+
+    // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
+    // The current implementation hides them, so we test for that.
+    // But make sure that we don't hide anything else
+    QCOMPARE(e->layoutData->items.size(), 11);
+    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(7));  // Thai: The ZWJ and ZWNJ characters are inherited, so should be part of the thai script
+    QCOMPARE(e->layoutData->items[1].num_glyphs, ushort(1));  // Common: The smart quotes cannot be handled by thai, so should be a seperate item
+    QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[3].num_glyphs, ushort(1));  // Common: Ellipsis
+    QCOMPARE(e->layoutData->items[4].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[5].num_glyphs, ushort(1));  // Common: Smart quote
+    QCOMPARE(e->layoutData->items[6].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[7].num_glyphs, ushort(1));  // Common: \xA0 = non-breaking space. Could be useful to have in thai, but not currently implemented
+    QCOMPARE(e->layoutData->items[8].num_glyphs, ushort(1));  // Thai: Thai character
+    QCOMPARE(e->layoutData->items[9].num_glyphs, ushort(1));  // Japanese: Kanji for tree
+    QCOMPARE(e->layoutData->items[10].num_glyphs, ushort(2)); // Thai: Thai character followed by superscript "a" which is of inherited type
+
+    //A quick sanity check - check all the characters are individual clusters
+    unsigned short *logClusters = e->layoutData->logClustersPtr;
+    for (int i = 0; i < 7; i++)
+        QCOMPARE(logClusters[i], ushort(i));
+    for (int i = 0; i < 10; i++)
+        QCOMPARE(logClusters[i+7], ushort(0));
+    QCOMPARE(logClusters[17], ushort(1));
+
+    // The only characters that we should be hiding are the ZWJ and ZWNJ characters in position 1
+    // and 3.
+    for (int i = 0; i < 18; i++)
+        QCOMPARE((bool)e->layoutData->glyphLayout.attributes[i].dontPrint, (i == 1 || i == 3));
+}
+
+void tst_QTextScriptEngine::thaiLineSplitting()
+{
+    //Test that a word with full stops is treated as a single item
+    QString s(QString::fromUtf8("ม.ค."));
+    QTextLayout layout(s);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QTextEngine *e = layout.engine();
+    e->width(0, s.length()); //force itemize and shape
+
+    // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
+    // The current implementation hides them, so we test for that.
+    // But make sure that we don't hide anything else
+    QCOMPARE(e->layoutData->items.size(), 1);
+    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(4));  // Thai: It's important that the whole string is counted as one string
+}
+
+void tst_QTextScriptEngine::thaiSaraAM()
+{
+    //U+0E33 (SARA AM, ำ) gets counted as two characters, so make sure it does not throw off the word boundaries by throwing off the logClusters
+    QString s(QString::fromUtf8("มาฟังคำตัดสินคดีฆ่ากำนันยูร"));
+    unsigned short clusterNumber[] = {0,1,2,2,3,4,6,7,7,9,10,10,12,13,14,14,16,16,18,19,21,22,22,24,25,25,27};
+    QTextLayout layout(s);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QTextEngine *e = layout.engine();
+    e->width(0, s.length()); //force itemize and shape
+
+    QCOMPARE(e->layoutData->items.size(), 1);
+    QCOMPARE(e->layoutData->items[0].num_glyphs, ushort(28));
+    QCOMPARE(sizeof(clusterNumber) / sizeof(unsigned short), (size_t)s.size());
+
+    for (int i = 0 ; i < e->layoutData->items[0].num_glyphs; i++)
+        QCOMPARE((bool)e->layoutData->glyphLayout.attributes[i].dontPrint, 0);
+
+    for (int i = 0; i < s.length(); i++)
+        QCOMPARE(e->layoutData->logClustersPtr[i], clusterNumber[i]);
+}
+
+void tst_QTextScriptEngine::thaiMultipleVowels()
+{
+    QString s(QString::fromUtf8("ส"));
+    for (int i = 0; i < 100; i++)
+        s += QChar(0x0E47); // Add lots of "VOWEL SIGN MAI TAI KHU N/S-T"  stacked on top of the character
+    s += QChar(0x200D); // Now add a zero width joiner (which adds a circle which is hidden)
+    for (int i = 0; i < 100; i++)
+        s += QChar(0x0E47); //Add lots of "VOWEL SIGN MAI TAI KHU N/S-T"  stacked on top of the ZWJ
+
+    for (int i = 0; i < 10; i++)
+        s += s; //Repeat the string to make it more likely to crash if we have a buffer overflow
+    QTextLayout layout(s);
+    layout.beginLayout();
+    layout.createLine();
+    layout.endLayout();
+
+    QTextEngine *e = layout.engine();
+    e->width(0, s.length()); //force itemize and shape
+
+    int k = 0;
+    for (int i = 0; i < e->layoutData->items.size(); i++)
+        for (int j = 0; j < e->layoutData->items[i].num_glyphs; j++) {
+            bool isZWJ = k%401 == 200;
+            QCOMPARE((bool)e->layoutData->glyphLayout.attributes[k++].dontPrint, isZWJ);
+        }
+}
+
 
 QTEST_MAIN(tst_QTextScriptEngine)
 #include "tst_qtextscriptengine.moc"

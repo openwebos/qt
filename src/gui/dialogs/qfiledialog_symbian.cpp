@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,7 +44,7 @@
 #ifndef QT_NO_FILEDIALOG
 
 #include <private/qfiledialog_p.h>
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
 #include <driveinfo.h>
 #include <AknCommonDialogsDynMem.h>
 #include <CAknMemorySelectionDialogMultiDrive.h>
@@ -58,8 +58,8 @@ extern QStringList qt_make_filter_list(const QString &filter); // defined in qfi
 extern QStringList qt_clean_filter_list(const QString &filter); // defined in qfiledialog.cpp
 
 enum DialogMode { DialogOpen, DialogSave, DialogFolder };
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
-class CExtensionFilter : public MAknFileFilter
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
+class CExtensionFilter : public CBase, public MAknFileFilter
 {
 public:
     void setFilter(const QString filter)
@@ -104,7 +104,7 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
                                    const QString filter, DialogMode dialogMode)
 {
     QString selection;
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
     TFileName startFolder;
     if (!startDirectory.isEmpty()) {
         QString dir = QDir::toNativeSeparators(QFileDialogPrivate::workingDirectory(startDirectory));
@@ -127,7 +127,7 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
                 extensionFilter->setFilter(filter);
                 select = AknCommonDialogsDynMem::RunSelectDlgLD(types, target,
                          startFolder, 0, 0, titlePtr, extensionFilter);
-                CleanupStack::Pop(extensionFilter);
+                CleanupStack::PopAndDestroy(extensionFilter);
             } else if (dialogMode == DialogSave) {
                 QString defaultFileName = QFileDialogPrivate::initialSelection(startDirectory);
                 target = qt_QString2TPtrC(defaultFileName);
@@ -143,8 +143,8 @@ static QString launchSymbianDialog(const QString dialogCaption, const QString st
             tryCount = 0;
         } else {
             // Symbian native file dialog doesn't allow accessing files outside C:/Data
-            // It will always leave in that case, so default into QDir::rootPath() in error cases.
-            QString dir = QDir::toNativeSeparators(QDir::rootPath());
+            // It will always leave in that case, so default into QDir::homePath() in error cases.
+            QString dir = QDir::toNativeSeparators(QDir::homePath());
             startFolder = qt_QString2TPtrC(dir);
         }
     }

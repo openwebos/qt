@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -184,7 +184,7 @@ QTipLabel::QTipLabel(const QString &text, QWidget *w)
     setAlignment(Qt::AlignLeft);
     setIndent(1);
     qApp->installEventFilter(this);
-    setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, 0, this) / 255.0);
+    setWindowOpacity(style()->styleHint(QStyle::SH_ToolTipLabel_Opacity, 0, this) / qreal(255.0));
     setMouseTracking(true);
     fadingOut = false;
     reuseTip(text);

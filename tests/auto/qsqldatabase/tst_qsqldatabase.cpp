@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1232,7 +1232,7 @@ void tst_QSqlDatabase::recordSQLite()
 
         FieldDef("integer", QVariant::Int,              QVariant(13)),
         FieldDef("int", QVariant::Int,                  QVariant(12)),
-        FieldDef("real", QVariant::String,              QVariant(1.234567890123456)),
+        FieldDef("real", QVariant::Double,              QVariant(1.234567890123456)),
 
         FieldDef()
     };

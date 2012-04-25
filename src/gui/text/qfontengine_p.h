@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -155,6 +155,7 @@ public:
     struct FaceId {
         FaceId() : index(0), encoding(0) {}
         QByteArray filename;
+        QByteArray uuid;
         int index;
         int encoding;
     };
@@ -295,7 +296,7 @@ inline bool operator ==(const QFontEngine::FaceId &f1, const QFontEngine::FaceId
 
 inline uint qHash(const QFontEngine::FaceId &f)
 {
-    return qHash((f.index << 16) + f.encoding) + qHash(f.filename);
+    return qHash((f.index << 16) + f.encoding) + qHash(f.filename + f.uuid);
 }
 
 

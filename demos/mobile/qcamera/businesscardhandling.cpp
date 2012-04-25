@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,7 +93,7 @@ bool BusinessCardHandling::findContact(const QString phoneNumber, QContact& c)
         QContactPhoneNumber::FieldNumber);
 
 #if defined Q_WS_MAEMO_5
-    // Workaround for Maemo bug http://bugreports.qt.nokia.com/browse/QTMOBILITY-437
+    // Workaround for Maemo bug http://bugreports.qt-project.org/browse/QTMOBILITY-437
     phoneFilter.setValue(phoneNumber.right(7));
     phoneFilter.setMatchFlags(QContactFilter::MatchContains);
 #else

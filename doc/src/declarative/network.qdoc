@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -134,10 +134,9 @@ One of the URL schemes built into Qt is the "qrc" scheme. This allows content to
 the executable using \l{The Qt Resource System}. Using this, an executable can reference QML content
 that is compiled into the executable:
 
-\code
-    QDeclarativeView *canvas = new QDeclarativeView;
-    canvas->setUrl(QUrl("qrc:/dial.qml"));
-\endcode
+\quotefromfile snippets/declarative/qtbinding/resources/main.cpp
+\skipto view
+\printuntil setSource
 
 The content itself can then use relative URLs, and so be transparently unaware that the content is
 compiled into the executable.

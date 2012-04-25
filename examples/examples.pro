@@ -45,6 +45,8 @@ symbian: SUBDIRS = \
                 gestures \
                 xml
 
+contains(DEFINES, QT_NO_GESTURES): SUBDIRS -= gestures
+
 !contains(QT_CONFIG, no-gui):contains(QT_CONFIG, multimedia) {
     SUBDIRS += multimedia
 }
@@ -62,8 +64,8 @@ embedded:SUBDIRS += qws
 contains(QT_CONFIG, opengl): SUBDIRS += opengl
 contains(QT_CONFIG, openvg): SUBDIRS += openvg
 contains(QT_CONFIG, dbus): SUBDIRS += dbus
-contains(QT_CONFIG, declarative): SUBDIRS += declarative
-win32: SUBDIRS += activeqt
+contains(QT_CONFIG, declarative): SUBDIRS += declarative helper
+win32:!win32-g++*: SUBDIRS += activeqt
 contains(QT_CONFIG, xmlpatterns):!contains(QT_CONFIG, no-gui): SUBDIRS += xmlpatterns
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
 contains(QT_CONFIG, concurrent): SUBDIRS += qtconcurrent

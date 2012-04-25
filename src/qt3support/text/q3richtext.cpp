@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -121,7 +121,7 @@ static inline bool isBreakable(Q3TextString *string, int pos)
 {
     if (string->at(pos).nobreak)
         return false;
-    return (pos < string->length()-1 && string->at(pos+1).softBreak);
+    return (pos+1 < string->length() && string->at(pos+1).softBreak);
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

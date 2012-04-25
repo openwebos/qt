@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -482,8 +482,8 @@ static QSizeF closestAcceptableSize(const QSizeF &proposed,
             minw = maxw;
             minh = maxh;
         }
-        middlew = minw + (maxw - minw)/2.0;
-        middleh = minh + (maxh - minh)/2.0;
+        middlew = minw + (maxw - minw)/qreal(2.0);
+        middleh = minh + (maxh - minh)/qreal(2.0);
 
         min_hfw = minimumHeightForWidth(middlew, minh, maxh, widget);
 

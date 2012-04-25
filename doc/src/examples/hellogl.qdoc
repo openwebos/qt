@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example opengl/hellogl
     \title Hello GL Example
 
-    The Hello GL example demonstrates the basic use of the OpenGL-related classes
+    \brief The Hello GL example demonstrates the basic use of the OpenGL-related classes
     provided with Qt.
 
     \image hellogl-example.png

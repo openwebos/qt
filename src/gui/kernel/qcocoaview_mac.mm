@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,9 +66,14 @@
 #include <qdebug.h>
 
 @interface NSEvent (Qt_Compile_Leopard_DeviceDelta)
+  // SnowLeopard:
   - (CGFloat)deviceDeltaX;
   - (CGFloat)deviceDeltaY;
   - (CGFloat)deviceDeltaZ;
+  // Lion:
+  - (CGFloat)scrollingDeltaX;
+  - (CGFloat)scrollingDeltaY;
+  - (CGFloat)scrollingDeltaZ;
 @end
 
 @interface NSEvent (Qt_Compile_Leopard_Gestures)
@@ -614,7 +619,6 @@ static int qCocoaViewCount = 0;
 
     int deltaX = 0;
     int deltaY = 0;
-    int deltaZ = 0;
 
     const EventRef carbonEvent = (EventRef)[theEvent eventRef];
     const UInt32 carbonEventKind = carbonEvent ? ::GetEventKind(carbonEvent) : 0;
@@ -627,15 +631,20 @@ static int qCocoaViewCount = 0;
         // It looks like 1/4 degrees per pixel behaves most native.
         // (NB: Qt expects the unit for delta to be 8 per degree):
         const int pixelsToDegrees = 2; // 8 * 1/4
-        deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
-        deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
-        deltaZ = [theEvent deviceDeltaZ] * pixelsToDegrees;
+        if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_6) {
+            // Mac OS 10.6
+            deltaX = [theEvent deviceDeltaX] * pixelsToDegrees;
+            deltaY = [theEvent deviceDeltaY] * pixelsToDegrees;
+        } else {
+            // Mac OS 10.7+
+            deltaX = [theEvent scrollingDeltaX] * pixelsToDegrees;
+            deltaY = [theEvent scrollingDeltaY] * pixelsToDegrees;
+        }
     } else {
         // carbonEventKind == kEventMouseWheelMoved
         // Remove acceleration, and use either -120 or 120 as delta:
         deltaX = qBound(-120, int([theEvent deltaX] * 10000), 120);
         deltaY = qBound(-120, int([theEvent deltaY] * 10000), 120);
-        deltaZ = qBound(-120, int([theEvent deltaZ] * 10000), 120);
     }
 
 #ifndef QT_NO_WHEELEVENT
@@ -651,13 +660,6 @@ static int qCocoaViewCount = 0;
 
     if (deltaY != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaY, buttons, keyMods, Qt::Vertical);
-        qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
-    }
-
-    if (deltaZ != 0) {
-        // Qt doesn't explicitly support wheels with a Z component. In a misguided attempt to
-        // try to be ahead of the pack, I'm adding this extra value.
-        QWheelEvent qwe(qlocal, qglobal, deltaZ, buttons, keyMods, (Qt::Orientation)3);
         qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
     }
 
@@ -1012,14 +1014,25 @@ static int qCocoaViewCount = 0;
     // When entering characters through Character Viewer or Keyboard Viewer, the text is passed
     // through this insertText method. Since we dont receive a keyDown Event in such cases, the
     // composing flag will be false.
-    if (([aString length] && composing) || !fromKeyDownEvent) {
+    //
+    // Characters can be sent through input method directly without composing process as well,
+    // for instance a Chinese input method will send "，" (U+FF0C) to insertText: when "," key
+    // is pressed. In that case we want to set commit string directly instead of going through
+    // key events handling again. Hence we only leave the string with Unicode value less than
+    // 256 to the key events handling process.
+    if (([aString length] && (composing || commitText.at(0).unicode() > 0xff)) || !fromKeyDownEvent) {
         // Send the commit string to the widget.
-        composing = false;
-        sendKeyEvents = false;
         QInputMethodEvent e;
         e.setCommitString(commitText);
-        if (QWidget *widgetToGetKey = qt_mac_getTargetForKeyEvent(qwidget))
+        QWidget *widgetToGetKey = 0;
+        if (!composing || qApp->focusWidget())
+            widgetToGetKey = qt_mac_getTargetForKeyEvent(qwidget);
+        else if (QMacInputContext *mic = qobject_cast<QMacInputContext *>(qApp->inputContext()))
+            widgetToGetKey = mic->lastFocusWidget();
+        if (widgetToGetKey)
             qt_sendSpontaneousEvent(widgetToGetKey, &e);
+        composing = false;
+        sendKeyEvents = false;
     } else {
         // The key sequence "`q" on a French Keyboard will generate two calls to insertText before
         // it returns from interpretKeyEvents. The first call will turn off 'composing' and accept

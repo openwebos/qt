@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -213,10 +213,10 @@ void tst_QStyle::testStyleFactory()
 #endif
 #ifdef Q_WS_WIN
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP &&
-        QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+        (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         QVERIFY(keys.contains("WindowsXP"));
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
-        QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+        (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
         QVERIFY(keys.contains("WindowsVista"));
 #endif
 

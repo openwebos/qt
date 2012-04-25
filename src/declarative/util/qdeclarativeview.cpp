@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -319,6 +319,8 @@ QDeclarativeView::~QDeclarativeView()
 
     Ensure that the URL provided is full and correct, in particular, use
     \l QUrl::fromLocalFile() when loading a file from the local filesystem.
+
+    \sa {Network Transparency}{Loading Resources in QML}
  */
 
 /*!

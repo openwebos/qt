@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example script/defaultprototypes
     \title Default Prototypes Example
 
-    This Qt Script example shows how to use default prototypes
+    \brief The Default Prototypes QtScript example shows how to use default prototypes
     to make a non-QObject-based type scriptable.
 
     \image defaultprototypes-example.png

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -235,7 +235,7 @@ void QGenericEngine::doRequestUpdate()
             name = interface.name();
 
         QNetworkConfiguration::StateFlags state = QNetworkConfiguration::Defined;
-        if((interface.flags() & QNetworkInterface::IsUp) && !interface.addressEntries().isEmpty())
+        if ((interface.flags() & QNetworkInterface::IsRunning) && !interface.addressEntries().isEmpty())
             state |= QNetworkConfiguration::Active;
 
         if (accessPointConfigurations.contains(id)) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1362,16 +1362,14 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
     qt_blurImage(&blurPainter, tmp, d->radius, false, true);
     blurPainter.end();
 
-    tmp = blurred;
-
     // blacken the image...
-    tmpPainter.begin(&tmp);
-    tmpPainter.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    tmpPainter.fillRect(tmp.rect(), d->color);
-    tmpPainter.end();
+    QPainter blackenPainter(&blurred);
+    blackenPainter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    blackenPainter.fillRect(blurred.rect(), d->color);
+    blackenPainter.end();
 
     // draw the blurred drop shadow...
-    p->drawImage(pos, tmp);
+    p->drawImage(pos, blurred);
 
     // Draw the actual pixmap...
     p->drawPixmap(pos, px, src);

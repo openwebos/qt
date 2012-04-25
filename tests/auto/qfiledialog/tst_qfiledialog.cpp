@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,7 +80,9 @@
 # define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
 #elif defined(Q_OS_UNIX)
 #ifdef QT_BUILD_INTERNAL
+QT_BEGIN_NAMESPACE
 extern Q_GUI_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded = 0);
+QT_END_NAMESPACE
 #endif
 #endif
 

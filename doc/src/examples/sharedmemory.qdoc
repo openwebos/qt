@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,9 +29,10 @@
   \example ipc/sharedmemory
   \title Shared Memory Example
 
-  The Shared Memory example shows how to use the QSharedMemory class
-  to implement inter-process communication using shared memory. To
-  build the example, run make. To run the example, start two instances
+  \brief The Shared Memory example shows how to use the QSharedMemory class
+  to implement inter-process communication using shared memory.
+  
+  To build the example, run make. To run the example, start two instances
   of the executable. The main() function creates an \l {QApplication}
   {application} and an instance of our example's Dialog class. The
   dialog is displayed and then control is passed to the application in

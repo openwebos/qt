@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example desktop/screenshot
     \title Screenshot Example
 
-    The Screenshot example shows how to take a screenshot of the
+    \brief The Screenshot example shows how to take a screenshot of the
     desktop using QApplication and QDesktopWidget. It also shows how
     to use QTimer to provide a single-shot timer, and how to
     reimplement the QWidget::resizeEvent() event handler to make sure

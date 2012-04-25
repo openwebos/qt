@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -897,12 +897,20 @@ void QX11PixmapData::fromImage(const QImage &img,
                     }
                     )
                     break;
-            case BPP24_888:                        // 24 bit MSB
+            case BPP24_888:
                 CYCLE(
-                    for (int x=0; x<w; x++) {
-                        *dst++ = qRed  (*p);
-                        *dst++ = qGreen(*p);
-                        *dst++ = qBlue (*p++);
+                    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+                        for (int x=0; x<w; x++) {
+                            *dst++ = qRed  (*p);
+                            *dst++ = qGreen(*p);
+                            *dst++ = qBlue (*p++);
+                        }
+                    } else {
+                        for (int x=0; x<w; x++) {
+                            *dst++ = qBlue (*p);
+                            *dst++ = qGreen(*p);
+                            *dst++ = qRed  (*p++);
+                        }
                     }
                     )
                     break;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,5 +29,5 @@
     \example openvg/star
     \title OpenVG Star Example
 
-    The OpenVG Star example demonstrates the use of Qt's OpenVG integration.
+    \brief The OpenVG Star example demonstrates the use of Qt's OpenVG integration.
 */

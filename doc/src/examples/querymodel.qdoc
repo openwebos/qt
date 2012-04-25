@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example sql/querymodel
     \title Query Model Example
 
-    The Query Model example shows how to make customized versions of
+    \brief The Query Model example shows how to make customized versions of
     data obtained from a SQL query, using a model that encapsulates
     the query and table views to display the results. 
 

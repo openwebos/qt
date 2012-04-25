@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -164,7 +164,7 @@ VisualID QEgl::getCompatibleVisualId(EGLConfig config)
         chosenVisualInfo = XGetVisualInfo(X11->display, VisualIDMask, &visualInfoTemplate, &matchingCount);
         if (chosenVisualInfo) {
             // Skip size checks if implementation supports non-matching visual
-            // and config (http://bugreports.qt.nokia.com/browse/QTBUG-9444).
+            // and config (http://bugreports.qt-project.org/browse/QTBUG-9444).
             if (QEgl::hasExtension("EGL_NV_post_convert_rounding")) {
                 XFree(chosenVisualInfo);
                 return visualId;

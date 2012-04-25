@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -289,7 +289,7 @@ void QDeclarativeTextPrivate::updateSize()
             doc->setTextWidth(-1);
             naturalWidth = doc->idealWidth();
         }
-        if (wrapMode != QDeclarativeText::NoWrap && q->widthValid())
+        if (q->widthValid())
             doc->setTextWidth(q->width());
         else
             doc->setTextWidth(doc->idealWidth()); // ### Text does not align if width is not set (QTextDoc bug)

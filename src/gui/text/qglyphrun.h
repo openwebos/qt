@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -79,8 +79,10 @@ public:
     void clear();
 
     QGlyphRun &operator=(const QGlyphRun &other);
+
     bool operator==(const QGlyphRun &other) const;
-    bool operator!=(const QGlyphRun &other) const;
+    inline bool operator!=(const QGlyphRun &other) const
+    { return !operator==(other); }
 
     void setOverline(bool overline);
     bool overline() const;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -105,6 +105,13 @@ namespace QPatternist
 
         /* Implementation is in qabstractxmlnodemodel.cpp. */
         inline bool operator!=(const NodeIndexStorage &other) const;
+
+        void reset()
+        {
+            data = 0;
+            additionalData = 0;
+            model = 0;
+        }
     };
 }
 
@@ -217,9 +224,7 @@ public:
 
     inline void reset()
     {
-        m_storage.data = 0;
-        m_storage.additionalData = 0;
-        m_storage.model = 0;
+        m_storage.reset();
     }
 
 private:

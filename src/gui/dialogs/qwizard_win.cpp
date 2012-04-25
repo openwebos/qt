@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -705,7 +705,6 @@ bool QVistaHelper::resolveSymbols()
 {
     static bool tried = false;
     if (!tried) {
-        tried = true;
         QSystemLibrary dwmLib(L"dwmapi");
         pDwmIsCompositionEnabled =
             (PtrDwmIsCompositionEnabled)dwmLib.resolve("DwmIsCompositionEnabled");
@@ -727,6 +726,7 @@ bool QVistaHelper::resolveSymbols()
             pDrawThemeTextEx = (PtrDrawThemeTextEx)themeLib.resolve("DrawThemeTextEx");
             pSetWindowThemeAttribute = (PtrSetWindowThemeAttribute)themeLib.resolve("SetWindowThemeAttribute");
         }
+        tried = true;
     }
 
     return (

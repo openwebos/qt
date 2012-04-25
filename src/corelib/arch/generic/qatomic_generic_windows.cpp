@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -43,6 +43,7 @@
 
 #include <QtCore/qatomic.h>
 
+QT_BEGIN_NAMESPACE
 
 class QCriticalSection
 {
@@ -129,3 +130,5 @@ void *QBasicAtomicPointer_fetchAndAddOrdered(void * volatile *_q_value, qptrdiff
         qAtomicCriticalSection.unlock();
     return returnValue;
 }
+
+QT_END_NAMESPACE

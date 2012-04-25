@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -90,6 +90,8 @@ QT_BEGIN_NAMESPACE
 #define SMOOTH_SCALABLE 0xffff
 
 bool qt_enable_test_font = false;
+
+static QString styleStringHelper(int weight, QFont::Style style);
 
 Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value)
 {
@@ -358,32 +360,20 @@ struct QtFontFoundry
 QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, const QString &styleName, bool create)
 {
     int pos = 0;
-    if (count) {
-        // if styleName for searching first if possible
-        if (!styleName.isEmpty()) {
-            for (; pos < count; pos++) {
-                if (styles[pos]->styleName == styleName)
-                    return styles[pos];
-            }
-        }
-        int low = 0;
-        int high = count;
-        pos = count / 2;
-        while (high > low) {
+    for (; pos < count; pos++) {
+        bool hasStyleName = !styleName.isEmpty(); // search styleName first if available
+        if (hasStyleName && !styles[pos]->styleName.isEmpty()) {
+            if (styles[pos]->styleName == styleName)
+                return styles[pos];
+        } else {
             if (styles[pos]->key == key)
                 return styles[pos];
-            if (styles[pos]->key < key)
-                low = pos + 1;
-            else
-                high = pos;
-            pos = (high + low) / 2;
         }
-        pos = low;
     }
     if (!create)
         return 0;
 
-//     qDebug("adding key (weight=%d, style=%d, oblique=%d stretch=%d) at %d", key.weight, key.style, key.oblique, key.stretch, pos);
+    // qDebug("adding key (weight=%d, style=%d, stretch=%d) at %d", key.weight, key.style, key.stretch, pos);
     if (!(count % 8)) {
         QtFontStyle **newStyles = (QtFontStyle **)
                  realloc(styles, (((count+8) >> 3) << 3) * sizeof(QtFontStyle *));
@@ -393,12 +383,10 @@ QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, const QString &st
 
     QtFontStyle *style = new QtFontStyle(key);
     style->styleName = styleName;
-    memmove(styles + pos + 1, styles + pos, (count-pos)*sizeof(QtFontStyle *));
     styles[pos] = style;
     count++;
     return styles[pos];
 }
-
 
 struct  QtFontFamily
 {
@@ -1184,7 +1172,7 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #endif
 QT_END_INCLUDE_NAMESPACE
 
-#if !defined(Q_WS_X11)
+#if !defined(Q_WS_X11) && !defined(Q_WS_MAC)
 QString QFontDatabase::resolveFontFamilyAlias(const QString &family)
 {
     return family;
@@ -1996,8 +1984,9 @@ bool  QFontDatabase::isScalable(const QString &family,
 
 
 /*!
-    Returns a list of the point sizes available for the font that has
-    family \a family and style \a style. The list may be empty.
+    \fn QList<int> QFontDatabase::pointSizes(const QString &family, const QString &style)
+    Returns a list of the point sizes available for the font with the
+    given \a family and \a style. The list may be empty.
 
     \sa smoothSizes(), standardSizes()
 */
@@ -2046,7 +2035,7 @@ QList<int> QFontDatabase::pointSizes(const QString &family,
                 const QtFontSize *size = style->pixelSizes + l;
 
                 if (size->pixelSize != 0 && size->pixelSize != USHRT_MAX) {
-                    const uint pointSize = qRound(size->pixelSize * 72.0 / dpi);
+                    const uint pointSize = qRound(size->pixelSize * qreal(72.0) / dpi);
                     if (! sizes.contains(pointSize))
                         sizes.append(pointSize);
                 }
@@ -2105,8 +2094,9 @@ QFont QFontDatabase::font(const QString &family, const QString &style,
 
 
 /*!
-    Returns the point sizes of a font that has family \a family and
-    style \a style that will look attractive. The list may be empty.
+    \fn QList<int> QFontDatabase::smoothSizes(const QString &family, const QString &style)
+    Returns the point sizes of a font with the given \a family and \a style
+    that will look attractive. The list may be empty.
     For non-scalable fonts and bitmap scalable fonts, this function
     is equivalent to pointSizes().
 
@@ -2156,7 +2146,7 @@ QList<int> QFontDatabase::smoothSizes(const QString &family,
                 const QtFontSize *size = style->pixelSizes + l;
 
                 if (size->pixelSize != 0 && size->pixelSize != USHRT_MAX) {
-                    const uint pointSize = qRound(size->pixelSize * 72.0 / dpi);
+                    const uint pointSize = qRound(size->pixelSize * qreal(72.0) / dpi);
                     if (! sizes.contains(pointSize))
                         sizes.append(pointSize);
                 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \page demos-browser.html
     \title Web Browser
 
-    The Web Browser demonstration shows Qt's WebKit module in action,
+    \brief The Web Browser demonstration shows Qt's WebKit module in action,
     providing a little Web browser application.
 
     \image browser-demo.png

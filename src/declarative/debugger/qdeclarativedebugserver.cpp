@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,7 +49,7 @@
 #include <QtCore/QStringList>
 
 #include <private/qobject_p.h>
-#include <private/qapplication_p.h>
+#include <private/qcoreapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -91,16 +91,18 @@ public:
     QStringList clientPlugins;
     bool gotHello;
     QString waitingForMsgFromService;
+    bool waitingForMsgSucceeded;
 
 private:
     // private slot
     void _q_deliverMessage(const QString &serviceName, const QByteArray &message);
-    static QDeclarativeDebugServerConnection *loadConnectionPlugin(const QString &pluginName);
+    static QDeclarativeDebugServerConnection *loadConnectionPlugin(QPluginLoader *loader, const QString &pluginName);
 };
 
 QDeclarativeDebugServerPrivate::QDeclarativeDebugServerPrivate() :
     connection(0),
-    gotHello(false)
+    gotHello(false),
+    waitingForMsgSucceeded(false)
 {
 }
 
@@ -118,7 +120,7 @@ void QDeclarativeDebugServerPrivate::advertisePlugins()
 }
 
 QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectionPlugin(
-    const QString &pluginName)
+        QPluginLoader *loader, const QString &pluginName)
 {
 #ifndef QT_NO_LIBRARY
     QStringList pluginCandidates;
@@ -135,17 +137,17 @@ QDeclarativeDebugServerConnection *QDeclarativeDebugServerPrivate::loadConnectio
     }
 
     foreach (const QString &pluginPath, pluginCandidates) {
-        QPluginLoader loader(pluginPath);
-        if (!loader.load()) {
+        loader->setFileName(pluginPath);
+        if (!loader->load()) {
             continue;
         }
         QDeclarativeDebugServerConnection *connection = 0;
-        if (QObject *instance = loader.instance())
+        if (QObject *instance = loader->instance())
             connection = qobject_cast<QDeclarativeDebugServerConnection*>(instance);
 
         if (connection)
             return connection;
-        loader.unload();
+        loader->unload();
     }
 #endif
     return 0;
@@ -167,7 +169,7 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
     if (!commandLineTested) {
         commandLineTested = true;
 
-        QApplicationPrivate *appD = static_cast<QApplicationPrivate*>(QObjectPrivate::get(qApp));
+        QCoreApplicationPrivate *appD = static_cast<QCoreApplicationPrivate*>(QObjectPrivate::get(qApp));
 #ifndef QDECLARATIVE_NO_DEBUG_PROTOCOL
         // ### remove port definition when protocol is changed
         int port = 0;
@@ -175,54 +177,58 @@ QDeclarativeDebugServer *QDeclarativeDebugServer::instance()
         bool ok = false;
 
         // format: qmljsdebugger=port:3768[,block] OR qmljsdebugger=ost[,block]
-        if (!appD->qmljsDebugArgumentsString().isEmpty()) {
+        if (!appD->qmljsDebugArguments().isEmpty()) {
             if (!QDeclarativeEnginePrivate::qml_debugging_enabled) {
-                const QString message =
-                    QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
-                              "Debugging has not been enabled.").arg(
-                                  appD->qmljsDebugArgumentsString());
-                qWarning("%s", qPrintable(message));
+                qWarning() << QString::fromLatin1(
+                                  "QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                  "Debugging has not been enabled.").arg(
+                                  appD->qmljsDebugArguments());
                 return 0;
             }
 
             QString pluginName;
-            if (appD->qmljsDebugArgumentsString().indexOf(QLatin1String("port:")) == 0) {
-                int separatorIndex = appD->qmljsDebugArgumentsString().indexOf(QLatin1Char(','));
-                port = appD->qmljsDebugArgumentsString().mid(5, separatorIndex - 5).toInt(&ok);
+            if (appD->qmljsDebugArguments().indexOf(QLatin1String("port:")) == 0) {
+                int separatorIndex = appD->qmljsDebugArguments().indexOf(QLatin1Char(','));
+                port = appD->qmljsDebugArguments().mid(5, separatorIndex - 5).toInt(&ok);
                 pluginName = QLatin1String("qmldbg_tcp");
-            } else if (appD->qmljsDebugArgumentsString().contains(QLatin1String("ost"))) {
+            } else if (appD->qmljsDebugArguments().contains(QLatin1String("ost"))) {
                 pluginName = QLatin1String("qmldbg_ost");
                 ok = true;
             }
 
-            block = appD->qmljsDebugArgumentsString().contains(QLatin1String("block"));
+            block = appD->qmljsDebugArguments().contains(QLatin1String("block"));
 
             if (ok) {
                 server = new QDeclarativeDebugServer();
 
+                QPluginLoader *loader = new QPluginLoader(server);
                 QDeclarativeDebugServerConnection *connection
-                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin(pluginName);
+                        = QDeclarativeDebugServerPrivate::loadConnectionPlugin(loader, pluginName);
                 if (connection) {
                     server->d_func()->connection = connection;
 
                     connection->setServer(server);
                     connection->setPort(port, block);
                 } else {
-                    qWarning() << QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
-                                                     "Remote debugger plugin has not been found.").arg(appD->qmljsDebugArgumentsString());
+                    qWarning() << QString::fromLatin1(
+                                      "QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                      "Remote debugger plugin has not been found.").arg(
+                                      appD->qmljsDebugArguments());
                 }
 
             } else {
-                qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
-                                            "Format is -qmljsdebugger=port:<port>[,block]").arg(
-                             appD->qmljsDebugArgumentsString()).toAscii().constData());
+                qWarning() << QString::fromLatin1(
+                                  "QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                                  "Format is -qmljsdebugger=port:<port>[,block]").arg(
+                                  appD->qmljsDebugArguments());
             }
         }
 #else
-        if (!appD->qmljsDebugArgumentsString().isEmpty()) {
-            qWarning(QString::fromAscii("QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
-                                        "QtDeclarative is not configured for debugging.").arg(
-                         appD->qmljsDebugArgumentsString()).toAscii().constData());
+        if (!appD->qmljsDebugArguments().isEmpty()) {
+            qWarning() << QString::fromLatin1(
+                              "QDeclarativeDebugServer: Ignoring \"-qmljsdebugger=%1\". "
+                              "QtDeclarative is not configured for debugging.").arg(
+                              appD->qmljsDebugArguments());
         }
 #endif
     }
@@ -275,7 +281,7 @@ void QDeclarativeDebugServer::receiveMessage(const QByteArray &message)
             iter.value()->statusChanged(newStatus);
         }
 
-        qWarning("QDeclarativeDebugServer: Connection established");
+        qDebug("QDeclarativeDebugServer: Connection established");
     } else {
 
         QString debugServer(QLatin1String("QDeclarativeDebugServer"));
@@ -315,7 +321,7 @@ void QDeclarativeDebugServer::receiveMessage(const QByteArray &message)
             if (d->waitingForMsgFromService == name) {
                 // deliver directly so that it is delivered before waitForMessage is returning.
                 d->_q_deliverMessage(name, message);
-                d->waitingForMsgFromService.clear();
+                d->waitingForMsgSucceeded = true;
             } else {
                 // deliver message in next event loop run.
                 // Fixes the case that the service does start it's own event loop ...,
@@ -409,7 +415,9 @@ bool QDeclarativeDebugServer::waitForMessage(QDeclarativeDebugService *service)
 
     do {
         d->connection->waitForMessage();
-    } while (!d->waitingForMsgFromService.isEmpty());
+    } while (!d->waitingForMsgSucceeded);
+    d->waitingForMsgSucceeded = false;
+    d->waitingForMsgFromService.clear();
     return true;
 }
 

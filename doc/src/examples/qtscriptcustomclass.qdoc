@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example script/customclass
     \title Custom Script Class Example
 
-    The Custom Script Class example shows how to use QScriptClass and QScriptClassPropertyIterator
+    \brief The Custom Script Class example shows how to use QScriptClass and QScriptClassPropertyIterator
     to implement a custom script class.
 
     The script class we are going to implement is called \c{ByteArray}. It provides a wrapper around

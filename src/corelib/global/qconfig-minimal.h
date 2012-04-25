@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -323,9 +323,6 @@
 /* Qt for Embedded Linux */
 #ifndef QT_NO_QWSEMBEDWIDGET
 #  define QT_NO_QWSEMBEDWIDGET
-#endif
-#ifndef QT_NO_QWS_ALPHA_CURSOR
-#  define QT_NO_QWS_ALPHA_CURSOR
 #endif
 #ifndef QT_NO_QWS_CURSOR
 #  define QT_NO_QWS_CURSOR

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,13 +71,15 @@ class QWindowsStylePrivate : public QCommonStylePrivate
     Q_DECLARE_PUBLIC(QWindowsStyle)
 public:
     QWindowsStylePrivate();
+    void startAnimation(QObject *o, QProgressBar *bar);
+    void stopAnimation(QObject *o, QProgressBar *bar);
     bool hasSeenAlt(const QWidget *widget) const;
     bool altDown() const { return alt_down; }
     bool alt_down;
     QList<const QWidget *> seenAlt;
     int menuBarTimer;
 
-    QList<QProgressBar *> bars;
+    QList<QProgressBar *> animatedProgressBars;
     int animationFps;
     int animateTimer;
     QElapsedTimer startTime;

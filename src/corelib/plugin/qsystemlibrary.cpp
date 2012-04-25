@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qsystemlibrary_p.h"
+
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qfileinfo.h>
@@ -83,6 +84,7 @@ QT_BEGIN_NAMESPACE
 #if defined(Q_OS_WINCE)
 HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirectory /* = true */)
 {
+    Q_UNUSED(onlySystemDirectory);
     return ::LoadLibrary(libraryName);
 }
 #else
@@ -91,7 +93,7 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
 extern QString qAppFileName();
 #endif
 
-static QString qSystemDirectory()
+static inline QString qSystemDirectory()
 {
     QVarLengthArray<wchar_t, MAX_PATH> fullPath;
 
@@ -115,27 +117,25 @@ HINSTANCE QSystemLibrary::load(const wchar_t *libraryName, bool onlySystemDirect
     searchOrder << qSystemDirectory();
 
     if (!onlySystemDirectory) {
-        const QString PATH(QLatin1String(qgetenv("PATH").constData()));
+        const QString PATH = QString::fromWCharArray((const wchar_t *)_wgetenv(L"PATH"));
         searchOrder << PATH.split(QLatin1Char(';'), QString::SkipEmptyParts);
     }
-    QString fileName = QString::fromWCharArray(libraryName);
-    fileName.append(QLatin1String(".dll"));
 
+    const QString fileName = QString::fromWCharArray(libraryName) + QLatin1String(".dll");
     // Start looking in the order specified
     for (int i = 0; i < searchOrder.count(); ++i) {
         QString fullPathAttempt = searchOrder.at(i);
-        if (!fullPathAttempt.endsWith(QLatin1Char('\\'))) {
+        if (!fullPathAttempt.endsWith(QLatin1Char('\\')))
             fullPathAttempt.append(QLatin1Char('\\'));
-        }
         fullPathAttempt.append(fileName);
         HINSTANCE inst = ::LoadLibrary((const wchar_t *)fullPathAttempt.utf16());
         if (inst != 0)
             return inst;
     }
-    return 0;
 
+    return 0;
 }
 
-#endif  //Q_OS_WINCE
+#endif // !Q_OS_WINCE
 
 QT_END_NAMESPACE

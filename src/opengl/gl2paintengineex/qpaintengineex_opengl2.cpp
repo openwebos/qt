@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1470,7 +1470,8 @@ void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
                                                 ? QFontEngineGlyphCache::Type(textItem->fontEngine()->glyphFormat)
                                                 : d->glyphCacheType;
         if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-            if (d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
+            if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+                || d->device->alphaRequested() || s->matrix.type() > QTransform::TxTranslate
                 || (s->composition_mode != QPainter::CompositionMode_Source
                 && s->composition_mode != QPainter::CompositionMode_SourceOver))
             {
@@ -1533,7 +1534,8 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
 
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-        if (d->device->alphaRequested() || txtype > QTransform::TxTranslate
+        if (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+            || d->device->alphaRequested() || txtype > QTransform::TxTranslate
             || (state()->composition_mode != QPainter::CompositionMode_Source
             && state()->composition_mode != QPainter::CompositionMode_SourceOver))
         {
@@ -1594,6 +1596,11 @@ static bool fontSmoothingApproximately(qreal target)
     return (qAbs(qt_fontsmoothing_gamma - target) < 0.2);
 }
 #endif
+
+static inline qreal qt_sRGB_to_linear_RGB(qreal f)
+{
+    return f > 0.04045 ? qPow((f + 0.055) / 1.055, 2.4) : f / 12.92;
+}
 
 // #define QT_OPENGL_DRAWCACHEDGLYPHS_INDEX_ARRAY_VBO
 
@@ -1754,12 +1761,34 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngineGlyphCache::Type glyp
     }
 
     QBrush pensBrush = q->state()->pen.brush();
+
+    bool srgbFrameBufferEnabled = false;
+    if (pensBrush.style() == Qt::SolidPattern &&
+        (ctx->d_ptr->extension_flags & QGLExtensions::SRGBFrameBuffer)) {
+#if defined(Q_WS_MAC)
+        if (glyphType == QFontEngineGlyphCache::Raster_RGBMask)
+#elif defined(Q_WS_WIN)
+        if (glyphType != QFontEngineGlyphCache::Raster_RGBMask || fontSmoothingApproximately(2.1))
+#else
+        if (false)
+#endif
+        {
+            QColor c = pensBrush.color();
+            qreal red = qt_sRGB_to_linear_RGB(c.redF());
+            qreal green = qt_sRGB_to_linear_RGB(c.greenF());
+            qreal blue = qt_sRGB_to_linear_RGB(c.blueF());
+            c = QColor::fromRgbF(red, green, blue, c.alphaF());
+            pensBrush.setColor(c);
+
+            glEnable(FRAMEBUFFER_SRGB_EXT);
+            srgbFrameBufferEnabled = true;
+        }
+    }
+
     setBrush(pensBrush);
 
     if (glyphType == QFontEngineGlyphCache::Raster_RGBMask) {
-
-        // Subpixel antialiasing without gamma correction
-
+        // Subpixel antialiasing with gamma correction
         QPainter::CompositionMode compMode = q->state()->composition_mode;
         Q_ASSERT(compMode == QPainter::CompositionMode_Source
             || compMode == QPainter::CompositionMode_SourceOver);
@@ -2134,6 +2163,10 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
         return false;
 
     d->ctx = d->device->context();
+#ifdef Q_OS_SYMBIAN
+    if (!d->ctx)
+        return false;
+#endif
     d->ctx->d_ptr->active_engine = this;
 
     const QSize sz = d->device->size();
@@ -2161,7 +2194,9 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
 #if !defined(QT_OPENGL_ES_2)
     bool success = qt_resolve_version_2_0_functions(d->ctx)
-                   && qt_resolve_buffer_extensions(d->ctx);
+                   && qt_resolve_buffer_extensions(d->ctx)
+                   && (!QGLFramebufferObject::hasOpenGLFramebufferObjects()
+                       || qt_resolve_framebufferobject_extensions(d->ctx));
     Q_ASSERT(success);
     Q_UNUSED(success);
 #endif
@@ -2294,6 +2329,8 @@ void QGL2PaintEngineExPrivate::updateClipScissorTest()
     currentScissorBounds = bounds;
 
     if (bounds == QRect(0, 0, width, height)) {
+        if (ctx->d_func()->workaround_brokenScissor)
+            clearClip(0);
         glDisable(GL_SCISSOR_TEST);
     } else {
         glEnable(GL_SCISSOR_TEST);

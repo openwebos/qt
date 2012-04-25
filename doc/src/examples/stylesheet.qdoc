@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example widgets/stylesheet
     \title Style Sheet Example
 
-    The Style Sheet Example shows how to use style sheets.
+    \brief The Style Sheet Example shows how to use style sheets with Qt.
     
     \image stylesheet-pagefold.png Screen Shot of the Pagefold style sheet
 */

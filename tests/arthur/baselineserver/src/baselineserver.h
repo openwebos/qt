@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -125,13 +125,14 @@ private:
     void storeImage(const QByteArray &itemBlock, bool isBaseline);
     void storeItemMetadata(const PlatformInfo &metadata, const QString &path);
     PlatformInfo fetchItemMetadata(const QString &path);
-    void mapPlatformInfo() const;
+    PlatformInfo mapPlatformInfo(const PlatformInfo& orig) const;
     const char *logtime();
     QString computeMismatchScore(const QImage& baseline, const QImage& rendered);
 
     BaselineProtocol proto;
-    PlatformInfo plat;
-    mutable PlatformInfo mapped;
+    PlatformInfo clientInfo;
+    mutable PlatformInfo mappedClientInfo;
+    mutable PlatformInfo overriddenMappedClientInfo;
     QString runId;
     bool connectionEstablished;
     Report report;

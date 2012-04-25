@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -541,7 +541,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 
     forever {
         ulong alloc = len;
-        if (len  >= (1 << 31) - sizeof(QByteArray::Data)) {
+        if (len  >= ulong(1 << 31) - sizeof(QByteArray::Data)) {
             //QByteArray does not support that huge size anyway.
             qWarning("qUncompress: Input data is corrupted");
             return QByteArray();
@@ -561,7 +561,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         switch (res) {
         case Z_OK:
             if (len != alloc) {
-                if (len  >= (1 << 31) - sizeof(QByteArray::Data)) {
+                if (len  >= ulong(1 << 31) - sizeof(QByteArray::Data)) {
                     //QByteArray does not support that huge size anyway.
                     qWarning("qUncompress: Input data is corrupted");
                     return QByteArray();
@@ -1369,12 +1369,17 @@ QByteArray::QByteArray(int size, char ch)
 
 QByteArray::QByteArray(int size, Qt::Initialization)
 {
-    d = static_cast<Data *>(qMalloc(sizeof(Data)+size));
-    Q_CHECK_PTR(d);
-    d->ref = 1;
-    d->alloc = d->size = size;
-    d->data = d->array;
-    d->array[size] = '\0';
+    if (size <= 0) {
+        d = &shared_empty;
+    } else {
+        d = static_cast<Data *>(qMalloc(sizeof(Data)+size));
+        Q_CHECK_PTR(d);
+        d->ref = 0;
+        d->alloc = d->size = size;
+        d->data = d->array;
+        d->array[size] = '\0';
+    }
+    d->ref.ref();
 }
 
 /*!

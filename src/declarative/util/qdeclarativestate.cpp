@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -173,6 +173,18 @@ QDeclarativeState::~QDeclarativeState()
     Q_D(QDeclarativeState);
     if (d->group)
         d->group->removeState(this);
+
+    /*
+      destroying an active state does not return us to the
+      base state, so we need to clean up our revert list to
+      prevent leaks. In the future we may want to redconsider
+      this overall architecture.
+    */
+    for (int i = 0; i < d->revertList.count(); ++i) {
+        if (d->revertList.at(i).binding()) {
+            d->revertList.at(i).binding()->destroy();
+        }
+    }
 }
 
 /*!

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,13 +147,6 @@
     \list
     \o \l{Web Browser} demonstrates how Qt's \l{QtWebKit} module can be used to
        implement a small Web browser.
-    \endlist
-
-    \section1 Multimedia
-
-    \list
-    \o \l{demos/spectrum}{Spectrum Analyser} shows how the \l{QtMultimedia}
-       module can be used to manipulate audio as it is played.
     \endlist
 
     \section1 Phonon

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1124,7 +1124,8 @@ void tst_QShortcut::context()
 // ------------------------------------------------------------------
 void tst_QShortcut::clearAllShortcuts()
 {
-    qDeleteAll(shortcuts);
+    QList<QShortcut *> shortcutsCpy = shortcuts;
+    qDeleteAll(shortcutsCpy);
     shortcuts.clear();
 }
 

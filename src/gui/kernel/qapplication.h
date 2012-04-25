@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -198,6 +198,7 @@ public:
     static void alert(QWidget *widget, int duration = 0);
 
     static Qt::KeyboardModifiers keyboardModifiers();
+    static Qt::KeyboardModifiers queryKeyboardModifiers();
     static Qt::MouseButtons mouseButtons();
 
     static void setDesktopSettingsAware(bool);
@@ -303,6 +304,10 @@ Q_SIGNALS:
 #ifndef QT_NO_SESSIONMANAGER
     void commitDataRequest(QSessionManager &sessionManager);
     void saveStateRequest(QSessionManager &sessionManager);
+#endif
+#ifdef Q_OS_SYMBIAN
+    void aboutToReleaseGpuResources();
+    void aboutToUseGpuResources();
 #endif
 
 public:

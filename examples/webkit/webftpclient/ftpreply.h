@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,8 +44,11 @@
 #include <QNetworkReply>
 #include <QStringList>
 #include <QUrlInfo>
+#include <QFtp>
 
+QT_BEGIN_NAMESPACE
 class QFtp;
+QT_END_NAMESPACE
 
 //! [class definition]
 class FtpReply : public QNetworkReply

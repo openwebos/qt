@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -574,7 +574,7 @@ void Generator::generateProperties()
                 strreg(p.name),
                 strreg(p.type));
         if (!(flags >> 24) && isQRealType(p.type))
-            fprintf(out, "(QMetaType::QReal << 24) | ");
+            fprintf(out, "((uint)QMetaType::QReal << 24) | ");
         fprintf(out, "0x%.8x,\n", flags);
     }
 

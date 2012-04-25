@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -94,6 +94,8 @@ public:
 public Q_SLOTS:
     void updateConfigurations();
 
+    static void addPostRoutine();
+
 Q_SIGNALS:
     void configurationAdded(const QNetworkConfiguration &config);
     void configurationRemoved(const QNetworkConfiguration &config);
@@ -107,6 +109,7 @@ private Q_SLOTS:
     void configurationChanged(QNetworkConfigurationPrivatePointer ptr);
 
     void pollEngines();
+
 
 private:
     Q_INVOKABLE void startPolling();

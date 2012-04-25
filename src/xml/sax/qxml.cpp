@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1321,7 +1321,8 @@ QXmlInputSource::QXmlInputSource(QIODevice *dev)
 {
     init();
     d->inputDevice = dev;
-    d->inputDevice->setTextModeEnabled(false);
+    if (dev->isOpen())
+        d->inputDevice->setTextModeEnabled(false);
 }
 
 #ifdef QT3_SUPPORT
@@ -7748,7 +7749,13 @@ bool QXmlSimpleReaderPrivate::processReference()
                                     return false;
                                 }
                                 if (ret) {
-                                    QString xmlRefString = ret->data();
+                                    QString xmlRefString;
+                                    QString buffer = ret->data();
+                                    while (buffer.length()>0){
+                                        xmlRefString += buffer;
+                                        ret->fetchData();
+                                        buffer = ret->data();
+                                    }
                                     delete ret;
                                     if (!stripTextDecl(xmlRefString)) {
                                         reportParseError(QLatin1String(XMLERR_ERRORINTEXTDECL));

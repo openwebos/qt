@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -198,6 +198,8 @@
     outputs XML formatted results instead of plain text
     \o \c -lightxml \BR
     outputs results as a stream of XML tags
+    \o \c -xunitxml \BR
+    outputs results as an Xunit XML document
     \o \c -eventdelay \e ms \BR
     if no delay is specified for keyboard or mouse simulation
     (\l QTest::keyClick(),

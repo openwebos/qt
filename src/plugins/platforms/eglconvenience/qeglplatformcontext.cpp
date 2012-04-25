@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,7 +48,7 @@
 
 #include <EGL/egl.h>
 
-QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi)
+QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, EGLint contextAttrs[], EGLSurface surface, EGLenum eglApi, QEGLPlatformContext *shareContext)
     : QPlatformGLContext()
     , m_eglDisplay(display)
     , m_eglSurface(surface)
@@ -59,7 +59,8 @@ QEGLPlatformContext::QEGLPlatformContext(EGLDisplay display, EGLConfig config, E
     }
 
     eglBindAPI(m_eglApi);
-    m_eglContext = eglCreateContext(m_eglDisplay,config, 0,contextAttrs);
+    EGLContext shareEglContext = shareContext ? shareContext->eglContext() : 0;
+    m_eglContext = eglCreateContext(m_eglDisplay,config, shareEglContext, contextAttrs);
     if (m_eglContext == EGL_NO_CONTEXT) {
         qWarning("Could not create the egl context\n");
         eglTerminate(m_eglDisplay);

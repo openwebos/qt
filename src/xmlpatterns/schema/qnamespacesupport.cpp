@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,8 +59,8 @@ NamespaceSupport::NamespaceSupport()
 {
 }
 
-NamespaceSupport::NamespaceSupport(const NamePool::Ptr &namePool)
-    : m_namePool(namePool)
+NamespaceSupport::NamespaceSupport(NamePool &namePool)
+    : m_namePool(&namePool)
 {
     // the XML namespace
     m_ns.insert(StandardPrefixes::xml, StandardNamespaces::xml);

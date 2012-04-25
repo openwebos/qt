@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example opengl/2dpainting
     \title 2D Painting Example
 
-    The 2D Painting example shows how QPainter and QGLWidget can be used
+    \brief The 2D Painting example shows how QPainter and QGLWidget can be used
     together to display accelerated 2D graphics on supported hardware.
 
     \image 2dpainting-example.png

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -366,9 +366,11 @@ QFilePrivate::setError(QFile::FileError err, int errNum)
 
     \value AutoCloseHandle The file handle passed into open() should be
     closed by close(), the default behaviour is that close just flushes
-    the file and the app is responsible for closing the file handle. When
-    opening a file by name, this flag is ignored as Qt always "owns" the
+    the file and the application is responsible for closing the file handle.
+    When opening a file by name, this flag is ignored as Qt always "owns" the
     file handle and must close it.
+    \value DontCloseHandle The file handle passed into open() will not be
+    closed by Qt. The application must ensure that close() is called.
  */
 
 #ifdef QT3_SUPPORT
@@ -822,8 +824,7 @@ QFile::rename(const QString &oldName, const QString &newName)
 
     \note To create a valid link on Windows, \a linkName must have a \c{.lnk} file extension.
 
-    \note On Symbian, no link is created and false is returned if fileName()
-    currently specifies a directory.
+    \note Symbian filesystem does not support links.
 
     \sa setFileName()
 */
@@ -916,6 +917,7 @@ QFile::copy(const QString &newName)
 #endif
                 if (error) {
                     out.close();
+                    close();
                     d->setError(QFile::CopyError, tr("Cannot open for output"));
                 } else {
                     char block[4096];
@@ -926,6 +928,7 @@ QFile::copy(const QString &newName)
                             break;
                         totalRead += in;
                         if(in != out.write(block, in)) {
+                            close();
                             d->setError(QFile::CopyError, tr("Failure to write block"));
                             error = true;
                             break;
@@ -939,6 +942,7 @@ QFile::copy(const QString &newName)
                     }
                     if (!error && !out.rename(newName)) {
                         error = true;
+                        close();
                         d->setError(QFile::CopyError, tr("Cannot create %1 for output").arg(newName));
                     }
 #ifdef QT_NO_TEMPORARYFILE
@@ -949,10 +953,10 @@ QFile::copy(const QString &newName)
                         out.setAutoRemove(false);
 #endif
                 }
-                close();
             }
             if(!error) {
                 QFile::setPermissions(newName, permissions());
+                close();
                 unsetError();
                 return true;
             }
@@ -1210,7 +1214,7 @@ bool QFile::open(int fd, OpenMode mode)
     Returns true if successful; otherwise returns false.
 
     When a QFile is opened using this function, behaviour of close() is
-    controlled by the AutoCloseHandle flag.
+    controlled by the \a handleFlags argument.
     If AutoCloseHandle is specified, and this function succeeds,
     then calling close() closes the adopted handle.
     Otherwise, close() does not actually close the file, but only flushes it.
@@ -1269,7 +1273,7 @@ bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
     Returns true if successful; otherwise returns false.
 
     When a QFile is opened using this function, behaviour of close() is
-    controlled by the AutoCloseHandle flag.
+    controlled by the \a handleFlags argument.
     If AutoCloseHandle is specified, and this function succeeds,
     then calling close() closes the adopted handle.
     Otherwise, close() does not actually close the file, but only flushes it.
@@ -1329,6 +1333,13 @@ bool QFile::open(const RFile &f, OpenMode mode, FileHandleFlags handleFlags)
   If the file is not open, or there is an error, handle() returns -1.
 
   This function is not supported on Windows CE.
+
+  On Symbian, this function returns -1 if the file was opened normally,
+  as Symbian OS native file handles do not fit in an int, and are
+  incompatible with C library functions that the handle would be used for.
+  If the file was opened using the overloads that take an open C library
+  file handle / file descriptor, then this function returns that same
+  handle.
 
   \sa QSocketNotifier
 */
@@ -1658,7 +1669,6 @@ bool QFile::atEnd() const
 
 /*!
     \fn bool QFile::seek(qint64 pos)
-    \since 4.8
 
     For random-access devices, this function sets the current position
     to \a pos, returning true on success, or false if an error occurred.
@@ -1680,6 +1690,9 @@ bool QFile::seek(qint64 off)
         qWarning("QFile::seek: IODevice is not open");
         return false;
     }
+
+    if (off == d->pos && off == d->devicePos)
+        return true; //avoid expensive flush for NOP seek to current position
 
     if (!d->ensureFlushed())
         return false;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -80,6 +80,10 @@ private slots:
 
     void addAppFont_data();
     void addAppFont();
+
+#ifdef Q_WS_MAC
+    void localizedFonts();
+#endif
 };
 
 tst_QFontDatabase::tst_QFontDatabase()
@@ -274,6 +278,16 @@ void tst_QFontDatabase::addAppFont()
 
     QVERIFY(db.families() == oldFamilies);
 }
+
+#ifdef Q_WS_MAC
+void tst_QFontDatabase::localizedFonts()
+{
+    QFontDatabase db;
+
+    QVERIFY(db.hasFamily(QString::fromUtf8("ヒラギノ明朝 Pro")));
+    QVERIFY(!db.hasFamily(QString::fromUtf8("NotValidFont")));
+}
+#endif
 
 QTEST_MAIN(tst_QFontDatabase)
 #include "tst_qfontdatabase.moc"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example widgets/calculator
     \title Calculator Example
 
-    The example shows how to use signals and slots to implement the
+    \brief The example shows how to use signals and slots to implement the
     functionality of a calculator widget, and how to use QGridLayout
     to place child widgets in a grid.
 

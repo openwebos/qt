@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -624,11 +624,11 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     // are not necessary.
     QStringList allPreDeps;
     foreach(QString item, project->values("PRE_TARGETDEPS")) {
-        allPreDeps.append(fileInfo(item).absoluteFilePath());
+        allPreDeps.append(QDir::cleanPath(outputDir.absoluteFilePath(item)));
     }
 
     foreach (QString item, project->values("GENERATED_SOURCES")) {
-        allPreDeps.append(fileInfo(item).absoluteFilePath());
+        allPreDeps.append(QDir::cleanPath(outputDir.absoluteFilePath(item)));
     }
 
     for (QMap<QString, QStringList>::iterator it = sources.begin(); it != sources.end(); ++it) {
@@ -638,7 +638,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
             QString sourceFile = currentSourcePath + "/" + values.at(i);
             QStringList deps = findDependencies(QDir::toNativeSeparators(sourceFile));
             foreach(QString depItem, deps) {
-                appendIfnotExist(allPreDeps, fileInfo(depItem).absoluteFilePath());
+                appendIfnotExist(allPreDeps, QDir::cleanPath(outputDir.absoluteFilePath(depItem)));
             }
         }
     }
@@ -649,8 +649,12 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     foreach(QString item, extraTargets) {
         foreach(QString targetItem, project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + item)) {
             // Make sure targetpath is absolute
-            QString absoluteTarget = fileInfo(targetItem).absoluteFilePath();
+            QString absoluteTarget = QDir::cleanPath(outputDir.absoluteFilePath(targetItem));
+#if defined(Q_OS_WIN)
+            if (allPreDeps.contains(absoluteTarget, Qt::CaseInsensitive)) {
+#else
             if (allPreDeps.contains(absoluteTarget)) {
+#endif
                 QStringList deps = project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + item + targetItem);
                 QString commandItem =  project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + item + targetItem).join(" ");
 
@@ -658,7 +662,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
                 QString absoluteDeps;
                 foreach (QString depItem, deps) {
                     if (!depItem.isEmpty()) {
-                        absoluteDeps.append(fileInfo(depItem).absoluteFilePath());
+                        absoluteDeps.append(QDir::cleanPath(outputDir.absoluteFilePath(depItem)));
                         absoluteDeps.append(" ");
                     }
                 }
@@ -683,13 +687,24 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     t << endl;
 
     // Write deployment rules
-    QString remoteTestPath = qt_epocRoot() + QLatin1String("epoc32/winscw/c/private/") + privateDirUid;
+    QString remoteTestPath = qt_epocRoot()
+        + QLatin1String("epoc32/release/winscw/udeb/z/private/") + privateDirUid;
     DeploymentList depList;
 
     //write emulator deployment
+    // There are deployment targets for both uded and urel emulators.
     t << "#if defined(WINSCW)" << endl;
     initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
-        QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QString(), generatedDirs, generatedFiles);
+        QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QLatin1String(BUILD_DEBUG),
+        generatedDirs, generatedFiles);
+    writeSbsDeploymentList(depList, t);
+
+    depList.clear();
+    remoteTestPath = qt_epocRoot()
+        + QLatin1String("epoc32/release/winscw/urel/z/private/") + privateDirUid;
+    initProjectDeploySymbian(project, depList, remoteTestPath, false, true,
+        QLatin1String(EMULATOR_DEPLOYMENT_PLATFORM), QLatin1String(BUILD_RELEASE),
+        generatedDirs, generatedFiles);
     writeSbsDeploymentList(depList, t);
     t << "#endif" << endl;
 
@@ -723,9 +738,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
         QFileInfo iconInfo = fileInfo(icon);
 
-        QFileInfo bldinf(project->values("MAKEFILE").first());
-        QString iconPath = bldinf.dir().relativeFilePath(iconInfo.path());
-
+        QString iconPath = outputDir.relativeFilePath(iconInfo.absolutePath());
         QString iconFile = iconInfo.baseName();
 
         QFileInfo iconTargetInfo = fileInfo(iconTargetFile);
@@ -747,11 +760,10 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     if (!cleanFiles.isEmpty()) {
         QStringList absoluteCleanFiles;
         foreach (QString cleanFile, cleanFiles) {
-            QFileInfo fi(cleanFile);
             QString fileName = QLatin1String("\"");
-            fileName.append(fi.absoluteFilePath());
+            fileName.append(QDir::cleanPath(outputDir.absoluteFilePath(cleanFile)));
             fileName.append(QLatin1String("\""));
-            absoluteCleanFiles << fileName;   	
+            absoluteCleanFiles << fileName;
         }
         t << "START EXTENSION qt/qmake_clean" << endl;
         t << "OPTION CLEAN_FILES " << absoluteCleanFiles.join(" ") << endl;

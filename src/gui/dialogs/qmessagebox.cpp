@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -153,7 +153,7 @@ public:
                       expandedTo(QApplication::globalStrut());
         opt.text = label(HideLabel);
         sz = fm.size(Qt::TextShowMnemonic, opt.text);
-        ret.expandedTo(style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
+        ret = ret.expandedTo(style()->sizeFromContents(QStyle::CT_PushButton, &opt, sz, this).
                       expandedTo(QApplication::globalStrut()));
         return ret;
     }
@@ -548,8 +548,8 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     \snippet doc/src/snippets/code/src_gui_dialogs_qmessagebox.cpp 6
 
     This is the approach recommended in the
-    \l{http://developer.apple.com/documentation/UserExperience/Conceptual/AppleHIGuidelines/XHIGWindows/chapter_18_section_7.html}
-    {Mac OS X Guidlines}. Similar guidlines apply for the other
+    \l{http://developer.apple.com/library/mac/documentation/UserExperience/Conceptual/AppleHIGuidelines/Windows/Windows.html#//apple_ref/doc/uid/20000961-BABCAJID}
+    {Mac OS X Guidelines}. Similar guidelines apply for the other
     platforms, but note the different ways the
     \l{QMessageBox::informativeText} {informative text} is handled for
     different platforms.
@@ -1788,7 +1788,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "to comply with the terms of the GNU GPL version 3.0.</p>"
         "<p>Please see <a href=\"http://qt.nokia.com/products/licensing\">qt.nokia.com/products/licensing</a> "
         "for an overview of Qt licensing.</p>"
-        "<p>Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).</p>"
+        "<p>Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://qt.nokia.com/\">qt.nokia.com</a> "
         "for more information.</p>"
         );
@@ -2486,7 +2486,7 @@ void QMessageBox::setInformativeText(const QString &text)
     }
 
     if (!d->informativeLabel) {
-        QLabel *label = new QLabel;
+        QLabel *label = new QLabel(this);
         label->setObjectName(QLatin1String("qt_msgbox_informativelabel"));
         label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, 0, this)));
         label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -2748,6 +2748,8 @@ QPixmap QMessageBox::standardIcon(Icon icon)
   \l StandardButton value indicating the standard button that was clicked.
   When using QMessageBox with custom buttons, this function returns an
   opaque value; use clickedButton() to determine which button was clicked.
+
+  \note The result() function returns also \l StandardButton value instead of \l QDialog::DialogCode
 
   Users cannot interact with any other window in the same
   application until they close the dialog, either by clicking a

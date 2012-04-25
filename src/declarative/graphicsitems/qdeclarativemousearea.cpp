@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -886,6 +886,8 @@ void QDeclarativeMouseArea::setHovered(bool h)
     \o Qt.LeftButton
     \o Qt.RightButton
     \o Qt.MiddleButton
+    \o Qt.XButton1
+    \o Qt.XButton2
     \endlist
 
     To accept more than one button the flags can be combined with the

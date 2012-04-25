@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -187,6 +187,7 @@ void readSymbianStoreLX(QMimeData* aData, CClipboard* clipboard)
     QString string = qt_TDesC2QString(buf);
     CleanupStack::PopAndDestroy(text);
 
+    aData->clear();
     aData->setText(string);
 }
 
@@ -196,6 +197,8 @@ void readFromStreamLX(QMimeData* aData,RReadStream& aStream)
     // dependencies between cleanup styles, and no cleanup stack dependencies on stacked objects.
     TCardinality mimeTypeCount;
     aStream >> mimeTypeCount;
+    if (mimeTypeCount > 0)
+        aData->clear();
     for (int i = 0; i< mimeTypeCount;i++)
     {
         // mime type

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,8 +29,10 @@
     \example tools/i18n
     \title I18N Example
 
-    The Internationalization (I18N) example demonstrates Qt's support for translated
-    text. Developers can write the initial application text in one language, and
+    \brief The Internationalization (I18N) example demonstrates Qt's support for translated
+    text.
+    
+    Developers can write the initial application text in one language, and
     translations can be provided later without any modifications to the code.
 
     \image i18n-example.png

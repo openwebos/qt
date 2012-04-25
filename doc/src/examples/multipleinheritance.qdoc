@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example uitools/multipleinheritance
     \title Multiple Inheritance Example
 
-    The Multiple Inheritance Example shows how to use a form created with \QD
+    \brief The Multiple Inheritance Example shows how to use a form created with \QD
     in an application by subclassing both QWidget and the user interface
     class, which is \c{Ui::CalculatorForm}.
 

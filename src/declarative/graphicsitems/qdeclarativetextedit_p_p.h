@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,7 +77,7 @@ public:
       yoff(0)
     {
 #ifdef Q_OS_SYMBIAN
-        if (QSysInfo::symbianVersion() == QSysInfo::SV_SF_1 || QSysInfo::symbianVersion() == QSysInfo::SV_SF_3) {
+        if (QSysInfo::symbianVersion() >= QSysInfo::SV_SF_1) {
             showInputPanelOnFocus = false;
         }
 #endif

@@ -12,10 +12,11 @@ INCLUDEPATH += ../shared
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov
 
-symbian: {
+wince*|symbian: {
     importFiles.files = data
     importFiles.path = .
     DEPLOYMENT += importFiles
+    wince*: DEFINES += SRCDIR=\\\".\\\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD\\\"
 }
@@ -23,4 +24,4 @@ symbian: {
 OTHER_FILES = data/backtrace1.js data/backtrace1.qml
 
 CONFIG += parallel_test
-
+CONFIG+=insignificant_test # QTQAINFRA-428

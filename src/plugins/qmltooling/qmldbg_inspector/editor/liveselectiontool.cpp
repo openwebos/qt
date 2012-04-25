@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -363,7 +363,9 @@ void LiveSelectionTool::setSelectOnlyContentItems(bool selectOnlyContentItems)
 
 void LiveSelectionTool::clear()
 {
+#ifndef QT_NO_CURSOR
     view()->setCursor(Qt::ArrowCursor);
+#endif
     m_rubberbandSelectionManipulator.clear(),
             m_singleSelectionManipulator.clear();
     m_selectionIndicator.clear();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -30,7 +30,7 @@
     \title SIP Dialog Example
     \ingroup qtce
 
-    The SIP Dialog example shows how to create a dialog that is aware of 
+    \brief The SIP Dialog example shows how to create a dialog that is aware of 
     the Windows Mobile SIP (Software Input Panel) and reacts to it.
 
     \table

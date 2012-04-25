@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example animation/states
     \title States Example
 
-    The States example shows how to use the Qt state machine to play
+    \brief The States example shows how to use the Qt state machine to play
     animations.
 
     \image states-example.png

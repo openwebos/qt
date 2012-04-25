@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1590,7 +1590,8 @@ bool QODBCResult::exec()
         return false;
     }
 
-    SQLINTEGER isScrollable, bufferLength;
+    SQLULEN isScrollable = 0;
+    SQLINTEGER bufferLength;
     r = SQLGetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, &isScrollable, SQL_IS_INTEGER, &bufferLength);
     if(r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO)
         QSqlResult::setForwardOnly(isScrollable==SQL_NONSCROLLABLE);

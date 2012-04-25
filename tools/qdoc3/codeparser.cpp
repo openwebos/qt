@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -51,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 #define COMMAND_COMPAT                  Doc::alias(QLatin1String("compat"))
+#define COMMAND_DEPENDS                 Doc::alias(QLatin1String("depends"))
 #define COMMAND_DEPRECATED              Doc::alias(QLatin1String("deprecated")) // ### don't document
 #define COMMAND_INGROUP                 Doc::alias(QLatin1String("ingroup"))
 #define COMMAND_INMODULE                Doc::alias(QLatin1String("inmodule"))  // ### don't document
@@ -200,6 +201,7 @@ CodeParser *CodeParser::parserForSourceFile(const QString &filePath)
 QSet<QString> CodeParser::commonMetaCommands()
 {
     return QSet<QString>() << COMMAND_COMPAT
+                           << COMMAND_DEPENDS
                            << COMMAND_DEPRECATED
                            << COMMAND_INGROUP
                            << COMMAND_INMODULE
@@ -230,6 +232,9 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 {
     if (command == COMMAND_COMPAT) {
         node->setStatus(Node::Compat);
+    }
+    else if (command == COMMAND_DEPENDS) {
+	node->addDependency(arg);
     }
     else if (command == COMMAND_DEPRECATED) {
 	node->setStatus(Node::Deprecated);
@@ -287,6 +292,9 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 	    FakeNode *fake = static_cast<FakeNode *>(node);
             fake->setTitle(arg);
             nameToTitle.insert(fake->name(),arg);
+            if (fake->subType() == Node::Example) {
+
+            }
         }
         else
 	    location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,6 +88,7 @@ private slots:
     void registrationBug();
     void doubleRegistrationBug();
     void alwaysRunToEndRestartBug();
+    void transitionAssignmentBug();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -842,6 +843,18 @@ void tst_qdeclarativeanimations::alwaysRunToEndRestartBug()
     QTest::qWait(800);
     QTIMED_COMPARE(rect.x(), qreal(200));
     QCOMPARE(static_cast<QDeclarativeAbstractAnimation*>(&animation)->qtAnimation()->state(), QAbstractAnimation::Stopped);
+}
+
+//QTBUG-20227
+void tst_qdeclarativeanimations::transitionAssignmentBug()
+{
+    QDeclarativeEngine engine;
+
+    QDeclarativeComponent c(&engine, SRCDIR "/data/transitionAssignmentBug.qml");
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->property("nullObject").toBool(), false);
 }
 
 QTEST_MAIN(tst_qdeclarativeanimations)

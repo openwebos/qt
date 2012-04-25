@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -391,6 +391,11 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
         return true;
     if (d->isDefaultConstructed || fileinfo.d_ptr->isDefaultConstructed)
         return false;
+
+    // Assume files are the same if path is the same
+    if (d->fileEntry.filePath() == fileinfo.d_ptr->fileEntry.filePath())
+        return true;
+
     Qt::CaseSensitivity sensitive;
     if (d->fileEngine == 0 || fileinfo.d_ptr->fileEngine == 0) {
         if (d->fileEngine != fileinfo.d_ptr->fileEngine) // one is native, the other is a custom file-engine
@@ -406,6 +411,7 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
     if (fileinfo.size() != size()) //if the size isn't the same...
         return false;
 
+   // Fallback to expensive canonical path computation
    return canonicalFilePath().compare(fileinfo.canonicalFilePath(), sensitive) == 0;
 }
 

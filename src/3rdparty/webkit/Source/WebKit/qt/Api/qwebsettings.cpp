@@ -273,6 +273,11 @@ void QWebSettingsPrivate::apply()
         settings->setNeedsSiteSpecificQuirks(value);
 
         settings->setUsesPageCache(WebCore::pageCache()->capacity());
+
+#if ENABLE(PASSWORD_ECHO)
+        settings->setPasswordEchoEnabled(true);
+        settings->setPasswordEchoDurationInSeconds(1);
+#endif
     } else {
         QList<QWebSettingsPrivate*> settings = *::allSettings();
         for (int i = 0; i < settings.count(); ++i)
@@ -429,11 +434,13 @@ QWebSettings* QWebSettings::globalSettings()
         web application cache feature is enabled or not. This is disabled by default.
     \value LocalStorageEnabled Specifies whether support for the HTML 5
         local storage feature is enabled or not. This is disabled by default.
+        (This value was introduced in 4.6.)
     \value LocalStorageDatabaseEnabled \e{This enum value is deprecated.} Use
         QWebSettings::LocalStorageEnabled instead.
     \value LocalContentCanAccessRemoteUrls Specifies whether locally loaded documents are
         allowed to access remote urls. This is disabled by default. For more information
         about security origins and local vs. remote content see QWebSecurityOrigin.
+        (This value was introduced in 4.6.)
     \value LocalContentCanAccessFileUrls Specifies whether locally loaded documents are
         allowed to access other local urls. This is enabled by default. For more information
         about security origins and local vs. remote content see QWebSecurityOrigin.

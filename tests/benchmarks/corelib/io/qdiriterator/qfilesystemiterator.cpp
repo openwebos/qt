@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -229,7 +229,7 @@ void QFileSystemIteratorPrivate::pushSubDirectory(const QByteArray &path)
 
 #ifdef Q_OS_WIN
     wchar_t szSearchPath[MAX_PATH];
-    wcscpy(szSearchPath, QString(path).utf16());
+    QString::fromAscii(path).toWCharArray(szSearchPath);
     wcscat(szSearchPath, L"\\*");
     HANDLE dir = FindFirstFile(szSearchPath, &m_fileSearchResult);
     m_bFirstSearchResult = true;

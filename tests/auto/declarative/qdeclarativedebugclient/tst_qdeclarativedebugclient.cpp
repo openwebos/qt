@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,11 +47,7 @@
 
 #include <QtDeclarative/qdeclarativeengine.h>
 
-#include <private/qdeclarativedebug_p.h>
-#include <private/qdeclarativeenginedebug_p.h>
 #include <private/qdeclarativedebugclient_p.h>
-#include <private/qdeclarativedebugservice_p.h>
-#include <private/qdeclarativedebughelper_p.h>
 
 #include "../../../shared/util.h"
 #include "../shared/debugutil_p.h"
@@ -73,10 +69,7 @@ private slots:
 
 void tst_QDeclarativeDebugClient::initTestCase()
 {
-    QTest::ignoreMessage(QtWarningMsg, "Qml debugging is enabled. Only use this in a safe environment!");
-    QDeclarativeDebugHelper::enableDebugging();
-
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Waiting for connection on port 13770...");
+    QTest::ignoreMessage(QtDebugMsg, "QDeclarativeDebugServer: Waiting for connection on port 13770...");
     new QDeclarativeEngine(this);
 
     m_conn = new QDeclarativeDebugConnection(this);
@@ -86,7 +79,7 @@ void tst_QDeclarativeDebugClient::initTestCase()
 
     m_conn->connectToHost("127.0.0.1", 13770);
 
-    QTest::ignoreMessage(QtWarningMsg, "QDeclarativeDebugServer: Connection established");
+    QTest::ignoreMessage(QtDebugMsg, "QDeclarativeDebugServer: Connection established");
     bool ok = m_conn->waitForConnected();
     QVERIFY(ok);
 

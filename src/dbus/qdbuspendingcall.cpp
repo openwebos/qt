@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -180,9 +180,12 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
     if (metaTypes.at(count) == QDBusMetaTypeId::message)
         --count;
 
-    // QList<int> is actually a vector
-    // kids, don't try this at home
-    setMetaTypes(count, count ? &metaTypes.at(1) : 0);
+    if (count == 0) {
+        setMetaTypes(count, 0);
+    } else {
+        QVector<int> types = QVector<int>::fromList(metaTypes);
+        setMetaTypes(count, types.constData() + 1);
+    }
     return true;
 }
 

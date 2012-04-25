@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2442,6 +2442,7 @@ void tst_Collections::cache()
 	QVERIFY(!cache.contains(2));
 	delete cache.take(10);
     }
+#if 0
     {
 	QCache<int, QString> cache(120);
 	int i;
@@ -2455,6 +2456,7 @@ void tst_Collections::cache()
 	QVERIFY(!cache.contains(3));
 	QVERIFY(cache.contains(2));
     }
+#endif
     {
 	QCache<int, int> cache(100);
 	cache.insert(2, new int(2));
@@ -3505,7 +3507,7 @@ void testVectorAlignment()
 
     for (int i = 0; i < 200; ++i)
         container.append(Aligned());
-    
+
     for (int i = 0; i < container.size(); ++i)
         QVERIFY(container.at(i).checkAligned());
 }

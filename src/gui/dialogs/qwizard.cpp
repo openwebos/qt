@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -572,8 +572,7 @@ public:
 #endif
         }
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
-        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-            && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
+        if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based))
             vistaInitPending = true;
 #endif
     }

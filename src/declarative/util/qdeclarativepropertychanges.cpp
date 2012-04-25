@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,7 +171,8 @@ public:
         reverseExpression = rewindExpression;
     }
 
-    /*virtual void copyOriginals(QDeclarativeActionEvent *other)
+    virtual bool needsCopy() { return true; }
+    virtual void copyOriginals(QDeclarativeActionEvent *other)
     {
         QDeclarativeReplaceSignalHandler *rsh = static_cast<QDeclarativeReplaceSignalHandler*>(other);
         saveCurrentValues();
@@ -182,7 +183,7 @@ public:
             ownedExpression = rsh->ownedExpression;
             rsh->ownedExpression = 0;
         }
-    }*/
+    }
 
     virtual void rewind() {
         ownedExpression = QDeclarativePropertyPrivate::setSignalExpression(property, rewindExpression);

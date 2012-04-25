@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -477,6 +477,7 @@ void QCursorData::update()
         QPixmap pixmap = QApplicationPrivate::instance()->getPixmapCursor(cshape);
         hcurs = create32BitCursor(pixmap, hx, hy);
     }
+        return;
     default:
         qWarning("QCursor::update: Invalid cursor shape %d", cshape);
         return;

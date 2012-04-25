@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example demos/interview
     \title Interview
 
-    The Interview demonstration explores the flexibility and scalability of the
+    \brief The Interview demonstration explores the flexibility and scalability of the
     model/view framework by presenting an infinitely deep data structure using a model
     and three different types of view.
 

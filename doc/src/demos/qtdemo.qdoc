@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -31,7 +31,7 @@
   \ingroup qttools
   \keyword qtdemo
 
-  The Examples and Demos Launcher (\c qtdemo) allows the user to browse the
+  \brief The Examples and Demos Launcher (\c qtdemo) allows the user to browse the
   examples and demonstrations included with Qt, access the documentation
   associated with each of them, and launch them as separate applications.
 

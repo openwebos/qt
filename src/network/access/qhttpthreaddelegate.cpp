@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -312,8 +312,6 @@ void QHttpThreadDelegate::startRequest()
         // some signals are only interesting when normal asynchronous style is used
         connect(httpReply,SIGNAL(readyRead()), this, SLOT(readyReadSlot()));
         connect(httpReply,SIGNAL(dataReadProgress(int, int)), this, SLOT(dataReadProgressSlot(int,int)));
-        connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
-                this, SLOT(cacheCredentialsSlot(QHttpNetworkRequest,QAuthenticator*)));
 #ifndef QT_NO_OPENSSL
         connect(httpReply,SIGNAL(sslErrors(const QList<QSslError>)), this, SLOT(sslErrorsSlot(QList<QSslError>)));
 #endif
@@ -325,6 +323,9 @@ void QHttpThreadDelegate::startRequest()
         connect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                 this, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     }
+
+    connect(httpReply, SIGNAL(cacheCredentials(QHttpNetworkRequest,QAuthenticator*)),
+            this, SLOT(cacheCredentialsSlot(QHttpNetworkRequest,QAuthenticator*)));
 }
 
 // This gets called from the user thread or by the synchronous HTTP timeout timer
@@ -363,7 +364,7 @@ void QHttpThreadDelegate::readyReadSlot()
 void QHttpThreadDelegate::finishedSlot()
 {
     if (!httpReply) {
-        qWarning() << "QHttpThreadDelegate::finishedSlot: HTTP reply had already been deleted, internal problem. Please report.";
+        qWarning("QHttpThreadDelegate::finishedSlot: HTTP reply had already been deleted, internal problem. Please report.");
         return;
     }
 #ifdef QHTTPTHREADDELEGATE_DEBUG
@@ -419,7 +420,7 @@ void QHttpThreadDelegate::synchronousFinishedSlot()
 void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError errorCode, const QString &detail)
 {
     if (!httpReply) {
-        qWarning() << "QHttpThreadDelegate::finishedWithErrorSlot: HTTP reply had already been deleted, internal problem. Please report.";
+        qWarning("QHttpThreadDelegate::finishedWithErrorSlot: HTTP reply had already been deleted, internal problem. Please report.");
         return;
     }
 #ifdef QHTTPTHREADDELEGATE_DEBUG
@@ -555,7 +556,8 @@ void QHttpThreadDelegate::synchronousAuthenticationRequiredSlot(const QHttpNetwo
     }
 
     // Disconnect this connection now since we only want to ask the authentication cache once.
-    QObject::disconnect(this, SLOT(synchronousAuthenticationRequiredSlot(QHttpNetworkRequest,QAuthenticator*)));
+    QObject::disconnect(httpReply, SIGNAL(authenticationRequired(QHttpNetworkRequest,QAuthenticator*)),
+        this, SLOT(synchronousAuthenticationRequiredSlot(QHttpNetworkRequest,QAuthenticator*)));
 }
 
 #ifndef QT_NO_NETWORKPROXY
@@ -572,7 +574,8 @@ void  QHttpThreadDelegate::synchronousProxyAuthenticationRequiredSlot(const QNet
     }
 
     // Disconnect this connection now since we only want to ask the authentication cache once.
-    QObject::disconnect(this, SLOT(synchronousProxyAuthenticationRequiredSlot(QNetworkProxy,QAuthenticator*)));
+    QObject::disconnect(httpReply, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+        this, SLOT(synchronousProxyAuthenticationRequiredSlot(QNetworkProxy,QAuthenticator*)));
 }
 
 #endif

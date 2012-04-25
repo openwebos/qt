@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example draganddrop/draggableicons
     \title Draggable Icons Example
 
-    The Draggable Icons example shows how to drag and drop image data between widgets
+    \brief The Draggable Icons example shows how to drag and drop image data between widgets
     in the same application, and between different applications.
 
     \image draggableicons-example.png

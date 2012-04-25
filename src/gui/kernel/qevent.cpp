@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -142,8 +142,7 @@ QInputEvent::~QInputEvent()
     and QWidget::mouseMoveEvent() to receive mouse events in your own
     widgets.
 
-    \sa QWidget::setMouseTracking() QWidget::grabMouse()
-    QCursor::pos()
+    \sa QWidget::setMouseTracking() QWidget::grabMouse() QCursor::pos()
 */
 
 /*!

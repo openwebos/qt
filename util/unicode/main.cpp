@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2646,7 +2646,7 @@ int main(int, char **)
     QByteArray header =
         "/****************************************************************************\n"
         "**\n"
-        "** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).\n"
+        "** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).\n"
         "** All rights reserved.\n"
         "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
         "**\n"
@@ -2722,8 +2722,8 @@ int main(int, char **)
             "#define QUNICODETABLES_P_H\n\n"
             "#include <QtCore/qchar.h>\n\n"
             "QT_BEGIN_NAMESPACE\n\n");
-    f.write("#define UNICODE_DATA_VERSION "DATA_VERSION_STR"\n\n");
-    f.write("#define UNICODE_LAST_CODEPOINT "LAST_CODEPOINT_STR"\n\n");
+    f.write("#define UNICODE_DATA_VERSION " DATA_VERSION_STR "\n\n");
+    f.write("#define UNICODE_LAST_CODEPOINT " LAST_CODEPOINT_STR "\n\n");
     f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
     f.write("\n");

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -225,12 +225,12 @@ QStringList QStyleFactory::keys()
 #endif
 #ifndef QT_NO_STYLE_WINDOWSXP
     if (!list.contains(QLatin1String("WindowsXP")) &&
-        (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         list << QLatin1String("WindowsXP");
 #endif
 #ifndef QT_NO_STYLE_WINDOWSVISTA
     if (!list.contains(QLatin1String("WindowsVista")) &&
-        (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
         list << QLatin1String("WindowsVista");
 #endif
 #ifndef QT_NO_STYLE_MOTIF

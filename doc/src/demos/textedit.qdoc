@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example demos/textedit
     \title Text Edit
 
-    The Text Edit demonstration shows Qt's rich text editing facilities in action,
+    \brief The Text Edit demonstration shows Qt's rich text editing facilities in action,
     providing an example document for you to experiment with.
 
     \image textedit-demo.png

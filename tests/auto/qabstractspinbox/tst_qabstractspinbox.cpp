@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -154,7 +154,7 @@ void tst_QAbstractSpinBox::task228728_cssselector()
 {
     //QAbstractSpinBox does some call to stylehint into his constructor.
     //so while the stylesheet want to access property, it should not crash
-    qApp->setStyleSheet("[alignement=\"1\"], [text=\"foo\"] { color:black; }" );
+    qApp->setStyleSheet("[alignment=\"1\"], [text=\"foo\"] { color:black; }" );
     QSpinBox box;
 }
 

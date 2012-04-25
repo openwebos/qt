@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,7 +73,7 @@ int main(int argc, const char **argv)
     const char * ok3  ="3.0";
 //    ptr = fail1;
 //    printf ("string: %s\n", ptr);
-   
+
     int length = strlen(ptr);
     if (length < 3) // expect "x.y" at least
         return internal_error;
@@ -94,6 +94,6 @@ int main(int argc, const char **argv)
 
     if (ptr[4] < '1')
         return fail;
-    
+
     return success;
 }

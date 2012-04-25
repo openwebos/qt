@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,6 +44,7 @@
     device.open(QIODevice::ReadOnly);
 
     QXmlQuery query;
-    query.setQuery("doc($inputDocument)/query[theDocument]");
     query.bindVariable("inputDocument", &device);
+    query.setQuery("doc($inputDocument)/query[theDocument]");
+
 //! [0]

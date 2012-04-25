@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -253,6 +253,8 @@ private:
 
 bool getNumerusInfo(QLocale::Language language, QLocale::Country country,
                     QByteArray *rules, QStringList *forms, const char **gettextRules);
+
+QString getNumerusInfoString();
 
 bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd);
 

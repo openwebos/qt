@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -125,6 +125,7 @@ QStringList AccessibleFactory::keys() const
 #ifndef QT_NO_TEXTEDIT
     list << QLatin1String("QTextEdit");
 #endif
+    list << QLatin1String("QPlainTextEdit");
     list << QLatin1String("QTipLabel");
     list << QLatin1String("QFrame");
     list << QLatin1String("QStackedWidget");
@@ -233,8 +234,10 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
 #endif
     } else if (classname == QLatin1String("QLabel") || classname == QLatin1String("QLCDNumber")) {
         iface = new QAccessibleDisplay(widget);
+#ifndef QT_NO_GROUPBOX
     } else if (classname == QLatin1String("QGroupBox")) {
-        iface = new QAccessibleDisplay(widget, Grouping);
+        iface = new QAccessibleGroupBox(widget);
+#endif
     } else if (classname == QLatin1String("QStatusBar")) {
         iface = new QAccessibleWidgetEx(widget, StatusBar);
 #ifndef QT_NO_PROGRESSBAR
@@ -298,6 +301,8 @@ QAccessibleInterface *AccessibleFactory::create(const QString &classname, QObjec
     } else if (classname == QLatin1String("QTextEdit")) {
         iface = new QAccessibleTextEdit(widget);
 #endif
+    } else if (classname == QLatin1String("QPlainTextEdit")) {
+        iface = new QAccessiblePlainTextEdit(widget);
     } else if (classname == QLatin1String("QTipLabel")) {
         iface = new QAccessibleDisplay(widget, ToolTip);
     } else if (classname == QLatin1String("QFrame")) {

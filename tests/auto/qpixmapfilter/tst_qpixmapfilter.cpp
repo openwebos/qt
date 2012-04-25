@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -425,7 +425,7 @@ void tst_QPixmapFilter::dropShadowBoundingRectFor()
 }
 
 QT_BEGIN_NAMESPACE
-void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed);
+Q_GUI_EXPORT void qt_blurImage(QImage &blurImage, qreal radius, bool quality, int transposed);
 QT_END_NAMESPACE
 
 void tst_QPixmapFilter::blurIndexed8()

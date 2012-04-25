@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -806,7 +806,7 @@ private:
     Q_DISABLE_COPY(QWidget)
     Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
 #ifdef Q_OS_SYMBIAN
-    Q_PRIVATE_SLOT(d_func(), void _q_delayedDestroy(WId winId))
+    Q_PRIVATE_SLOT(d_func(), void void _q_cleanupWinIds())
 #endif
 
     QWidgetData *data;

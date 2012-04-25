@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example draganddrop/puzzle
     \title Drag and Drop Puzzle Example
 
-    The Drag and Drop Puzzle example demonstrates a way of using the drag and drop system with
+    \brief The Drag and Drop Puzzle example demonstrates a way of using the drag and drop system with
     item view widgets.
 
     \image draganddroppuzzle-example.png

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -4202,6 +4202,10 @@ void QImage::setPixel(int x, int y, uint index_or_rgb)
     }
     // detach is called from within scanLine
     uchar * s = scanLine(y);
+    if (!s) {
+        qWarning("setPixel: Out of memory");
+        return;
+    }
     const quint32p p = quint32p::fromRawData(index_or_rgb);
     switch(d->format) {
     case Format_Mono:
@@ -5908,12 +5912,12 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
                      uchar *dptr, int dbpl, int p_inc, int dHeight,
                      const uchar *sptr, int sbpl, int sWidth, int sHeight)
 {
-    int m11 = int(trueMat.m11()*4096.0);
-    int m12 = int(trueMat.m12()*4096.0);
-    int m21 = int(trueMat.m21()*4096.0);
-    int m22 = int(trueMat.m22()*4096.0);
-    int dx  = qRound(trueMat.dx()*4096.0);
-    int dy  = qRound(trueMat.dy()*4096.0);
+    int m11 = int(trueMat.m11()*qreal(4096.0));
+    int m12 = int(trueMat.m12()*qreal(4096.0));
+    int m21 = int(trueMat.m21()*qreal(4096.0));
+    int m22 = int(trueMat.m22()*qreal(4096.0));
+    int dx  = qRound(trueMat.dx()*qreal(4096.0));
+    int dy  = qRound(trueMat.dy()*qreal(4096.0));
 
     int m21ydx = dx + (xoffset<<16) + (m11 + m21) / 2;
     int m22ydy = dy + (m12 + m22) / 2;

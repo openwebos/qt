@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -202,6 +202,7 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri) c
     try {
         item = loader.openDocument(source, normalizedUri, d->m_context);
     } catch (QPatternist::Exception exception) {
+        Q_UNUSED(exception);
         return false;
     }
 
@@ -216,6 +217,7 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri) c
     try {
         reader.read();
     } catch (QPatternist::Exception exception) {
+        Q_UNUSED(exception);
         return false;
     }
 

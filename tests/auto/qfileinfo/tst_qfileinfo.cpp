@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,7 +61,9 @@
 #define _WIN32_WINNT  0x500
 #include <qt_windows.h>
 #include <qlibrary.h>
+#ifndef Q_OS_WINCE
 #include <lm.h>
+#endif
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
@@ -482,6 +484,11 @@ void tst_QFileInfo::absolutePath_data()
     QTest::newRow("c:\\autoexec.bat") << "c:\\autoexec.bat" << "C:/"
                                       << "autoexec.bat";
 #endif
+    QTest::newRow("QTBUG-19995.1") << drivePrefix + "/System/Library/StartupItems/../Frameworks"
+                                   << drivePrefix + "/System/Library"
+                                   << "Frameworks";
+    QTest::newRow("QTBUG-19995.2") << drivePrefix + "/System/Library/StartupItems/../Frameworks/"
+                                   << drivePrefix + "/System/Library/Frameworks" << "";
 }
 
 void tst_QFileInfo::absolutePath()
@@ -503,6 +510,7 @@ void tst_QFileInfo::absFilePath_data()
 
     QTest::newRow("relativeFile") << "tmp.txt" << QDir::currentPath() + "/tmp.txt";
     QTest::newRow("relativeFileInSubDir") << "temp/tmp.txt" << QDir::currentPath() + "/" + "temp/tmp.txt";
+    QString drivePrefix;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     QString curr = QDir::currentPath();
 
@@ -511,7 +519,7 @@ void tst_QFileInfo::absFilePath_data()
     QTest::newRow("absFilePath") << "c:\\home\\andy\\tmp.txt" << "C:/home/andy/tmp.txt";
 
     // Make sure drive-relative paths return correct absolute paths (task 255326)
-    QString drivePrefix = QDir::currentPath().left(2);
+    drivePrefix = QDir::currentPath().left(2);
     QString nonCurrentDrivePrefix =
         drivePrefix.left(1).compare("X", Qt::CaseInsensitive) == 0 ? QString("Y:") : QString("X:");
 
@@ -521,6 +529,8 @@ void tst_QFileInfo::absFilePath_data()
 #else
     QTest::newRow("absFilePath") << "/home/andy/tmp.txt" << "/home/andy/tmp.txt";
 #endif
+    QTest::newRow("QTBUG-19995") << drivePrefix + "/System/Library/StartupItems/../Frameworks"
+                                 << drivePrefix + "/System/Library/Frameworks";
 }
 
 void tst_QFileInfo::absFilePath()
@@ -1395,7 +1405,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
             wchar_t errstr[0x100];
             DWORD count = FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM,
                 0, err, 0, errstr, 0x100, 0);
-            QString error(QString::fromUtf16(errstr, count));
+            QString error(QString::fromWCharArray (errstr, count));
             qWarning() << error;
             //we need at least one data set for the test not to assert fail when skipping _data function
             QDir target("target");
@@ -1427,7 +1437,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     QString junction = "junction_pwd";
     FileSystem::createNtfsJunction(target, junction);
     QFileInfo targetInfo(target);
-    QTest::newRow("junction_pwd") << junction << true << targetInfo.absoluteFilePath() << targetInfo.canonicalFilePath();
+    QTest::newRow("junction_pwd") << junction << false << QString() << QString();
 
     QFileInfo fileInJunction(targetInfo.absoluteFilePath().append("/file"));
     QFile file(fileInJunction.absoluteFilePath());
@@ -1440,7 +1450,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
     junction = "junction_root";
     FileSystem::createNtfsJunction(target, junction);
     targetInfo.setFile(target);
-    QTest::newRow("junction_root") << junction << true << targetInfo.absoluteFilePath() << targetInfo.canonicalFilePath();
+    QTest::newRow("junction_root") << junction << false << QString() << QString();
 
     //Mountpoint
     typedef BOOLEAN (WINAPI *PtrGetVolumeNameForVolumeMountPointW)(LPCWSTR, LPWSTR, DWORD);
@@ -1455,7 +1465,7 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks_data()
         junction = "mountpoint";
         rootVolume.replace("\\\\?\\","\\??\\");
         FileSystem::createNtfsJunction(rootVolume, junction);
-        QTest::newRow("mountpoint") << junction << true <<  QDir::fromNativeSeparators(rootPath) << QDir::rootPath();
+        QTest::newRow("mountpoint") << junction << false << QString() << QString();
     }
 }
 
@@ -1468,8 +1478,10 @@ void tst_QFileInfo::ntfsJunctionPointsAndSymlinks()
 
     QFileInfo fi(path);
     QCOMPARE(fi.isSymLink(), isSymLink);
-    QCOMPARE(fi.symLinkTarget(), linkTarget);
-    QCOMPARE(fi.canonicalFilePath(), canonicalFilePath);
+    if (isSymLink) {
+        QCOMPARE(fi.symLinkTarget(), linkTarget);
+        QCOMPARE(fi.canonicalFilePath(), canonicalFilePath);
+    }
 }
 
 void tst_QFileInfo::brokenShortcut()

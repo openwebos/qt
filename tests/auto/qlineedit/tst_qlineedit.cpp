@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -282,6 +282,7 @@ private slots:
     void taskQTBUG_7395_readOnlyShortcut();
     void QTBUG697_paletteCurrentColorGroup();
     void QTBUG13520_textNotVisible();
+    void QTBUG7174_inputMaskCursorBlink();
 
 #ifdef QT3_SUPPORT
     void validateAndSet_data();
@@ -1769,6 +1770,13 @@ void tst_QLineEdit::passwordEchoDelay()
     ev.setCommitString(QLatin1String("7"));
     QApplication::sendEvent(testWidget, &ev);
     QCOMPARE(testWidget->displayText(), QString(7, fillChar) + QLatin1Char('7'));
+
+    testWidget->setCursorPosition(3);
+    QCOMPARE(testWidget->displayText(), QString(7, fillChar) + QLatin1Char('7'));
+    QTest::keyPress(testWidget, 'a');
+    QCOMPARE(testWidget->displayText(), QString(3, fillChar) + QLatin1Char('a') + QString(5, fillChar));
+    QTest::keyPress(testWidget, Qt::Key_Backspace);
+    QCOMPARE(testWidget->displayText(), QString(8, fillChar));
 
     // restore clean state
     testWidget->setEchoMode(QLineEdit::Normal);
@@ -3816,6 +3824,30 @@ void tst_QLineEdit::QTBUG13520_textNotVisible()
 
 }
 
+class UpdateRegionLineEdit : public QLineEdit
+{
+public:
+    QRegion updateRegion;
+protected:
+    void paintEvent(QPaintEvent *event)
+    {
+        updateRegion = event->region();
+    }
+};
+
+void tst_QLineEdit::QTBUG7174_inputMaskCursorBlink()
+{
+    UpdateRegionLineEdit edit;
+    edit.setInputMask(QLatin1String("AAAA"));
+    edit.setFocus();
+    edit.setText(QLatin1String("AAAA"));
+    edit.show();
+    QRect cursorRect = edit.inputMethodQuery(Qt::ImMicroFocus).toRect();
+    QTest::qWaitForWindowShown(&edit);
+    edit.updateRegion = QRegion();
+    QTest::qWait(QApplication::cursorFlashTime());
+    QVERIFY(edit.updateRegion.contains(cursorRect));
+}
 
 void tst_QLineEdit::bidiVisualMovement_data()
 {

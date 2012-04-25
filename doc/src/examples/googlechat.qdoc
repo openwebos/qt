@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example webkit/googlechat
     \title Google Chat Example
 
-    The Google Chat example shows how to use implement a simple Google Chat
+    \brief The Google Chat example shows how to use implement a simple Google Chat
     client with QtWebKit.
 
     \image googlechat-example.png

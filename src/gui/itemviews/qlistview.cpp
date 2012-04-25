@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1475,7 +1475,7 @@ void QListView::doItemsLayout()
 void QListView::updateGeometries()
 {
     Q_D(QListView);
-    if (d->model->rowCount(d->root) <= 0 || d->model->columnCount(d->root) <= 0) {
+    if (geometry().isEmpty() || d->model->rowCount(d->root) <= 0 || d->model->columnCount(d->root) <= 0) {
         horizontalScrollBar()->setRange(0, 0);
         verticalScrollBar()->setRange(0, 0);
     } else {
@@ -1490,15 +1490,15 @@ void QListView::updateGeometries()
 
     // if the scroll bars are turned off, we resize the contents to the viewport
     if (d->movement == Static && !d->isWrapping()) {
-        const QSize maxSize = maximumViewportSize();
+        d->layoutChildren(); // we need the viewport size to be updated
         if (d->flow == TopToBottom) {
             if (horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
-                d->setContentsSize(maxSize.width(), contentsSize().height());
+                d->setContentsSize(viewport()->width(), contentsSize().height());
                 horizontalScrollBar()->setRange(0, 0); // we see all the contents anyway
             }
         } else { // LeftToRight
             if (verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOff) {
-                d->setContentsSize(contentsSize().width(), maxSize.height());
+                d->setContentsSize(contentsSize().width(), viewport()->height());
                 verticalScrollBar()->setRange(0, 0); // we see all the contents anyway
             }
         }
@@ -3216,7 +3216,12 @@ int QListView::visualIndex(const QModelIndex &index) const
     Q_D(const QListView);
     d->executePostedLayout();
     QListViewItem itm = d->indexToListViewItem(index);
-    return d->commonListView->itemIndex(itm);
+    int visualIndex = d->commonListView->itemIndex(itm);
+    for (int row = 0; row <= index.row() && visualIndex >= 0; row++) {
+        if (d->isHidden(row))
+            visualIndex--;
+    }
+    return visualIndex;
 }
 
 QT_END_NAMESPACE

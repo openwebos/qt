@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,6 +29,6 @@
     \example script/marshal
     \title Qt Script Marshalling Example
 
-    The Qt Script Marshalling example demonstrates the marshalling of value
+    \brief The Qt Script Marshalling example demonstrates the marshalling of value
     types between C++ and Qt Script.
 */

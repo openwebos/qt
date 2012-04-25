@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -47,6 +47,7 @@
 
 #include <qdeclarativedebugservice_p.h>
 #include "private/qdeclarativeproperty_p.h"
+#include "private/qdeclarativevaluetype_p.h"
 
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdebug.h>
@@ -112,7 +113,7 @@ void QDeclarativeWatchProxy::notifyValueChanged()
     QVariant v;
     if (m_expr)
         v = m_expr->evaluate();
-    else
+    else if (QDeclarativeValueTypeFactory::isValueType(m_property.userType()))
         v = m_property.read(m_object);
 
     emit m_watch->propertyChanged(m_id, m_debugId, m_property, v);

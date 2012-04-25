@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -105,7 +105,7 @@ while (it.current()) {
 
 //! [7]
 QList<Q3ListViewItem *> lst;
-Q3ListViewItemIterator it(myListView, Selected);
+Q3ListViewItemIterator it(myListView, Q3ListViewItemIterator::Selected);
 while (it.current()) {
     lst.append(it.current());
     ++it;

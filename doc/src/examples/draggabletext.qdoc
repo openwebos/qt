@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example draganddrop/draggabletext
     \title Draggable Text Example
 
-    The Draggable Text example shows how to drag and drop textual data between widgets
+    \brief The Draggable Text example shows how to drag and drop textual data between widgets
     in the same application, and between different applications.
 
     \image draggabletext-example.png

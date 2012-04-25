@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -397,7 +397,6 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
     if (symbianLocalizationList.size()) {
         // Add localized resources to DEPLOYMENT if default resource deployment is done
         addLocalizedResourcesToDeployment("default_resource_deployment.files", symbianLocalizationList);
-        addLocalizedResourcesToDeployment("default_reg_deployment.files", symbianLocalizationList);
     }
 
     // deploy files specified by DEPLOYMENT variable
@@ -503,9 +502,11 @@ void SymbianCommonGenerator::generatePkgFile(const QString &iconFile,
         twf << wrapperStreamBuffer << endl;
 
         // Wrapped files deployment
-        QString currentPath = qmake_getpwd();
+        QString currentPath = Option::output_dir;
+        if (!currentPath.endsWith(QLatin1Char('/')))
+            currentPath += QLatin1Char('/');
         QString sisName = QString("%1.sis").arg(fixedTarget);
-        twf << "\"" << currentPath << "/" << sisName << "\" - \"!:\\private\\2002CCCE\\import\\" << sisName << "\"" << endl;
+        twf << "\"" << currentPath << sisName << "\" - \"!:\\private\\2002CCCE\\import\\" << sisName << "\"" << endl;
 
         QString bootStrapPath = QLibraryInfo::location(QLibraryInfo::PrefixPath);
         bootStrapPath.append("/smartinstaller.sis");
@@ -848,6 +849,7 @@ void SymbianCommonGenerator::parseTsFiles(SymbianLocalizationList *symbianLocali
 
             foreach (QString file, symbianTsFiles) {
                 QRegExp matcher(matchStr);
+                matcher.setCaseSensitivity(Qt::CaseInsensitive);
                 if (matcher.exactMatch(file) && parseTsContent(file, &loc))
                     break;
             }
@@ -862,12 +864,17 @@ void SymbianCommonGenerator::fillQt2SymbianLocalizationList(SymbianLocalizationL
     QStringList symbianLanguages = generator->project->values("SYMBIAN_MATCHED_LANGUAGES");
 
     foreach (QString qtCode, symbianLanguages) {
-        SymbianLocalization newLoc;
         QString symbianCodeVariable = symbianCodePrefix + qtCode;
-        newLoc.symbianLanguageCode = generator->project->first(symbianCodeVariable);
-        if (!newLoc.symbianLanguageCode.isEmpty()) {
-            newLoc.qtLanguageCode = qtCode;
-            symbianLocalizationList->append(newLoc);
+        QStringList symbianCodes = generator->project->values(symbianCodeVariable);
+		// Some languages have more than one Symbian code, so they get more than one
+		// entry in symbianLocalizationList.
+        foreach (QString symbianCode, symbianCodes) {
+            SymbianLocalization newLoc;
+            newLoc.symbianLanguageCode = symbianCode;
+            if (!newLoc.symbianLanguageCode.isEmpty()) {
+                newLoc.qtLanguageCode = qtCode;
+                symbianLocalizationList->append(newLoc);
+            }
         }
     }
 }
@@ -951,12 +958,15 @@ bool SymbianCommonGenerator::parseTsContent(const QString &tsFilename, SymbianLo
             static QString messageElement = QLatin1String("message");
             static QString sourceElement = QLatin1String("source");
             static QString translationElement = QLatin1String("translation");
-            static QString shortCaptionId = QLatin1String("Application short caption");
-            static QString longCaptionId = QLatin1String("Application long caption");
-            static QString pkgDisplayNameId = QLatin1String("Package name");
-            static QString installerPkgDisplayNameId = QLatin1String("Smart installer package name");
-            static QString languageAttribute = QLatin1String("language");
-            static QChar underscoreChar = QLatin1Char('_');
+            static QString idAttribute = QLatin1String("id");
+            static QString shortCaptionId = QLatin1String("qtn_short_caption_");
+            static QString longCaptionId = QLatin1String("qtn_long_caption_");
+            static QString pkgDisplayNameId = QLatin1String("qtn_package_name_");
+            static QString installerPkgDisplayNameId = QLatin1String("qtn_smart_installer_package_name_");
+            static QString shortCaptionSource = QLatin1String("Application short caption");
+            static QString longCaptionSource = QLatin1String("Application long caption");
+            static QString pkgDisplayNameSource = QLatin1String("Package name");
+            static QString installerPkgDisplayNameSource = QLatin1String("Smart installer package name");
 
             enum CurrentContext {
                 ContextUnknown,
@@ -989,44 +999,39 @@ bool SymbianCommonGenerator::parseTsContent(const QString &tsFilename, SymbianLo
                             if (xml.name() == messageElement) {
                                 QString source;
                                 QString translation;
+                                QString id = xml.attributes().value(idAttribute).toString();
                                 while (xml.readNextStartElement()) {
                                     if (xml.name() == sourceElement) {
                                         source = xml.readElementText();
                                     } else if (xml.name() == translationElement) {
-                                        translation = xml.readElementText();
+                                        // Technically translation element can have child elements
+                                        // i.e. numerusform and lengthvariant. We don't support
+                                        // these for actual caption/pkgname translations, but since
+                                        // they may be present on other unrelated message elements,
+                                        // we need to explicitly skip them to avoid parsing errors.
+                                        translation = xml.readElementText(QXmlStreamReader::SkipChildElements);
                                     } else {
                                         xml.skipCurrentElement();
                                     }
                                 }
-
-                                if (source == shortCaptionId) {
-                                    if (loc->shortCaption.isEmpty()) {
-                                        loc->shortCaption = translation;
-                                    } else {
-                                        fprintf(stderr, "Warning: Duplicate application short caption defined in (%s).\n",
-                                                qPrintable(tsFilename));
-                                    }
-                                } else if (source == longCaptionId) {
-                                    if (loc->longCaption.isEmpty()) {
-                                        loc->longCaption = translation;
-                                    } else {
-                                        fprintf(stderr, "Warning: Duplicate application long caption defined in (%s).\n",
-                                                qPrintable(tsFilename));
-                                    }
-                                } else if (source == pkgDisplayNameId) {
-                                    if (loc->pkgDisplayName.isEmpty()) {
-                                        loc->pkgDisplayName = translation;
-                                    } else {
-                                        fprintf(stderr, "Warning: Duplicate package display name defined in (%s).\n",
-                                                qPrintable(tsFilename));
-                                    }
-                                } else if (source == installerPkgDisplayNameId) {
-                                    if (loc->installerPkgDisplayName.isEmpty()) {
-                                        loc->installerPkgDisplayName = translation;
-                                    } else {
-                                        fprintf(stderr, "Warning: Duplicate smart installer package display name defined in (%s).\n",
-                                                qPrintable(tsFilename));
-                                    }
+                                // Interesting translations can be identified either by id attribute
+                                // of the message or by the source text.
+                                // Allow translations with correct id to override translations
+                                // detected by source text, as the source text can accidentally
+                                // be the same in another string if there are non-interesting
+                                // translations added to same context.
+                                if (id.startsWith(shortCaptionId)
+                                    || (loc->shortCaption.isEmpty() && source == shortCaptionSource)) {
+                                    loc->shortCaption = translation;
+                                } else if (id.startsWith(longCaptionId)
+                                    || (loc->longCaption.isEmpty() && source == longCaptionSource)) {
+                                    loc->longCaption = translation;
+                                } else if (id.startsWith(pkgDisplayNameId)
+                                    || (loc->pkgDisplayName.isEmpty() && source == pkgDisplayNameSource)) {
+                                    loc->pkgDisplayName = translation;
+                                } else if (id.startsWith(installerPkgDisplayNameId)
+                                    || (loc->installerPkgDisplayName.isEmpty() && source == installerPkgDisplayNameSource)) {
+                                    loc->installerPkgDisplayName = translation;
                                 }
                             } else {
                                 xml.skipCurrentElement();

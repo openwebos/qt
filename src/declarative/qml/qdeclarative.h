@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -404,17 +404,6 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj, bool create = true)
     static int idx = -1;
     return qmlAttachedPropertiesObject(&idx, obj, &T::staticMetaObject, create);
 }
-
-// Enable debugging before any QDeclarativeEngine is created
-struct Q_DECLARATIVE_EXPORT QDeclarativeDebuggingEnabler
-{
-    QDeclarativeDebuggingEnabler();
-};
-
-// Execute code in constructor before first QDeclarativeEngine is instantiated
-#if defined(QT_DECLARATIVE_DEBUG)
-static QDeclarativeDebuggingEnabler qmlEnableDebuggingHelper;
-#endif
 
 QT_END_NAMESPACE
 

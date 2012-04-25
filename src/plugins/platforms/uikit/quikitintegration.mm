@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,7 +44,7 @@
 #include "quikitwindowsurface.h"
 #include "quikitscreen.h"
 #include "quikiteventloop.h"
-#include "qgenericunixfontdatabase.h"
+#include "qcoretextfontdatabase.h"
 
 #include <QtGui/QApplication>
 
@@ -56,16 +56,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QUIKitFontDatabase : public QGenericUnixFontDatabase
-{
-public:
-    virtual QString fontDir() const
-    {
-        return QString( [[[[NSBundle mainBundle] bundlePath]
-            stringByAppendingPathComponent:@"fonts"] UTF8String] );
-    }
-};
-
 static QUIKitIntegration *m_instance = 0;
 
 QUIKitIntegration * QUIKitIntegration::instance()
@@ -74,7 +64,7 @@ QUIKitIntegration * QUIKitIntegration::instance()
 }
 
 QUIKitIntegration::QUIKitIntegration()
-    :mFontDb(new QUIKitFontDatabase() )
+    :mFontDb(new QCoreTextFontDatabase)
 {
     if (!m_instance)
         m_instance = this;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -28,8 +28,9 @@
 /*!
     \title Minehunt
     \example demos/declarative/minehunt
+    \depends helper/qmlapplicationviewer
 
-    This demo shows how to create a simple Minehunt game, using QML for the
+    \brief The Qt Quick Minehunt demo shows how to create a simple Minehunt game, using QML for the
     UI and C++ for the game logic.
 
     \image qml-minehunt-demo.png

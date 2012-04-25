@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,6 +41,7 @@
 
 #include <QStack>
 #include <QStringList>
+#include <QFileInfo>
 
 #include "qanyuri_p.h"
 #include "qboolean_p.h"
@@ -207,6 +208,21 @@ Item::Iterator::Ptr IdrefFN::evaluateSequence(const DynamicContext::Ptr &context
     return CommonValues::emptyIterator; /* TODO Haven't implemented further. */
 }
 
+/*!
+ * Attemps to resolve scheme if URL does not have scheme defined.
+ */
+static QUrl resolveScheme(const QUrl &url)
+{
+    // On Windows and Symbian the drive letter is detected as the scheme.
+    if (url.scheme().isEmpty() || (url.scheme().length() == 1)) {
+        QString filename = url.toString();
+        QFileInfo file(filename);
+        if (file.exists())
+            return QUrl::fromLocalFile(filename);
+    }
+    return url;
+}
+
 Item DocFN::evaluateSingleton(const DynamicContext::Ptr &context) const
 {
     const Item itemURI(m_operands.first()->evaluateSingleton(context));
@@ -219,7 +235,7 @@ Item DocFN::evaluateSingleton(const DynamicContext::Ptr &context) const
      * as part of a workaround for solaris-cc-64. DocFN::typeCheck() is in qsequencefns.cpp
      * as part of that workaround. */
     const QUrl mayRela(AnyURI::toQUrl<ReportContext::FODC0005>(itemURI.stringValue(), context, this));
-    const QUrl uri(context->resolveURI(mayRela, staticBaseURI()));
+    const QUrl uri(resolveScheme(context->resolveURI(mayRela, staticBaseURI())));
 
     Q_ASSERT(uri.isValid());
     Q_ASSERT(!uri.isRelative());
@@ -251,7 +267,7 @@ bool DocAvailableFN::evaluateEBV(const DynamicContext::Ptr &context) const
     /* These two lines are duplicated in DocFN::evaluateSingleton(), as part
      * of a workaround for solaris-cc-64. */
     const QUrl mayRela(AnyURI::toQUrl<ReportContext::FODC0005>(itemURI.stringValue(), context, this));
-    const QUrl uri(context->resolveURI(mayRela, staticBaseURI()));
+    const QUrl uri(resolveScheme(context->resolveURI(mayRela, staticBaseURI())));
 
     Q_ASSERT(!uri.isRelative());
     return context->resourceLoader()->isDocumentAvailable(uri);

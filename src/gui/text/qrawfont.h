@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -81,7 +81,10 @@ public:
     bool isValid() const;
 
     QRawFont &operator=(const QRawFont &other);
+
     bool operator==(const QRawFont &other) const;
+    inline bool operator!=(const QRawFont &other) const
+    { return !operator==(other); }
 
     QString familyName() const;
     QString styleName() const;
@@ -132,9 +135,6 @@ public:
 
 private:
     friend class QRawFontPrivate;
-
-    void detach();
-
     QExplicitlySharedDataPointer<QRawFontPrivate> d;
 };
 

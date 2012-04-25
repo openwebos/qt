@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,7 +59,7 @@
 #include <X11/Xlib-xcb.h>
 #endif
 
-#ifdef XCB_USE_EGL //dont pull in eglext prototypes
+#ifdef XCB_USE_EGL //don't pull in eglext prototypes
 #include <EGL/egl.h>
 #endif
 

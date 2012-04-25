@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,8 +104,13 @@ void QSoftKeyManagerPrivateS60::ensureCbaVisibilityAndResponsiviness(CEikButtonG
 {
     RDrawableWindow *cbaWindow = cba.DrawableWindow();
     Q_ASSERT_X(cbaWindow, Q_FUNC_INFO, "Native CBA does not have window!");
-    // Make sure CBA is visible, i.e. CBA window is on top
-    cbaWindow->SetOrdinalPosition(0);
+    // CBA comes on top of new option menu
+    int pos = 0;
+   
+    if(cba.ButtonGroupType()== SLafButtonGroupContainer::ECba)
+        pos = 1;
+    
+    cbaWindow->SetOrdinalPosition(pos);
     // Qt shares same CBA instance between top-level widgets,
     // make sure we are not faded by underlying window.
     cbaWindow->SetFaded(EFalse, RWindowTreeNode::EFadeIncludeChildren);
@@ -117,7 +122,7 @@ void QSoftKeyManagerPrivateS60::ensureCbaVisibilityAndResponsiviness(CEikButtonG
 
 void QSoftKeyManagerPrivateS60::clearSoftkeys(CEikButtonGroupContainer &cba)
 {
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
     QT_TRAP_THROWING(
         //EAknSoftkeyEmpty is used, because using -1 adds softkeys without actions on Symbian3
         cba.SetCommandL(0, EAknSoftkeyEmpty, KNullDesC);
@@ -317,7 +322,7 @@ bool QSoftKeyManagerPrivateS60::setSoftkey(CEikButtonGroupContainer &cba,
         QString text = softkeyText(*action);
         TPtrC nativeText = qt_QString2TPtrC(text);
         int command = S60_COMMAND_START + position;
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
         if (softKeyCommandActions.contains(action))
             command = softKeyCommandActions.value(action);
 #endif

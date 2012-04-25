@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -52,6 +52,9 @@
 #include <QtCore/qdatetime.h>
 #if defined(Q_OS_UNIX)
 #include <QtCore/qdir.h>
+#endif
+#ifdef Q_OS_LINUX
+#include <link.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -210,11 +213,7 @@ DEFINEFUNC(int, SSL_library_init, void, DUMMYARG, return -1, return)
 DEFINEFUNC(void, SSL_load_error_strings, void, DUMMYARG, return, DUMMYARG)
 DEFINEFUNC(SSL *, SSL_new, SSL_CTX *a, a, return 0, return)
 #if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
 DEFINEFUNC4(long, SSL_ctrl, SSL *a, a, int cmd, cmd, long larg, larg, void *parg, parg, return -1, return)
-#else
-DEFINEFUNC4(long, SSL_ctrl, SSL *a, a, int cmd, cmd, long larg, larg, const void *parg, parg, return -1, return)
-#endif
 #endif
 DEFINEFUNC3(int, SSL_read, SSL *a, a, void *b, b, int c, c, return -1, return)
 DEFINEFUNC3(void, SSL_set_bio, SSL *a, a, BIO *b, b, BIO *c, c, return, DUMMYARG)
@@ -222,11 +221,15 @@ DEFINEFUNC(void, SSL_set_accept_state, SSL *a, a, return, DUMMYARG)
 DEFINEFUNC(void, SSL_set_connect_state, SSL *a, a, return, DUMMYARG)
 DEFINEFUNC(int, SSL_shutdown, SSL *a, a, return -1, return)
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+#ifndef OPENSSL_NO_SSL2
 DEFINEFUNC(const SSL_METHOD *, SSLv2_client_method, DUMMYARG, DUMMYARG, return 0, return)
+#endif
 DEFINEFUNC(const SSL_METHOD *, SSLv3_client_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const SSL_METHOD *, SSLv23_client_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const SSL_METHOD *, TLSv1_client_method, DUMMYARG, DUMMYARG, return 0, return)
+#ifndef OPENSSL_NO_SSL2
 DEFINEFUNC(const SSL_METHOD *, SSLv2_server_method, DUMMYARG, DUMMYARG, return 0, return)
+#endif
 DEFINEFUNC(const SSL_METHOD *, SSLv3_server_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const SSL_METHOD *, SSLv23_server_method, DUMMYARG, DUMMYARG, return 0, return)
 DEFINEFUNC(const SSL_METHOD *, TLSv1_server_method, DUMMYARG, DUMMYARG, return 0, return)
@@ -336,6 +339,23 @@ static bool libGreaterThan(const QString &lhs, const QString &rhs)
     return true;
 }
 
+#ifdef Q_OS_LINUX
+static int dlIterateCallback(struct dl_phdr_info *info, size_t size, void *data)
+{
+    if (size < sizeof (info->dlpi_addr) + sizeof (info->dlpi_name))
+        return 1;
+    QSet<QString> *paths = (QSet<QString> *)data;
+    QString path = QString::fromLocal8Bit(info->dlpi_name);
+    if (!path.isEmpty()) {
+        QFileInfo fi(path);
+        path = fi.absolutePath();
+        if (!path.isEmpty())
+            paths->insert(path);
+    }
+    return 0;
+}
+#endif
+
 static QStringList findAllLibSsl()
 {
     QStringList paths;
@@ -347,6 +367,12 @@ static QStringList findAllLibSsl()
             .split(QLatin1Char(':'), QString::SkipEmptyParts);
 #  endif
     paths << QLatin1String("/lib") << QLatin1String("/usr/lib") << QLatin1String("/usr/local/lib");
+#ifdef Q_OS_LINUX
+    // discover paths of already loaded libraries
+    QSet<QString> loadedPaths;
+    dl_iterate_phdr(dlIterateCallback, &loadedPaths);
+    paths.append(loadedPaths.toList());
+#endif
 
     QStringList foundSsls;
     foreach (const QString &path, paths) {
@@ -741,11 +767,15 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_set_connect_state)
     RESOLVEFUNC(SSL_shutdown)
     RESOLVEFUNC(SSL_write)
+#ifndef OPENSSL_NO_SSL2
     RESOLVEFUNC(SSLv2_client_method)
+#endif
     RESOLVEFUNC(SSLv3_client_method)
     RESOLVEFUNC(SSLv23_client_method)
     RESOLVEFUNC(TLSv1_client_method)
+#ifndef OPENSSL_NO_SSL2
     RESOLVEFUNC(SSLv2_server_method)
+#endif
     RESOLVEFUNC(SSLv3_server_method)
     RESOLVEFUNC(SSLv23_server_method)
     RESOLVEFUNC(TLSv1_server_method)

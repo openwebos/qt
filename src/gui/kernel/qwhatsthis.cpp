@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -227,7 +227,7 @@ QWhatsThat::QWhatsThat(const QString& txt, QWidget* parent, QWidget *showTextFor
     }
 #if defined(Q_WS_WIN)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
     {
         BOOL shadow;
         SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow, 0);
@@ -305,7 +305,7 @@ void QWhatsThat::paintEvent(QPaintEvent*)
     bool drawShadow = true;
 #if defined(Q_WS_WIN)
     if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-        && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+        && (QSysInfo::WindowsVersion & QSysInfo::WV_NT_based)))
     {
         BOOL shadow;
         SystemParametersInfo(SPI_GETDROPSHADOW, 0, &shadow, 0);

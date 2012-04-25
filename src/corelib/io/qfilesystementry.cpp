@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -378,6 +378,37 @@ void QFileSystemEntry::findFileNameSeparators() const
         else
             m_lastDotInFileName = lastDotInFileName - firstDotInFileName;
     }
+}
+
+bool QFileSystemEntry::isClean() const
+{
+    resolveFilePath();
+    int dots = 0;
+    bool dotok = true; // checking for ".." or "." starts to relative paths
+    bool slashok = true;
+    for (QString::const_iterator iter = m_filePath.constBegin(); iter != m_filePath.constEnd(); iter++) {
+        if (*iter == QLatin1Char('/')) {
+            if (dots == 1 || dots == 2)
+                return false; // path contains "./" or "../"
+            if (!slashok)
+                return false; // path contains "//"
+            dots = 0;
+            dotok = true;
+            slashok = false;
+        } else if (dotok) {
+            slashok = true;
+            if (*iter == QLatin1Char('.')) {
+                dots++;
+                if (dots > 2)
+                    dotok = false;
+            } else {
+                //path element contains a character other than '.', it's clean
+                dots = 0;
+                dotok = false;
+            }
+        }
+    }
+    return (dots != 1 && dots != 2); // clean if path doesn't end in . or ..
 }
 
 QT_END_NAMESPACE

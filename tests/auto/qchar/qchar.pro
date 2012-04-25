@@ -8,8 +8,13 @@ deploy.files += NormalizationTest.txt
 DEPLOYMENT += deploy
 }
 
-symbian: {
+
+wince*: {
+    DEFINES += SRCDIR=\\\"\\\"
+} else:symbian: {
     DEFINES += SRCDIR=""
+} else:integrity {
+    DEFINES += SRCDIR=\"/\"
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

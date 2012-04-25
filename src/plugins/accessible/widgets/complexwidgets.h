@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -241,8 +241,12 @@ public:
     QString text(Text t, int child) const;
     Role role(int child) const;
     State state(int child) const;
+    int navigate(RelationFlag relation, int entry,
+                         QAccessibleInterface **target) const;
 
     bool doAction(int action, int child, const QVariantList &params);
+    QString actionText(int action, Text t, int child) const;
+    int userActionCount(int child) const;
     bool setSelected(int child, bool on, bool extend);
     QVector<int> selection() const;
 

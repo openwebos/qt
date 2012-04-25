@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example threads/semaphores
     \title Semaphores Example
 
-    The Semaphores example shows how to use QSemaphore to control
+    \brief The Semaphores example shows how to use QSemaphore to control
     access to a circular buffer shared by a producer thread and a
     consumer thread.
 

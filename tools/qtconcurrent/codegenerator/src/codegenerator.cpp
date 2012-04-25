@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -134,7 +134,7 @@ const Compound operator+(const Item &a, const char * const text)
 
 const Compound operator+(const char * const text, const Item &b)
 {
-    return Compound(Text(text), b);    
+    return Compound(Text(text), b);
 }
 
 }

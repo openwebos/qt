@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -263,6 +263,7 @@ private slots:
     void mdiAreaTest();
     void mdiSubWindowTest();
     void lineEditTest();
+    void groupBoxTest();
     void workspaceTest();
     void dialogButtonBoxTest();
     void dialTest();
@@ -2531,6 +2532,12 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(interface->actionText(QAccessible::DefaultAction, QAccessible::Name, 4), QString());
     QCOMPARE(interface->actionText(QAccessible::DefaultAction, QAccessible::Name, 5), QString("Execute"));
 
+    // QTBUG-21578 - after setting accessible name on a menu it would no longer
+    // return the right names for it's children.
+    QCOMPARE(interface->text(QAccessible::Name, 1), QString("New..."));
+    file->setAccessibleName("File");
+    QCOMPARE(interface->text(QAccessible::Name, 1), QString("New..."));
+
     QAccessibleInterface *iface = 0;
     QAccessibleInterface *iface2 = 0;
 
@@ -2734,6 +2741,12 @@ void tst_QAccessibility::textEditTest()
     QCOMPARE(iface->textInterface()->characterRect(0, QAccessible2::RelativeToParent).size(), QSize(fm.width("h"), fm.height()));
     QCOMPARE(iface->textInterface()->characterRect(5, QAccessible2::RelativeToParent).size(), QSize(fm.width(" "), fm.height()));
     QCOMPARE(iface->textInterface()->characterRect(6, QAccessible2::RelativeToParent).size(), QSize(fm.width("w"), fm.height()));
+
+    iface->editableTextInterface()->copyText(6, 11);
+    QCOMPARE(QApplication::clipboard()->text(), QLatin1String("world"));
+    iface->editableTextInterface()->cutText(12, 16);
+    QCOMPARE(QApplication::clipboard()->text(), QLatin1String("how "));
+    QCOMPARE(iface->textInterface()->text(12, 15), QLatin1String("are"));
     }
     QTestAccessibility::clearEvents();
 }
@@ -3021,7 +3034,7 @@ void tst_QAccessibility::lineEditTest()
     QCOMPARE(iface->childCount(), 0);
     QVERIFY(iface->state(0) & QAccessible::Sizeable);
     QVERIFY(iface->state(0) & QAccessible::Movable);
-    QCOMPARE(bool(iface->state(0) & QAccessible::Focusable), le->isActiveWindow());
+    QVERIFY(iface->state(0) & QAccessible::Focusable);
     QVERIFY(iface->state(0) & QAccessible::Selectable);
     QVERIFY(iface->state(0) & QAccessible::HasPopup);
     QCOMPARE(bool(iface->state(0) & QAccessible::Focused), le->hasFocus());
@@ -3050,7 +3063,7 @@ void tst_QAccessibility::lineEditTest()
     QApplication::processEvents();
     QVERIFY(!(iface->state(0) & QAccessible::Sizeable));
     QVERIFY(!(iface->state(0) & QAccessible::Movable));
-    QCOMPARE(bool(iface->state(0) & QAccessible::Focusable), le->isActiveWindow());
+    QVERIFY(iface->state(0) & QAccessible::Focusable);
     QVERIFY(iface->state(0) & QAccessible::Selectable);
     QVERIFY(iface->state(0) & QAccessible::HasPopup);
     QCOMPARE(bool(iface->state(0) & QAccessible::Focused), le->hasFocus());
@@ -3131,6 +3144,50 @@ void tst_QAccessibility::lineEditTest()
     delete iface;
     delete toplevel;
     QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::groupBoxTest()
+{
+    QGroupBox *groupBox = new QGroupBox();
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(groupBox);
+
+    groupBox->setTitle(QLatin1String("Test QGroupBox"));
+    groupBox->setToolTip(QLatin1String("This group box will be used to test accessibility"));
+    QVBoxLayout *layout = new QVBoxLayout();
+    QRadioButton *rbutton = new QRadioButton();
+    layout->addWidget(rbutton);
+    groupBox->setLayout(layout);
+    QAccessibleInterface *rButtonIface = QAccessible::queryAccessibleInterface(rbutton);
+
+    QCOMPARE(iface->childCount(), 1);
+    QCOMPARE(iface->role(0), QAccessible::Grouping);
+    QCOMPARE(iface->text(QAccessible::Name, 0), QLatin1String("Test QGroupBox"));
+    QCOMPARE(iface->text(QAccessible::Description, 0), QLatin1String("This group box will be used to test accessibility"));
+    QAccessible::Relation relation = iface->relationTo(0, rButtonIface, 0);
+    QVERIFY(relation & QAccessible::Label);
+
+    delete rButtonIface;
+    delete iface;
+    delete groupBox;
+
+    groupBox = new QGroupBox();
+    iface = QAccessible::queryAccessibleInterface(groupBox);
+
+    groupBox->setCheckable(true);
+    groupBox->setChecked(false);
+
+    QCOMPARE(iface->role(0), QAccessible::CheckBox);
+    QAccessibleActionInterface *actionIface = iface->actionInterface();
+    QVERIFY(actionIface);
+    QAccessible::State state = iface->state(0);
+    QVERIFY(!(state & QAccessible::Checked));
+    actionIface->doAction(0);
+    QVERIFY(groupBox->isChecked());
+    state = iface->state(0);
+    QVERIFY(state & QAccessible::Checked);
+
+    delete iface;
+    delete groupBox;
 }
 
 void tst_QAccessibility::workspaceTest()

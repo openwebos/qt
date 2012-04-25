@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -499,7 +499,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                             } else if(*(buffer+x) == '*') { //c style comment
                                 for(++x; x < buffer_len; ++x) {
                                     if(*(buffer+x) == '*') {
-                                        if(x < buffer_len-1 && *(buffer + (x+1)) == '/') {
+                                        if(x+1 < buffer_len && *(buffer + (x+1)) == '/') {
                                             ++x;
                                             break;
                                         }
@@ -568,7 +568,8 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                 keyword_len++;
             }
 
-            if(keyword_len == 7 && !strncmp(keyword, "include", keyword_len)) {
+            if((keyword_len == 7 && !strncmp(keyword, "include", 7)) // C & Obj-C
+               || (keyword_len == 6 && !strncmp(keyword, "import", 6))) { // Obj-C
                 char term = *(buffer + x);
                 if(term == '<') {
                     try_local = false;

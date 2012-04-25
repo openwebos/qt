@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -88,7 +88,7 @@ static const char propertiesInterfaceXml[] =
     "    <method name=\"GetAll\">\n"
     "      <arg name=\"interface_name\" type=\"s\" direction=\"in\"/>\n"
     "      <arg name=\"values\" type=\"a{sv}\" direction=\"out\"/>\n"
-    "      <annotation name=\"com.trolltech.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"/>\n"
+    "      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"/>\n"
     "    </method>\n"
     "  </interface>\n";
 

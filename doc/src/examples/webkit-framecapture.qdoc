@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example webkit/framecapture
     \title WebKit Frame Capture Example
 
-    The Frame Capture example shows how to use the WebKit browser engine to
+    \brief The Frame Capture example shows how to use the WebKit browser engine to
     obtain images of frames in a Web page.
 
     This example is designed to be run from the command line. Run the

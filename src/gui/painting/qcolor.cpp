@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1578,7 +1578,7 @@ QColor QColor::toRgb() const
             }
 
             // chromatic case
-            const qreal h = ct.ahsv.hue == 36000 ? 0 : ct.ahsv.hue / 6000.;
+            const qreal h = ct.ahsv.hue == 36000 ? 0 : ct.ahsv.hue / qreal(6000.);
             const qreal s = ct.ahsv.saturation / qreal(USHRT_MAX);
             const qreal v = ct.ahsv.value / qreal(USHRT_MAX);
             const int i = int(h);
@@ -1638,7 +1638,7 @@ QColor QColor::toRgb() const
                 color.ct.argb.red = color.ct.argb.green = color.ct.argb.blue = 0;
             } else {
                 // chromatic case
-                const qreal h = ct.ahsl.hue == 36000 ? 0 : ct.ahsl.hue / 36000.;
+                const qreal h = ct.ahsl.hue == 36000 ? 0 : ct.ahsl.hue / qreal(36000.);
                 const qreal s = ct.ahsl.saturation / qreal(USHRT_MAX);
                 const qreal l = ct.ahsl.lightness / qreal(USHRT_MAX);
 

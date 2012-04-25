@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,7 +42,7 @@
 #include <QApplication>
 #include <QGLColormap>
 
-int main()
+int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
@@ -51,7 +51,8 @@ int main()
 
     // This will fill the colormap with colors ranging from
     // black to white.
-    for (int i = 0; i < colormap.size(); i++)
+    const int size = 256;
+    for (int i = 0; i < size; ++i)
         colormap.setEntry(i, qRgb(i, i, i));
 
     widget.setColormap(colormap);

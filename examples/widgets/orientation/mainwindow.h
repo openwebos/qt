@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -41,12 +41,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QWidget>
+#include <QAbstractButton>
 
 #include "ui_landscape.h"
 #include "ui_portrait.h"
 
 class QAbstractButton;
+
+QT_BEGIN_NAMESPACE
 
 //! [0]
 class MainWindow : public QWidget
@@ -69,5 +71,7 @@ private:
     QWidget *portraitWidget;
 };
 //! [0]
+
+QT_END_NAMESPACE
 
 #endif // MAINWINDOW_H

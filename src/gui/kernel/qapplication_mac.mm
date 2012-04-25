@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1394,6 +1394,11 @@ void QApplication::restoreOverrideCursor()
 #endif
 }
 #endif // QT_NO_CURSOR
+
+Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+{
+    return qt_mac_get_modifiers(GetCurrentEventKeyModifiers());
+}
 
 QWidget *QApplication::topLevelAt(const QPoint &p)
 {
@@ -3111,7 +3116,7 @@ void onApplicationChangedActivation( bool activated )
         qt_mac_update_cursor();
     } else { // de-activated
         QApplicationPrivate *priv = [[QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) sharedDelegate] qAppPrivate];
-        while (priv->inPopupMode())
+        if (priv->inPopupMode())
             app->activePopupWidget()->close();
         if (app) {
             QEvent ev(QEvent::ApplicationDeactivate);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,7 +93,7 @@ int QAccessibleMenu::childAt(int x, int y) const
 QString QAccessibleMenu::text(Text t, int child) const
 {
     QString tx = QAccessibleWidgetEx::text(t, child);
-    if (tx.size())
+    if (!child && tx.size())
         return tx;
 
     switch (t) {
@@ -433,6 +433,8 @@ QString QAccessibleMenuItem::actionText(int action, Text text, int child ) const
         switch (action) {
         case Press:
         case DefaultAction:
+            if (m_action->menu())
+                return QMenu::tr("Open");
             return QMenu::tr("Execute");
             break;
         default:
@@ -444,11 +446,41 @@ QString QAccessibleMenuItem::actionText(int action, Text text, int child ) const
 
 bool QAccessibleMenuItem::doAction(int action, int child, const QVariantList & /*params = QVariantList()*/ )
 {
-    if ((action == Press || action == DefaultAction) && child == 0) {
-        m_action->trigger();
-        return true;
+    if ((child) || ((action != DefaultAction) && (action != Press)))
+        return false;
+
+    // if the action has a menu, expand/hide it
+    if (m_action->menu()) {
+        if (m_action->menu()->isVisible()) {
+            m_action->menu()->hide();
+            return true;
+        } else {
+            if (QMenuBar *bar = qobject_cast<QMenuBar*>(owner())) {
+                bar->setActiveAction(m_action);
+                return true;
+            } else if (QMenu *menu = qobject_cast<QMenu*>(owner())){
+                menu->setActiveAction(m_action);
+                return true;
+            }
+        }
     }
-    return false;
+    // no menu
+    m_action->trigger();
+    return true;
+}
+
+// action interface
+int QAccessibleMenuItem::actionCount()
+{
+    return 1;
+}
+
+void QAccessibleMenuItem::doAction(int actionIndex)
+{
+    if (actionIndex)
+        return;
+
+    doAction(DefaultAction, 0);
 }
 
 int QAccessibleMenuItem::indexOfChild( const QAccessibleInterface * child ) const
@@ -591,7 +623,7 @@ QAccessible::State QAccessibleMenuItem::state(int child ) const
         s = Normal;
         QWidget *own = owner();
 
-        if (own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false) {
+        if (own && (own->testAttribute(Qt::WA_WState_Visible) == false || m_action->isVisible() == false)) {
             s |= Invisible;
         }
 
@@ -604,7 +636,7 @@ QAccessible::State QAccessibleMenuItem::state(int child ) const
                 s |= Focused;
 #endif
         }
-        if (own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
+        if (own && own->style()->styleHint(QStyle::SH_Menu_MouseTracking))
             s |= HotTracked;
         if (m_action->isSeparator() || !m_action->isEnabled())
             s |= Unavailable;
@@ -618,7 +650,7 @@ QAccessible::State QAccessibleMenuItem::state(int child ) const
             delete iface;
         }
     }
-    return s;
+    return s | HasInvokeExtension;;
 }
 
 QString QAccessibleMenuItem::text ( Text t, int child ) const
@@ -654,15 +686,48 @@ QString QAccessibleMenuItem::text ( Text t, int child ) const
     return str;
 }
 
+// action interface
 int QAccessibleMenuItem::userActionCount ( int /*child*/ ) const
 {
     return 0;
 }
 
-
 QAction *QAccessibleMenuItem::action() const
 {
     return m_action;
+}
+
+QString QAccessibleMenuItem::description(int)
+{
+    return text(QAccessible::Description, 0);
+}
+
+QString QAccessibleMenuItem::name(int)
+{
+    return actionText(DefaultAction, QAccessible::Name, 0);
+}
+
+QString QAccessibleMenuItem::localizedName(int)
+{
+    return text(QAccessible::Name, 0);
+}
+
+QStringList QAccessibleMenuItem::keyBindings(int)
+{
+    QStringList keys;
+#ifndef QT_NO_SHORTCUT
+    QKeySequence key = m_action->shortcut();
+    if (!key.isEmpty()) {
+        keys.append(key.toString());
+    }
+#endif
+    return keys;
+}
+
+
+QVariant QAccessibleMenuItem::invokeMethodEx(Method, int, const QVariantList &)
+{
+    return QVariant();
 }
 
 QWidget *QAccessibleMenuItem::owner() const

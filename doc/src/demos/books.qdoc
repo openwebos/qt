@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example demos/books
     \title Books Demonstration
 
-    The Books demonstration shows how Qt's SQL classes can be used with the model/view
+    \brief The Books demonstration shows how Qt's SQL classes can be used with the model/view
     framework to create rich user interfaces for information stored in a database.
 
     \image books-demo.png

@@ -10,10 +10,10 @@ symbian: {
     TARGET = "Qt$${QT_LIBINFIX}"
 
     isEmpty(QT_LIBINFIX) {
-        TARGET.UID3 = 0x2001e61c
+        TARGET.UID3 = 0x2001E61C
     } else {
         # Always use experimental UID for infixed configuration to avoid UID clash
-        TARGET.UID3 = 0xe001e61c
+        TARGET.UID3 = 0xE001E61C
     }
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 
@@ -27,13 +27,13 @@ symbian: {
         $$QMAKE_LIBDIR_QT/QtTest$${QT_LIBINFIX}.dll \
         $$QMAKE_LIBDIR_QT/QtSql$${QT_LIBINFIX}.dll
 
+    # Symbian exports do not like absolute paths, so generate a relative path to original .pro file dir
+    S60_INSTALLS_SOURCE_DIR = $$relativeProPath()
+
     symbian-abld|symbian-sbsv2 {
         pluginLocations = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
         bearerPluginLocation = $${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)
         bearerStubZ = $${EPOCROOT}$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin
-        BLD_INF_RULES.prj_exports += \
-            "qsymbianbearer.qtplugin /$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin" \
-            "qsymbianbearer.qtplugin /epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
     } else {
         pluginLocations = $$QT_BUILD_TREE/plugins/s60
         bearerPluginLocation = $$QT_BUILD_TREE/plugins/bearer
@@ -51,6 +51,9 @@ symbian: {
             "ENDIF" \
             "   \"$$bearerStubZ\" - \"c:$$replace(QT_PLUGINS_BASE_DIR,/,\\)\\bearer\\qsymbianbearer$${QT_LIBINFIX}.qtplugin\""
         qtlibraries.pkg_postrules += qts60plugindeployment
+        BLD_INF_RULES.prj_exports += \
+            "$$S60_INSTALLS_SOURCE_DIR/qsymbianbearer.qtplugin /$${HW_ZDIR}$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin" \
+            "$$S60_INSTALLS_SOURCE_DIR/qsymbianbearer.qtplugin /epoc32/winscw/c$${QT_PLUGINS_BASE_DIR}/bearer/qsymbianbearer$${QT_LIBINFIX}.qtplugin"
     } else {
         # No need to deploy plugins for older platform versions when building on Symbian3 or later
         bearer_plugin.files = $$QT_BUILD_TREE/plugins/bearer/qsymbianbearer$${QT_LIBINFIX}.dll
@@ -68,8 +71,9 @@ symbian: {
         ":\"Nokia, Qt\"" \
         " "
 
+    ru_header = "$${LITERAL_HASH}{\"$${TARGET}\"}, ($$TARGET.UID3), $${QT_MAJOR_VERSION},$${QT_MINOR_VERSION},$${QT_PATCH_VERSION}, TYPE=SA,RU"
 
-    qtlibraries.pkg_prerules = vendorinfo
+    qtlibraries.pkg_prerules = ru_header vendorinfo
     qtlibraries.pkg_prerules += "; Dependencies of Qt libraries"
 
     # It is expected that Symbian^3 and newer phones will have sufficiently new OpenC already installed
@@ -103,7 +107,7 @@ symbian: {
 
     # Support backup & restore for Qt libraries
     qtbackup.files = backup_registration.xml
-    qtbackup.path = c:/private/10202d56/import/packages/$$replace(TARGET.UID3, 0x,)
+    qtbackup.path = c:/private/10202d56/import/packages/$$lower($$replace(TARGET.UID3, 0x,))
 
     DEPLOYMENT += qtlibraries \
                   qtbackup \
@@ -171,5 +175,6 @@ symbian: {
         qtlibraries.files += $$QMAKE_LIBDIR_QT/QtMultimedia$${QT_LIBINFIX}.dll
     }
 
-    BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
+    BLD_INF_RULES.prj_exports += "$$S60_INSTALLS_SOURCE_DIR/qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
+    BLD_INF_RULES.prj_exports += "$$S60_INSTALLS_SOURCE_DIR/qt_resources.iby $$LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(qt_resources.iby)"
 }

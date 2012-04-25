@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -49,6 +49,7 @@
 #include <unistd.h> // for usleep
 #define RUNNING_TIME 2000 // save GPU mem by running shorter time.
 #else
+#include "qplatformdefs.h" // for usleep
 #define RUNNING_TIME 5000
 #endif
 

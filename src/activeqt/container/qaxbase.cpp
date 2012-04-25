@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -290,15 +290,15 @@ public:
     // IUnknown
     unsigned long __stdcall AddRef()
     {
-        return ref++;
+        return InterlockedIncrement(&ref);
     }
     unsigned long __stdcall Release()
     {
-        if (!--ref) {
+        LONG refCount = InterlockedDecrement(&ref);
+        if (!refCount)
             delete this;
-            return 0;
-        }
-        return ref;
+
+        return refCount;
     }
     HRESULT __stdcall QueryInterface(REFIID riid, void **ppvObject)
     {
@@ -538,7 +538,7 @@ public:
     QMap<DISPID, QByteArray> props;
 
     QAxBase *combase;
-    long ref;
+    LONG ref;
 };
 
 /*
@@ -4216,14 +4216,17 @@ public:
         AddRef();
         return S_OK;
     }
-    unsigned long __stdcall AddRef() { return ++ref; }
+    unsigned long __stdcall AddRef()
+    {
+        return InterlockedIncrement(&ref);
+    }
     unsigned long __stdcall Release()
     {
-        if (!--ref) {
+        LONG refCount = InterlockedDecrement(&ref);
+        if (!refCount)
             delete this;
-            return 0;
-        }
-        return ref;
+
+        return refCount;
     }
 
     HRESULT __stdcall Read(LPCOLESTR name, VARIANT *var, IErrorLog *)
@@ -4250,7 +4253,7 @@ public:
     QAxBase::PropertyBag map;
 
 private:
-    unsigned long ref;
+    LONG ref;
 };
 
 /*!

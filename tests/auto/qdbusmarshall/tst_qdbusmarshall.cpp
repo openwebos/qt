@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,6 +93,18 @@ private slots:
     void receiveUnknownType_data();
     void receiveUnknownType();
 
+    void demarshallPrimitives_data();
+    void demarshallPrimitives();
+
+    void demarshallStrings_data();
+    void demarshallStrings();
+
+    void demarshallInvalidStringList_data();
+    void demarshallInvalidStringList();
+
+    void demarshallInvalidByteArray_data();
+    void demarshallInvalidByteArray();
+
 private:
     int fileDescriptorForTest();
 
@@ -159,13 +171,15 @@ int tst_QDBusMarshall::fileDescriptorForTest()
     return tempFile.handle();
 }
 
-void tst_QDBusMarshall::sendBasic_data()
+void addBasicTypesColumns()
 {
     QTest::addColumn<QVariant>("value");
     QTest::addColumn<QString>("sig");
     QTest::addColumn<QString>("stringResult");
+}
 
-    // basic types:
+void basicNumericTypes_data()
+{
     QTest::newRow("bool") << QVariant(false) << "b" << "false";
 #if 1
     QTest::newRow("bool2") << QVariant(true) << "b" << "true";
@@ -177,11 +191,24 @@ void tst_QDBusMarshall::sendBasic_data()
     QTest::newRow("int64") << QVariant(Q_INT64_C(3)) << "x" << "3";
     QTest::newRow("uint64") << QVariant(Q_UINT64_C(4)) << "t" << "4";
     QTest::newRow("double") << QVariant(42.5) << "d" << "42.5";
+}
+
+void basicStringTypes_data()
+{
     QTest::newRow("string") << QVariant("ping") << "s" << "\"ping\"";
     QTest::newRow("objectpath") << qVariantFromValue(QDBusObjectPath("/org/kde")) << "o" << "[ObjectPath: /org/kde]";
     QTest::newRow("signature") << qVariantFromValue(QDBusSignature("g")) << "g" << "[Signature: g]";
     QTest::newRow("emptystring") << QVariant("") << "s" << "\"\"";
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
+}
+
+void tst_QDBusMarshall::sendBasic_data()
+{
+    addBasicTypesColumns();
+
+    // basic types:
+    basicNumericTypes_data();
+    basicStringTypes_data();
 
     if (fileDescriptorPassing)
         QTest::newRow("file-descriptor") << qVariantFromValue(QDBusUnixFileDescriptor(fileDescriptorForTest())) << "h" << "[Unix FD: valid]";
@@ -1166,6 +1193,299 @@ void tst_QDBusMarshall::receiveUnknownType()
         QCOMPARE(spy.list.at(0).arguments().at(0).userType(), receivedTypeId);
     }
 #endif
+}
+
+void tst_QDBusMarshall::demarshallPrimitives_data()
+{
+    addBasicTypesColumns();
+
+    // Primitive types, excluding strings and FD
+    basicNumericTypes_data();
+}
+
+template<class T>
+QVariant demarshallPrimitiveAs(const QDBusArgument& dbusArg)
+{
+    T val;
+    dbusArg >> val;
+    return qVariantFromValue(val);
+}
+
+QVariant demarshallPrimitiveAs(int typeIndex, const QDBusArgument& dbusArg)
+{
+    switch (typeIndex) {
+    case 0:
+        return demarshallPrimitiveAs<uchar>(dbusArg);
+    case 1:
+        return demarshallPrimitiveAs<bool>(dbusArg);
+    case 2:
+        return demarshallPrimitiveAs<short>(dbusArg);
+    case 3:
+        return demarshallPrimitiveAs<ushort>(dbusArg);
+    case 4:
+        return demarshallPrimitiveAs<int>(dbusArg);
+    case 5:
+        return demarshallPrimitiveAs<uint>(dbusArg);
+    case 6:
+        return demarshallPrimitiveAs<qlonglong>(dbusArg);
+    case 7:
+        return demarshallPrimitiveAs<qulonglong>(dbusArg);
+    case 8:
+        return demarshallPrimitiveAs<double>(dbusArg);
+    default:
+        return QVariant();
+    }
+}
+
+void tst_QDBusMarshall::demarshallPrimitives()
+{
+    QFETCH(QVariant, value);
+    QFETCH(QString, sig);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    // Demarshall each test data value to all primitive types to test
+    // demarshalling to the wrong type does not cause a crash
+    for (int typeIndex = 0; true; ++typeIndex) {
+        QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath,
+                                                          interfaceName, "ping");
+        QDBusArgument sendArg;
+        sendArg.beginStructure();
+        sendArg.appendVariant(value);
+        sendArg.endStructure();
+        msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+        QDBusMessage reply = con.call(msg);
+
+        const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
+        receiveArg.beginStructure();
+        QCOMPARE(receiveArg.currentSignature(), sig);
+
+        const QVariant receiveValue = demarshallPrimitiveAs(typeIndex, receiveArg);
+        if (receiveValue.type() == value.type()) {
+            // Value type is the same, compare the values
+            QCOMPARE(receiveValue, value);
+            QVERIFY(receiveArg.atEnd());
+        }
+
+        receiveArg.endStructure();
+        QVERIFY(receiveArg.atEnd());
+
+        if (!receiveValue.isValid())
+            break;
+    }
+}
+
+void tst_QDBusMarshall::demarshallStrings_data()
+{
+    QTest::addColumn<QVariant>("value");
+    QTest::addColumn<char>("targetSig");
+    QTest::addColumn<QVariant>("expectedValue");
+
+    // All primitive types demarshall to null string types
+    typedef QPair<QVariant, char> ValSigPair;
+    const QList<ValSigPair> nullStringTypes
+        = QList<ValSigPair>()
+            << ValSigPair(qVariantFromValue(QString()), 's')
+            << ValSigPair(qVariantFromValue(QDBusObjectPath()), 'o')
+            << ValSigPair(qVariantFromValue(QDBusSignature()), 'g');
+    foreach (ValSigPair valSigPair, nullStringTypes) {
+        QTest::newRow("bool(false)") << QVariant(false) << valSigPair.second << valSigPair.first;
+        QTest::newRow("bool(true)") << QVariant(true) << valSigPair.second << valSigPair.first;
+        QTest::newRow("byte") << qVariantFromValue(uchar(1)) << valSigPair.second << valSigPair.first;
+        QTest::newRow("int16") << qVariantFromValue(short(2)) << valSigPair.second << valSigPair.first;
+        QTest::newRow("uint16") << qVariantFromValue(ushort(3)) << valSigPair.second << valSigPair.first;
+        QTest::newRow("int") << QVariant(1) << valSigPair.second << valSigPair.first;
+        QTest::newRow("uint") << QVariant(2U) << valSigPair.second << valSigPair.first;
+        QTest::newRow("int64") << QVariant(Q_INT64_C(3)) << valSigPair.second << valSigPair.first;
+        QTest::newRow("uint64") << QVariant(Q_UINT64_C(4)) << valSigPair.second << valSigPair.first;
+        QTest::newRow("double") << QVariant(42.5) << valSigPair.second << valSigPair.first;
+    }
+
+    // String types should demarshall to each other. This is a regression test
+    // to check released functionality is maintained even after checks have
+    // been added to string demarshalling
+    QTest::newRow("empty string->invalid objectpath") << QVariant("")
+                                                      << 'o' << qVariantFromValue(QDBusObjectPath());
+    QTest::newRow("null string->invalid objectpath") << QVariant(QString())
+                                                     << 'o' << qVariantFromValue(QDBusObjectPath());
+    QTest::newRow("string->invalid objectpath") << QVariant("invalid objectpath")
+                                                << 'o' << qVariantFromValue(QDBusObjectPath());
+    QTest::newRow("string->valid objectpath") << QVariant("/org/kde")
+                                              << 'o' << qVariantFromValue(QDBusObjectPath("/org/kde"));
+
+    QTest::newRow("empty string->invalid signature") << QVariant("")
+                                                     << 'g' << qVariantFromValue(QDBusSignature());
+    QTest::newRow("null string->invalid signature") << QVariant(QString())
+                                                    << 'g' << qVariantFromValue(QDBusSignature());
+    QTest::newRow("string->invalid signature") << QVariant("_invalid signature")
+                                               << 'g' << qVariantFromValue(QDBusSignature());
+    QTest::newRow("string->valid signature") << QVariant("s")
+                                             << 'g' << qVariantFromValue(QDBusSignature("s"));
+
+    QTest::newRow("objectpath->string") << qVariantFromValue(QDBusObjectPath("/org/kde"))
+                                        << 's' << qVariantFromValue(QString("/org/kde"));
+    QTest::newRow("objectpath->invalid signature") << qVariantFromValue(QDBusObjectPath("/org/kde"))
+                                                   << 'g' << qVariantFromValue(QDBusSignature());
+
+    QTest::newRow("signature->string") << qVariantFromValue(QDBusSignature("s"))
+                                       << 's' << qVariantFromValue(QString("s"));
+    QTest::newRow("signature->invalid objectpath") << qVariantFromValue(QDBusSignature("s"))
+                                                   << 'o' << qVariantFromValue(QDBusObjectPath());
+}
+
+QVariant demarshallAsString(const QDBusArgument& dbusArg, char targetSig)
+{
+    switch (targetSig) {
+        case 's': {
+            QString s;
+            dbusArg >> s;
+            return s;
+        }
+        case 'o': {
+            QDBusObjectPath op;
+            dbusArg >> op;
+            return qVariantFromValue(op);
+        }
+        case 'g' : {
+            QDBusSignature sig;
+            dbusArg >> sig;
+            return qVariantFromValue(sig);
+        }
+        default: {
+            return QVariant();
+        }
+    }
+}
+
+void tst_QDBusMarshall::demarshallStrings()
+{
+    QFETCH(QVariant, value);
+    QFETCH(char, targetSig);
+    QFETCH(QVariant, expectedValue);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath,
+                                                      interfaceName, "ping");
+    QDBusArgument sendArg;
+    sendArg.beginStructure();
+    sendArg.appendVariant(value);
+    sendArg.endStructure();
+    msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+    QDBusMessage reply = con.call(msg);
+
+    const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
+    receiveArg.beginStructure();
+
+    QVariant receiveValue = demarshallAsString(receiveArg, targetSig);
+    QVERIFY2(receiveValue.isValid(), "Invalid targetSig in demarshallStrings_data()");
+    QVERIFY(compare(receiveValue, expectedValue));
+
+    receiveArg.endStructure();
+    QVERIFY(receiveArg.atEnd());
+}
+
+void tst_QDBusMarshall::demarshallInvalidStringList_data()
+{
+    addBasicTypesColumns();
+
+    // None of the basic types should demarshall to a string list
+    basicNumericTypes_data();
+    basicStringTypes_data();
+
+    // Arrays of non-string type should not demarshall to a string list
+    QList<bool> bools;
+    QTest::newRow("emptyboollist") << qVariantFromValue(bools);
+    bools << false << true << false;
+    QTest::newRow("boollist") << qVariantFromValue(bools);
+
+    // Structures should not demarshall to a QByteArray
+    QTest::newRow("struct of strings")
+            << qVariantFromValue(QVariantList() << QString("foo") << QString("bar"));
+    QTest::newRow("struct of mixed types")
+            << qVariantFromValue(QVariantList() << QString("foo") << int(42) << double(3.14));
+}
+
+void tst_QDBusMarshall::demarshallInvalidStringList()
+{
+    QFETCH(QVariant, value);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath,
+                                                      interfaceName, "ping");
+    QDBusArgument sendArg;
+    sendArg.beginStructure();
+    sendArg.appendVariant(value);
+    sendArg.endStructure();
+    msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+    QDBusMessage reply = con.call(msg);
+
+    const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
+    receiveArg.beginStructure();
+
+    QStringList receiveValue;
+    receiveArg >> receiveValue;
+    QCOMPARE(receiveValue, QStringList());
+
+    receiveArg.endStructure();
+    QVERIFY(receiveArg.atEnd());
+}
+
+void tst_QDBusMarshall::demarshallInvalidByteArray_data()
+{
+    addBasicTypesColumns();
+
+    // None of the basic types should demarshall to a QByteArray
+    basicNumericTypes_data();
+    basicStringTypes_data();
+
+    // Arrays of other types than byte should not demarshall to a QByteArray
+    QList<bool> bools;
+    QTest::newRow("empty array of bool") << qVariantFromValue(bools);
+    bools << true << false << true;
+    QTest::newRow("non-empty array of bool") << qVariantFromValue(bools);
+
+    // Structures should not demarshall to a QByteArray
+    QTest::newRow("struct of bytes")
+            << qVariantFromValue(QVariantList() << uchar(1) << uchar(2));
+
+    QTest::newRow("struct of mixed types")
+            << qVariantFromValue(QVariantList() << int(42) << QString("foo") << double(3.14));
+}
+
+void tst_QDBusMarshall::demarshallInvalidByteArray()
+{
+    QFETCH(QVariant, value);
+
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    QDBusMessage msg = QDBusMessage::createMethodCall(serviceName, objectPath,
+                                                      interfaceName, "ping");
+    QDBusArgument sendArg;
+    sendArg.beginStructure();
+    sendArg.appendVariant(value);
+    sendArg.endStructure();
+    msg.setArguments(QVariantList() << qVariantFromValue(sendArg));
+    QDBusMessage reply = con.call(msg);
+
+    const QDBusArgument receiveArg = qvariant_cast<QDBusArgument>(reply.arguments().at(0));
+    receiveArg.beginStructure();
+
+    QByteArray receiveValue;
+    receiveArg >> receiveValue;
+    QCOMPARE(receiveValue, QByteArray());
+
+    receiveArg.endStructure();
+    QVERIFY(receiveArg.atEnd());
 }
 
 QTEST_MAIN(tst_QDBusMarshall)

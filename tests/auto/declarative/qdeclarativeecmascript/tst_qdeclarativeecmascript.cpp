@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -177,6 +177,7 @@ private slots:
     void aliasWritesOverrideBindings();
     void pushCleanContext();
     void realToInt();
+    void qtbug_20648();
 
     void include();
 
@@ -3088,6 +3089,15 @@ void tst_qdeclarativeecmascript::realToInt()
     QCOMPARE(object->value(), int(4));
     QMetaObject::invokeMethod(object, "test2");
     QCOMPARE(object->value(), int(8));
+}
+
+void tst_qdeclarativeecmascript::qtbug_20648()
+{
+    QDeclarativeComponent component(&engine, TEST_FILE("qtbug_20648.qml"));
+    QObject *o = component.create();
+    QVERIFY(o != 0);
+    QCOMPARE(o->property("test").toInt(), 100);
+    delete o;
 }
 
 QTEST_MAIN(tst_qdeclarativeecmascript)

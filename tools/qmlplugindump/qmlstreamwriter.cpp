@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -93,8 +93,7 @@ void QmlStreamWriter::writeEndObject()
         m_pendingLineLength = 0;
         m_maybeOneline = false;
     } else {
-        if (m_maybeOneline)
-            flushPotentialLinesWithNewlines();
+        flushPotentialLinesWithNewlines();
         --m_indentDepth;
         writeIndent();
         m_stream->write("}\n");

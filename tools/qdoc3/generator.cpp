@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -814,10 +814,13 @@ QString Generator::imageFileName(const Node *relative, const QString& fileBase)
     if (filePath.isEmpty())
         return QString();
 
-    return QLatin1String("images/")
-           + Config::copyFile(relative->doc().location(),
-                              filePath, userFriendlyFilePath,
-                              outputDir() + QLatin1String("/images"));
+    QString path = Config::copyFile(relative->doc().location(),
+                                    filePath,
+                                    userFriendlyFilePath,
+                                    outputDir() + QLatin1String("/images"));
+    if (path[0] != '/')
+        return QLatin1String("images/") + path;
+    return QLatin1String("images") + path;
 }
 
 void Generator::setImageFileExtensions(const QStringList& extensions)

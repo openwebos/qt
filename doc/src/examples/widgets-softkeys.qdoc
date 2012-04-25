@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,5 +29,5 @@
     \example widgets/softkeys
     \title Soft Keys Example
 
-    The Soft Keys example shows how to use soft key input on the Symbian platform.
+    \brief The Soft Keys example shows how to use soft key input on the Symbian platform.
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -158,15 +158,39 @@ typedef VOID (WINAPI *PtrBuildTrusteeWithSidW)(PTRUSTEE_W, PSID);
 static PtrBuildTrusteeWithSidW ptrBuildTrusteeWithSidW = 0;
 typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACCESS_MASK);
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
-static TRUSTEE_W currentUserTrusteeW;
-static TRUSTEE_W worldTrusteeW;
-
 typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
 typedef BOOL (WINAPI *PtrGetVolumePathNamesForVolumeNameW)(LPCWSTR,LPWSTR,DWORD,PDWORD);
 static PtrGetVolumePathNamesForVolumeNameW ptrGetVolumePathNamesForVolumeNameW = 0;
 QT_END_INCLUDE_NAMESPACE
 
+static TRUSTEE_W currentUserTrusteeW;
+static TRUSTEE_W worldTrusteeW;
+static PSID currentUserSID = 0;
+static PSID worldSID = 0;
+
+/*
+    Deletes the allocated SIDs during global static cleanup
+*/
+class SidCleanup
+{
+public:
+    ~SidCleanup();
+};
+
+SidCleanup::~SidCleanup()
+{
+    qFree(currentUserSID);
+    currentUserSID = 0;
+
+    // worldSID was allocated with AllocateAndInitializeSid so it needs to be freed with FreeSid
+    if (worldSID) {
+        ::FreeSid(worldSID);
+        worldSID = 0;
+    }
+}
+
+Q_GLOBAL_STATIC(SidCleanup, initSidCleanup)
 
 static void resolveLibs()
 {
@@ -186,47 +210,59 @@ static void resolveLibs()
         }
 #endif
 
-        triedResolve = true;
 #if !defined(Q_OS_WINCE)
-        HINSTANCE advapiHnd = QSystemLibrary::load(L"advapi32");
-        if (advapiHnd) {
-            ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
-            ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
-            ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)GetProcAddress(advapiHnd, "BuildTrusteeWithSidW");
-            ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)GetProcAddress(advapiHnd, "GetEffectiveRightsFromAclW");
+        QSystemLibrary advapi32(QLatin1String("advapi32"));
+        if (advapi32.load()) {
+            ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)advapi32.resolve("GetNamedSecurityInfoW");
+            ptrLookupAccountSidW = (PtrLookupAccountSidW)advapi32.resolve("LookupAccountSidW");
+            ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)advapi32.resolve("BuildTrusteeWithSidW");
+            ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)advapi32.resolve("GetEffectiveRightsFromAclW");
         }
         if (ptrBuildTrusteeWithSidW) {
             // Create TRUSTEE for current user
             HANDLE hnd = ::GetCurrentProcess();
             HANDLE token = 0;
+            initSidCleanup();
             if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
-                TOKEN_USER tu;
-                DWORD retsize;
-                if (::GetTokenInformation(token, TokenUser, &tu, sizeof(tu), &retsize))
-                    ptrBuildTrusteeWithSidW(&currentUserTrusteeW, tu.User.Sid);
+                DWORD retsize = 0;
+                // GetTokenInformation requires a buffer big enough for the TOKEN_USER struct and
+                // the SID struct. Since the SID struct can have variable number of subauthorities
+                // tacked at the end, its size is variable. Obtain the required size by first
+                // doing a dummy GetTokenInformation call.
+                ::GetTokenInformation(token, TokenUser, 0, 0, &retsize);
+                if (retsize) {
+                    void *tokenBuffer = qMalloc(retsize);
+                    if (::GetTokenInformation(token, TokenUser, tokenBuffer, retsize, &retsize)) {
+                        PSID tokenSid = reinterpret_cast<PTOKEN_USER>(tokenBuffer)->User.Sid;
+                        DWORD sidLen = ::GetLengthSid(tokenSid);
+                        currentUserSID = reinterpret_cast<PSID>(qMalloc(sidLen));
+                        if (::CopySid(sidLen, currentUserSID, tokenSid))
+                            ptrBuildTrusteeWithSidW(&currentUserTrusteeW, currentUserSID);
+                    }
+                    qFree(tokenBuffer);
+                }
                 ::CloseHandle(token);
             }
 
             typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
-            PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
-            typedef PVOID (WINAPI *PtrFreeSid)(PSID);
-            PtrFreeSid ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
-            if (ptrAllocateAndInitializeSid && ptrFreeSid) {
+            PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)advapi32.resolve("AllocateAndInitializeSid");
+            if (ptrAllocateAndInitializeSid) {
                 // Create TRUSTEE for Everyone (World)
                 SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
-                PSID pWorld = 0;
-                if (ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pWorld))
-                    ptrBuildTrusteeWithSidW(&worldTrusteeW, pWorld);
-                ptrFreeSid(pWorld);
+                if (ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &worldSID))
+                    ptrBuildTrusteeWithSidW(&worldTrusteeW, worldSID);
             }
         }
-        HINSTANCE userenvHnd = QSystemLibrary::load(L"userenv");
-        if (userenvHnd)
-            ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
-        HINSTANCE kernel32 = LoadLibrary(L"kernel32");
-        if(kernel32)
-            ptrGetVolumePathNamesForVolumeNameW = (PtrGetVolumePathNamesForVolumeNameW)GetProcAddress(kernel32, "GetVolumePathNamesForVolumeNameW");
+
+        QSystemLibrary userenv(QLatin1String("userenv"));
+        if (userenv.load())
+            ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)userenv.resolve("GetUserProfileDirectoryW");
+
+        QSystemLibrary kernel32(QLatin1String("kernel32"));
+        if (kernel32.load())
+            ptrGetVolumePathNamesForVolumeNameW = (PtrGetVolumePathNamesForVolumeNameW)kernel32.resolve("GetVolumePathNamesForVolumeNameW");
 #endif
+        triedResolve = true;
     }
 }
 #endif // QT_NO_LIBRARY
@@ -252,15 +288,15 @@ static bool resolveUNCLibs()
             return ptrNetShareEnum && ptrNetApiBufferFree;
         }
 #endif
-        triedResolve = true;
+
 #if !defined(Q_OS_WINCE)
-        HINSTANCE hLib = QSystemLibrary::load(L"Netapi32");
-        if (hLib) {
-            ptrNetShareEnum = (PtrNetShareEnum)GetProcAddress(hLib, "NetShareEnum");
-            if (ptrNetShareEnum)
-                ptrNetApiBufferFree = (PtrNetApiBufferFree)GetProcAddress(hLib, "NetApiBufferFree");
+        QSystemLibrary netapi32(QLatin1String("Netapi32"));
+        if (netapi32.load()) {
+            ptrNetShareEnum = (PtrNetShareEnum)netapi32.resolve("NetShareEnum");
+            ptrNetApiBufferFree = (PtrNetApiBufferFree)netapi32.resolve("NetApiBufferFree");
         }
 #endif
+        triedResolve = true;
     }
     return ptrNetShareEnum && ptrNetApiBufferFree;
 }
@@ -508,11 +544,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 
     if (!entry.isRelative()) {
 #if !defined(Q_OS_WINCE)
-        if (entry.isAbsolute()
-            && !entry.filePath().contains(QLatin1String("/../"))
-            && !entry.filePath().contains(QLatin1String("/./"))
-            && !entry.filePath().endsWith(QLatin1String("/.."))
-            && !entry.filePath().endsWith(QLatin1String("/."))) {
+        if (entry.isAbsolute() && entry.isClean()) {
             ret = entry.filePath();
         }  else {
             ret = QDir::fromNativeSeparators(nativeAbsoluteFilePath(entry.filePath()));
@@ -536,7 +568,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
         // Force uppercase drive letters.
         ret[0] = ret.at(0).toUpper();
     }
-    return QFileSystemEntry(ret);
+    return QFileSystemEntry(ret, QFileSystemEntry::FromInternalPath());
 }
 
 //static
@@ -696,7 +728,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
         if (what & QFileSystemMetaData::UserWritePermission) {
             if (::_waccess((wchar_t*)entry.nativeFilePath().utf16(), W_OK) == 0)
                 data.entryFlags |= QFileSystemMetaData::UserWritePermission;
-            data.knownFlagsMask |= QFileSystemMetaData::UserReadPermission;
+            data.knownFlagsMask |= QFileSystemMetaData::UserWritePermission;
         }
     }
 
@@ -1052,11 +1084,12 @@ QString QFileSystemEngine::tempPath()
     }
     if (ret.isEmpty()) {
 #if !defined(Q_OS_WINCE)
-        ret = QLatin1String("c:/tmp");
+        ret = QLatin1String("C:/tmp");
 #else
         ret = QLatin1String("/Temp");
 #endif
-    }
+    } else if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
+        ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
     return ret;
 }
 
@@ -1097,7 +1130,6 @@ QFileSystemEntry QFileSystemEngine::currentPath()
     if (ret.length() >= 2 && ret[1] == QLatin1Char(':'))
         ret[0] = ret.at(0).toUpper(); // Force uppercase drive letters.
 #else
-    Q_UNUSED(fileName);
     //TODO - a race condition exists when using currentPath / setCurrentPath from multiple threads
     if (qfsPrivateCurrentDir.isEmpty())
         qfsPrivateCurrentDir = QCoreApplication::applicationDirPath();

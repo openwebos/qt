@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -226,15 +226,12 @@ QVariant QFontEngineQPA::extractHeaderField(const uchar *data, HeaderTag request
 
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
 {
-    unsigned int uc = str[i].unicode();
-    if (uc >= 0xd800 && uc < 0xdc00 && i < len-1) {
-        uint low = str[i+1].unicode();
-       if (low >= 0xdc00 && low < 0xe000) {
-            uc = (uc - 0xd800)*0x400 + (low - 0xdc00) + 0x10000;
-            ++i;
-        }
+    uint ucs4 = str[i].unicode();
+    if (str[i].isHighSurrogate() && i < len-1 && str[i+1].isLowSurrogate()) {
+        ++i;
+        ucs4 = QChar::surrogateToUcs4(ucs4, str[i].unicode());
     }
-    return uc;
+    return ucs4;
 }
 
 QFontEngineQPA::QFontEngineQPA(const QFontDef &def, const QByteArray &data)

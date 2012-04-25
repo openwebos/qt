@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example dialogs/trivialwizard
     \title Trivial Wizard Example
 
-    The Trivial Wizard example illustrates how to create a linear three-page
+    \brief The Trivial Wizard example illustrates how to create a linear three-page
     registration wizard using three instances of QWizardPage and one instance
     of QWizard.
 

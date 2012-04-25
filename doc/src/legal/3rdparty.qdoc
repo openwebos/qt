@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -234,7 +234,7 @@
 
     \hr
 
-    libpng versions 1.2.6, August 15, 2004, through 1.5.1, February 3, 2011, are
+    libpng versions 1.2.6, August 15, 2004, through 1.5.10, March 29, 2012, are
     Copyright (c) 2004, 2006-2011 Glenn Randers-Pehrson, and are
     distributed according to the same disclaimer and license as libpng-1.2.5
     with the following individual added to the list of Contributing Authors
@@ -361,7 +361,7 @@
     See \c src/3rdparty/sha1/sha1.cpp for more information about the terms and
     conditions under which the code is supplied.
 
-    \section1 SQLite (\c sqlite) version 3.5.9
+    \section1 SQLite (\c sqlite) version 3.7.7.1
 
     \e{SQLite is a small C library that implements a
     self-contained, embeddable, zero-configuration SQL database engine.}

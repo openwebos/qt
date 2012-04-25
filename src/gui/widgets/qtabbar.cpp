@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -171,7 +171,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
 
     if (tabIndex > 0 && tabIndex - 1 == d->currentIndex)
         option->selectedPosition = QStyleOptionTab::PreviousIsSelected;
-    else if (tabIndex < totalTabs - 1 && tabIndex + 1 == d->currentIndex)
+    else if (tabIndex + 1 < totalTabs && tabIndex + 1 == d->currentIndex)
         option->selectedPosition = QStyleOptionTab::NextIsSelected;
     else
         option->selectedPosition = QStyleOptionTab::NotAdjacent;
@@ -1221,6 +1221,8 @@ void QTabBar::setCurrentIndex(int index)
         d->layoutTab(index);
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
+            QAccessible::updateAccessibility(this, oldIndex + 1, QAccessible::Selection);
+
             QAccessible::updateAccessibility(this, index + 1, QAccessible::Focus);
             QAccessible::updateAccessibility(this, index + 1, QAccessible::Selection);
         }

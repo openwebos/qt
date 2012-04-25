@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -143,6 +143,14 @@ void tst_QCoreApplication::argc()
         QCoreApplication app(argc, argv);
         QCOMPARE(argc, 0);
         QCOMPARE(app.argc(), 0);
+    }
+
+    {
+        int argc = 2;
+        char *argv[] = { "tst_qcoreapplication", "-qmljsdebugger=port:3768,block" };
+        QCoreApplication app(argc, argv);
+        QCOMPARE(argc, 1);
+        QCOMPARE(app.argc(), 1);
     }
 }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -148,10 +148,10 @@ vector.lastIndexOf("X");        // returns -1
 
 
 //! [14]
-QVector<double> vect;
+QVector<QString> vect;
 vect << "red" << "green" << "blue" << "black";
 
-QList<double> list = vect.toList();
+QList<QString> list = vect.toList();
 // list: ["red", "green", "blue", "black"]
 //! [14]
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -74,10 +74,14 @@
 #  include "private/qfilesystemengine_p.h"
 #  include <apacmdln.h>
 #elif defined(Q_OS_UNIX)
-#  if !defined(QT_NO_GLIB)
-#    include "qeventdispatcher_glib_p.h"
+#  if defined(Q_OS_BLACKBERRY)
+#    include "qeventdispatcher_blackberry_p.h"
+#  else
+#    if !defined(QT_NO_GLIB)
+#      include "qeventdispatcher_glib_p.h"
+#    endif
+#    include "qeventdispatcher_unix_p.h"
 #  endif
-#  include "qeventdispatcher_unix_p.h"
 #endif
 
 #ifdef Q_OS_WIN
@@ -217,6 +221,30 @@ bool QCoreApplicationPrivate::checkInstance(const char *function)
     return b;
 }
 
+Q_GLOBAL_STATIC(QString, qmljs_debug_arguments);
+
+void QCoreApplicationPrivate::processCommandLineArguments()
+{
+    int j = argc ? 1 : 0;
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i] && *argv[i] != '-') {
+            argv[j++] = argv[i];
+            continue;
+        }
+        QByteArray arg = argv[i];
+        if (arg.startsWith("-qmljsdebugger=")) {
+            *qmljs_debug_arguments() = QString::fromLocal8Bit(arg.right(arg.length() - 15));
+        } else {
+            argv[j++] = argv[i];
+        }
+    }
+
+    if (j < argc) {
+        argv[j] = 0;
+        argc = j;
+    }
+}
+
 // Support for introspection
 
 QSignalSpyCallbackSet Q_CORE_EXPORT qt_signal_spy_callback_set = { 0, 0, 0, 0 };
@@ -273,6 +301,29 @@ bool QCoreApplicationPrivate::is_app_closing = false;
 // initialized in qcoreapplication and in qtextstream autotest when setlocale is called.
 Q_CORE_EXPORT bool qt_locale_initialized = false;
 
+#ifdef Q_OS_SYMBIAN
+// The global QSettings needs to be cleaned where cleanup stack is available, which is not
+// normally the case when global static destructors are run.
+// Declare a custom QGlobalStaticDeleter for QSettings to handle that case.
+template<>
+class QGlobalStaticDeleter<QSettings>
+{
+public:
+    QGlobalStatic<QSettings> &globalStatic;
+    QGlobalStaticDeleter(QGlobalStatic<QSettings> &_globalStatic)
+        : globalStatic(_globalStatic)
+    { }
+
+    inline ~QGlobalStaticDeleter()
+    {
+        CTrapCleanup *cleanup = CTrapCleanup::New();
+        delete globalStatic.pointer;
+        delete cleanup;
+        globalStatic.pointer = 0;
+        globalStatic.destroyed = true;
+    }
+};
+#endif
 
 /*
   Create an instance of Trolltech.conf. This ensures that the settings will not
@@ -410,12 +461,16 @@ void QCoreApplicationPrivate::createEventDispatcher()
 #if defined(Q_OS_SYMBIAN)
     eventDispatcher = new QEventDispatcherSymbian(q);
 #elif defined(Q_OS_UNIX)
+#  if defined(Q_OS_BLACKBERRY)
+    eventDispatcher = new QEventDispatcherBlackberry(q);
+#  else
 #  if !defined(QT_NO_GLIB)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QEventDispatcherGlib(q);
     else
 #  endif
         eventDispatcher = new QEventDispatcherUNIX(q);
+#  endif
 #elif defined(Q_OS_WIN)
     eventDispatcher = new QEventDispatcherWin32(q);
 #else
@@ -472,6 +527,11 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 # endif
         app_libpaths->append(app_location);
 #endif
+}
+
+QString QCoreApplicationPrivate::qmljsDebugArguments()
+{
+    return *qmljs_debug_arguments();
 }
 
 QString qAppName()
@@ -718,6 +778,8 @@ void QCoreApplication::init()
         CleanupStack::PopAndDestroy(&loader);
     }
 #endif
+
+    d->processCommandLineArguments();
 
     qt_startup_hook();
 }
@@ -1968,12 +2030,6 @@ QString QCoreApplication::applicationDirPath()
         appPath = qt_TDesC2QString(privatePath);
         appPath.prepend(QLatin1Char(':')).prepend(qDriveChar);
 
-        // Create the appPath if it doesn't exist. Non-existing appPath will cause
-        // Platform Security violations later on if the app doesn't have AllFiles capability.
-        err = fs.CreatePrivatePath(drive);
-        if (err != KErrNone)
-            qWarning("QCoreApplication::applicationDirPath: Failed to create private path.");
-
         d->cachedApplicationDirPath = QFileInfo(appPath).path();
     }
 #else
@@ -2312,6 +2368,33 @@ QString QCoreApplication::applicationVersion()
 
 #ifndef QT_NO_LIBRARY
 
+#if defined(Q_OS_SYMBIAN)
+void qt_symbian_installLibraryPaths(QString installPathPlugins, QStringList& libPaths)
+{
+    // Add existing path on all drives for relative PluginsPath in Symbian
+    QString tempPath = installPathPlugins;
+    if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
+        tempPath += QDir::separator();
+    }
+    RFs& fs = qt_s60GetRFs();
+    TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
+    // Symbian searches should start from Y:. Fix start drive otherwise TFindFile starts from the session drive
+    _LIT(KStartDir, "Y:");
+    TFileName dirPath(KStartDir);
+    dirPath.Append(tempPathPtr);
+    TFindFile finder(fs);
+    TInt err = finder.FindByDir(tempPathPtr, dirPath);
+    while (err == KErrNone) {
+        QString foundDir(reinterpret_cast<const QChar *>(finder.File().Ptr()),
+                         finder.File().Length());
+        foundDir = QDir(foundDir).canonicalPath();
+        if (!libPaths.contains(foundDir))
+            libPaths.append(foundDir);
+        err = finder.Find();
+    }
+}
+#endif
+
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
 
 /*!
@@ -2344,24 +2427,8 @@ QStringList QCoreApplication::libraryPaths()
         QStringList *app_libpaths = coreappdata()->app_libpaths = new QStringList;
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
 #if defined(Q_OS_SYMBIAN)
-        // Add existing path on all drives for relative PluginsPath in Symbian
         if (installPathPlugins.at(1) != QChar(QLatin1Char(':'))) {
-            QString tempPath = installPathPlugins;
-            if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
-                tempPath += QDir::separator();
-            }
-            RFs& fs = qt_s60GetRFs();
-            TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
-            TFindFile finder(fs);
-            TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
-            while (err == KErrNone) {
-                QString foundDir(reinterpret_cast<const QChar *>(finder.File().Ptr()),
-                                 finder.File().Length());
-                foundDir = QDir(foundDir).canonicalPath();
-                if (!app_libpaths->contains(foundDir))
-                    app_libpaths->append(foundDir);
-                err = finder.Find();
-            }
+            qt_symbian_installLibraryPaths(installPathPlugins, *app_libpaths);
         }
 #else
         if (QFile::exists(installPathPlugins)) {
@@ -2475,6 +2542,36 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     coreappdata()->app_libpaths->removeAll(canonicalPath);
     QFactoryLoader::refreshAll();
 }
+
+#if defined(Q_OS_SYMBIAN)
+void QCoreApplicationPrivate::rebuildInstallLibraryPaths()
+{
+    // check there is not a single fixed install path
+    QString nativeInstallPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+    if (nativeInstallPathPlugins.at(1) == QChar(QLatin1Char(':')))
+        return;
+    QString installPathPlugins = QDir::cleanPath(nativeInstallPathPlugins);
+    // look for the install path at the drive roots
+    installPathPlugins.prepend(QChar(QLatin1Char(':')));
+
+    QMutexLocker locker(libraryPathMutex());
+    QStringList &app_libpaths = *coreappdata()->app_libpaths;
+    // Build a new library path, copying non-installPath components, and replacing existing install path with new
+    QStringList newPaths;
+    bool installPathFound = false;
+    foreach (QString path, app_libpaths) {
+        if (path.mid(1).compare(installPathPlugins, Qt::CaseInsensitive) == 0) {
+            // skip existing install paths, insert new install path when we find the first
+            if (!installPathFound)
+                qt_symbian_installLibraryPaths(nativeInstallPathPlugins, newPaths);
+            installPathFound = true;
+        } else {
+            newPaths.append(path);
+        }
+    }
+    app_libpaths = newPaths;
+}
+#endif
 
 #endif //QT_NO_LIBRARY
 

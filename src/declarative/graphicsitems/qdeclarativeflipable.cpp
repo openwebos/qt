@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -228,9 +228,9 @@ void QDeclarativeFlipablePrivate::updateSceneTransformFromParent()
         if (current == QDeclarativeFlipable::Back && back)
             setBackTransform();
         if (front)
-            front->setOpacity((current==QDeclarativeFlipable::Front)?1.:0.);
+            front->setOpacity((current==QDeclarativeFlipable::Front)?qreal(1.):qreal(0.));
         if (back)
-            back->setOpacity((current==QDeclarativeFlipable::Back)?1.:0.);
+            back->setOpacity((current==QDeclarativeFlipable::Back)?qreal(1.):qreal(0.));
         emit q->sideChanged();
     }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -145,6 +145,7 @@ void QXmlSchemaPrivate::load(QIODevice *source, const QUrl &documentUri, const Q
 
         m_schemaIsValid = true;
     } catch (QPatternist::Exception exception) {
+        Q_UNUSED(exception);
         m_schemaIsValid = false;
     }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -258,7 +258,8 @@ void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
 {
 #ifdef Q_WS_S60
     if (resourceId == R_AVKON_MENUPANE_EMPTY) {
-        if (menuPane->NumberOfItemsInPane() <= 1)
+        // As ccpu is enabled in the editors, default native menu items are now <=2
+        if (menuPane->NumberOfItemsInPane() <= 2)
             QT_TRYCATCH_LEAVING(qt_symbian_show_toplevel(menuPane));
 
     } else if (resourceId != R_AVKON_MENUPANE_FEP_DEFAULT

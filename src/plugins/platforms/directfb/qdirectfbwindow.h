@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -61,17 +61,21 @@ public:
     void setVisible(bool visible);
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags flags);
+    bool setKeyboardGrabEnabled(bool grab);
+    bool setMouseGrabEnabled(bool grab);
     void raise();
     void lower();
     WId winId() const;
 
-    QPlatformGLContext *glContext() const;
+    IDirectFBWindow *dfbWindow() const;
+
+    // helper to get access to DirectFB types
+    IDirectFBSurface *dfbSurface();
 
 private:
-    IDirectFBWindow *m_dfbWindow;
+    QDirectFBPointer<IDirectFBSurface> m_dfbSurface;
+    QDirectFBPointer<IDirectFBWindow> m_dfbWindow;
     QDirectFbInput *m_inputHandler;
-
-    QPlatformGLContext *m_context;
 };
 
 QT_END_NAMESPACE

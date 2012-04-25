@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -76,7 +76,7 @@ CodeMarker::~CodeMarker()
   A code market performs no initialization by default. Marker-specific
   initialization is performed in subclasses.
  */
-void CodeMarker::initializeMarker(const Config &config)
+void CodeMarker::initializeMarker(const Config& ) // config
 {
 }
 

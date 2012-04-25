@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -298,6 +298,12 @@ void MessageEditor::editorCreated(QTextEdit *te)
     }
 }
 
+void MessageEditor::editorDestroyed()
+{
+    if (m_selectionHolder == sender())
+        resetSelection();
+}
+
 void MessageEditor::fixTabOrder()
 {
     m_tabOrderTimer.start(0);
@@ -345,9 +351,13 @@ static void clearSelection(QTextEdit *t)
 void MessageEditor::selectionChanged(QTextEdit *te)
 {
     if (te != m_selectionHolder) {
-        if (m_selectionHolder)
+        if (m_selectionHolder) {
             clearSelection(m_selectionHolder);
+            disconnect(this, SLOT(editorDestroyed()));
+        }
         m_selectionHolder = (te->textCursor().hasSelection() ? te : 0);
+        if (FormatTextEdit *fte = qobject_cast<FormatTextEdit*>(m_selectionHolder))
+            connect(fte, SIGNAL(editorDestroyed()), SLOT(editorDestroyed()));
         updateCanCutCopy();
     }
 }
@@ -364,6 +374,7 @@ void MessageEditor::resetSelection()
 {
     if (m_selectionHolder) {
         clearSelection(m_selectionHolder);
+        disconnect(this, SLOT(editorDestroyed()));
         m_selectionHolder = 0;
         updateCanCutCopy();
     }

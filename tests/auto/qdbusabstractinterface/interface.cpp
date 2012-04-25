@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,9 +40,23 @@
 ****************************************************************************/
 
 #include "interface.h"
+#include <QThread>
 
 Interface::Interface()
 {
+}
+
+// Export the sleep function
+// TODO QT5: remove this class, QThread::msleep is now public
+class FriendlySleepyThread : public QThread {
+public:
+    using QThread::msleep;
+};
+
+int Interface::sleepMethod(int msec)
+{
+    FriendlySleepyThread::msleep(msec);
+    return 42;
 }
 
 #include "moc_interface.cpp"

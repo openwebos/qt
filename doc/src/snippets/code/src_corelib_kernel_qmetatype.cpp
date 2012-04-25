@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,7 +73,7 @@ MyStruct s2 = var.value<MyStruct>();
 
 //! [3]
 int id = QMetaType::type("MyClass");
-if (id == 0) {
+if (id != 0) {
     void *myClassPtr = QMetaType::construct(id);
     ...
     QMetaType::destroy(id, myClassPtr);

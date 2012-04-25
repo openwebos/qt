@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -152,7 +152,7 @@ void QTcpServerConnection::listen()
     d->tcpServer = new QTcpServer(this);
     QObject::connect(d->tcpServer, SIGNAL(newConnection()), this, SLOT(newConnection()));
     if (d->tcpServer->listen(QHostAddress::Any, d->port)) {
-        qWarning("QDeclarativeDebugServer: Waiting for connection on port %d...", d->port);
+        qDebug("QDeclarativeDebugServer: Waiting for connection on port %d...", d->port);
     } else {
         qWarning("QDeclarativeDebugServer: Unable to listen on port %d", d->port);
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -281,7 +281,9 @@ void PreviewDeviceSkin::slotDirection(QAction *a)
     const Qt::Orientation newOrientation = newDirection == DirectionUp ? Qt::Vertical : Qt::Horizontal;
     const Qt::Orientation oldOrientation = m_direction  == DirectionUp ? Qt::Vertical : Qt::Horizontal;
     m_direction = newDirection;
+#ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
+#endif
     if (oldOrientation != newOrientation) {
         QSize size = screenSize();
         if (newOrientation == Qt::Horizontal)
@@ -289,7 +291,9 @@ void PreviewDeviceSkin::slotDirection(QAction *a)
         fitWidget(size);
     }
     setTransform(skinTransform());
+#ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
+#endif
 }
 
 void PreviewDeviceSkin::fitWidget(const QSize &size)
@@ -408,10 +412,14 @@ void ZoomablePreviewDeviceSkin::setZoomPercent(int zp)
     if (m_zoomMenu->zoom() != zp)
         m_zoomMenu->setZoom(zp);
 
+#ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);    
+#endif
     m_zoomWidget->setZoom(zp);
     setTransform(skinTransform());
+#ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
+#endif
 }
 
 void ZoomablePreviewDeviceSkin::populateContextMenu(QMenu *menu)

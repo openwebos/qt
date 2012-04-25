@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -118,7 +118,7 @@ void debugBinaryString(const char *data, qint64 maxlen)
  */
 QIODevicePrivate::QIODevicePrivate()
     : openMode(QIODevice::NotOpen), buffer(QIODEVICE_BUFFERSIZE),
-      pos(0), devicePos(0)
+      pos(0), devicePos(0), seqDumpPos(0)
        , pPos(&pos), pDevicePos(&devicePos)
        , baseReadLineDataCalled(false)
        , firstRead(true)
@@ -423,6 +423,8 @@ QIODevice::~QIODevice()
     seeking backwards and forwards in the data stream. Regular files
     are non-sequential.
 
+    The QIODevice implementation returns false.
+
     \sa bytesAvailable()
 */
 bool QIODevice::isSequential() const
@@ -466,11 +468,17 @@ void QIODevice::setOpenMode(OpenMode openMode)
     otherwise the \l Text flag is removed. This feature is useful for classes
     that provide custom end-of-line handling on a QIODevice.
 
+    The IO device should be opened before calling this function.
+
     \sa open(), setOpenMode()
  */
 void QIODevice::setTextModeEnabled(bool enabled)
 {
     Q_D(QIODevice);
+    if (!isOpen()) {
+        qWarning("QIODevice::setTextModeEnabled: The device is not open");
+        return;
+    }
     if (enabled)
         d->openMode |= Text;
     else
@@ -571,6 +579,7 @@ void QIODevice::close()
     d->openMode = NotOpen;
     d->errorString.clear();
     d->pos = 0;
+    d->seqDumpPos = 0;
     d->buffer.clear();
     d->firstRead = true;
 }

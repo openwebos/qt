@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -53,7 +53,6 @@
 #include "qabstracteventdispatcher_p.h"
 #include "qcoreapplication_p.h"
 #include <private/qthread_p.h>
-#include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -322,19 +321,17 @@ static void resolveTimerAPI()
 {
     static bool triedResolve = false;
     if (!triedResolve) {
-#ifndef QT_NO_THREAD
-        QMutexLocker locker(QMutexPool::globalInstanceGet(&triedResolve));
-        if (triedResolve)
-            return;
-#endif
-        triedResolve = true;
-#if !defined(Q_OS_WINCE)
-        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("winmm"), "timeKillEvent");
+#ifdef Q_OS_WINCE
+        QSystemLibrary library(QLatin1String("Mmtimer"));
 #else
-        qtimeSetEvent = (ptimeSetEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeSetEvent");
-        qtimeKillEvent = (ptimeKillEvent)QSystemLibrary::resolve(QLatin1String("Mmtimer"), "timeKillEvent");
+        QSystemLibrary library(QLatin1String("winmm"));
 #endif
+        if (library.load()) {
+            qtimeSetEvent = (ptimeSetEvent)library.resolve("timeSetEvent");
+            qtimeKillEvent = (ptimeKillEvent)library.resolve("timeKillEvent");
+        }
+
+        triedResolve = true;
     }
 }
 
@@ -545,6 +542,7 @@ LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
         }
     }
 #ifdef Q_OS_WINCE
+    Q_UNUSED(code);
     return 0;
 #else
     return CallNextHookEx(0, code, wp, lp);

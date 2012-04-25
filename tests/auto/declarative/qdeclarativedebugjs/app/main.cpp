@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,13 +44,10 @@
 #include <QDeclarativeComponent>
 #include <QDeclarativeEngine>
 #include <QStringList>
-#include <QtDeclarative/private/qdeclarativedebughelper_p.h>
 #include <QtDeclarative/private/qdeclarativedebugservice_p.h>
 
 int main(int argc, char *argv[])
 {
-    QDeclarativeDebugHelper::enableDebugging();
-
     QApplication app(argc, argv);
 
     const QUrl path = QUrl::fromLocalFile(app.arguments().last());

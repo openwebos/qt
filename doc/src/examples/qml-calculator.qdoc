@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -28,8 +28,9 @@
 /*!
     \title Calculator
     \example demos/declarative/calculator
+    \depends helper/qmlapplicationviewer
 
-    This demo shows how to write a simple calculator application in QML and JavaScript.
+    \brief The Qt Quick Calculator demo shows how to write a simple calculator application in QML and JavaScript.
 
     \image qml-calculator-example.png
 */

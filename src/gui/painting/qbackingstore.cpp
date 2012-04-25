@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1630,7 +1630,7 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         extra->staticContentsSize = data.crect.size();
     }
 
-#ifdef Q_WS_QPA //Dont even call q->p
+#ifdef Q_WS_QPA //Don't even call q->p
     QPaintEngine *engine = 0;
 #else
     QPaintEngine *engine = q->paintEngine();

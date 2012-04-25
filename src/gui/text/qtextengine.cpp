@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -114,7 +114,20 @@ private:
             return;
         const int end = start + length;
         for (int i = start + 1; i < end; ++i) {
-            if ((m_analysis[i] == m_analysis[start])
+            // According to the unicode spec we should be treating characters in the Common script
+            // (punctuation, spaces, etc) as being the same script as the surrounding text for the
+            // purpose of splitting up text. This is important because, for example, a fullstop
+            // (0x2E) can be used to indicate an abbreviation and so must be treated as part of a
+            // word.  Thus it must be passed along with the word in languages that have to calculate
+            // word breaks.  For example the thai word "ครม." has no word breaks but the word "ครม"
+            // does.
+            // Unfortuntely because we split up the strings for both wordwrapping and for setting
+            // the font and because Japanese and Chinese are also aliases of the script "Common",
+            // doing this would break too many things.  So instead we only pass the full stop
+            // along, and nothing else.
+            if (m_analysis[i].bidiLevel == m_analysis[start].bidiLevel
+                && m_analysis[i].flags == m_analysis[start].flags
+                && (m_analysis[i].script == m_analysis[start].script || m_string[i] == QLatin1Char('.'))
                 && m_analysis[i].flags < QScriptAnalysis::SpaceTabOrObject
                 && i - start < MaxItemLength)
                 continue;
@@ -968,7 +981,7 @@ void QTextEngine::shapeText(int item) const
     }
 
     for (int i = 0; i < si.num_glyphs; ++i)
-        si.width += glyphs.advances_x[i];
+        si.width += glyphs.advances_x[i] * !glyphs.attributes[i].dontPrint;
 }
 
 static inline bool hasCaseChange(const QScriptItem &si)
@@ -993,8 +1006,7 @@ static void heuristicSetGlyphAttributes(const QChar *uc, int length, QGlyphLayou
 
     int glyph_pos = 0;
     for (int i = 0; i < length; i++) {
-        if (uc[i].unicode() >= 0xd800 && uc[i].unicode() < 0xdc00 && i < length-1
-            && uc[i+1].unicode() >= 0xdc00 && uc[i+1].unicode() < 0xe000) {
+        if (uc[i].isHighSurrogate() && i < length-1 && uc[i+1].isLowSurrogate()) {
             logClusters[i] = glyph_pos;
             logClusters[++i] = glyph_pos;
         } else {
@@ -1387,6 +1399,7 @@ QTextEngine::~QTextEngine()
     if (!stackEngine)
         delete layoutData;
     delete specialData;
+    resetFontEngineCache();
 }
 
 const HB_CharAttributes *QTextEngine::attributes() const
@@ -1447,6 +1460,13 @@ static inline void releaseCachedFontEngine(QFontEngine *fontEngine)
     }
 }
 
+void QTextEngine::resetFontEngineCache()
+{
+    releaseCachedFontEngine(feCache.prevFontEngine);
+    releaseCachedFontEngine(feCache.prevScaledFontEngine);
+    feCache.reset();
+}
+
 void QTextEngine::invalidate()
 {
     freeMemory();
@@ -1455,9 +1475,7 @@ void QTextEngine::invalidate()
     if (specialData)
         specialData->resolvedFormatIndices.clear();
 
-    releaseCachedFontEngine(feCache.prevFontEngine);
-    releaseCachedFontEngine(feCache.prevScaledFontEngine);
-    feCache.reset();
+    resetFontEngineCache();
 }
 
 void QTextEngine::clearLineData()
@@ -1532,33 +1550,38 @@ void QTextEngine::itemize() const
     const ushort *e = uc + length;
     int lastScript = QUnicodeTables::Common;
     while (uc < e) {
-        int script = QUnicodeTables::script(*uc);
-        if (script == QUnicodeTables::Inherited)
-            script = lastScript;
-        analysis->flags = QScriptAnalysis::None;
-        if (*uc == QChar::ObjectReplacementCharacter) {
-            if (analysis->bidiLevel % 2)
-                --analysis->bidiLevel;
+        switch (*uc) {
+        case QChar::ObjectReplacementCharacter:
             analysis->script = QUnicodeTables::Common;
             analysis->flags = QScriptAnalysis::Object;
-        } else if (*uc == QChar::LineSeparator) {
+            break;
+        case QChar::LineSeparator:
             if (analysis->bidiLevel % 2)
                 --analysis->bidiLevel;
             analysis->script = QUnicodeTables::Common;
             analysis->flags = QScriptAnalysis::LineOrParagraphSeparator;
             if (option.flags() & QTextOption::ShowLineAndParagraphSeparators)
                 *const_cast<ushort*>(uc) = 0x21B5; // visual line separator
-        } else if (*uc == 9) {
+            break;
+        case 9: // Tab
             analysis->script = QUnicodeTables::Common;
             analysis->flags = QScriptAnalysis::Tab;
             analysis->bidiLevel = control.baseLevel();
-        } else if ((*uc == 32 || *uc == QChar::Nbsp)
-                   && (option.flags() & QTextOption::ShowTabsAndSpaces)) {
-            analysis->script = QUnicodeTables::Common;
-            analysis->flags = QScriptAnalysis::Space;
-            analysis->bidiLevel = control.baseLevel();
-        } else {
-            analysis->script = script;
+            break;
+        case 32: // Space
+        case QChar::Nbsp:
+            if (option.flags() & QTextOption::ShowTabsAndSpaces) {
+                analysis->script = QUnicodeTables::Common;
+                analysis->flags = QScriptAnalysis::Space;
+                analysis->bidiLevel = control.baseLevel();
+                break;
+            }
+        // fall through
+        default:
+            int script = QUnicodeTables::script(*uc);
+            analysis->script = script == QUnicodeTables::Inherited ? lastScript : script;
+            analysis->flags = QScriptAnalysis::None;
+            break;
         }
         lastScript = analysis->script;
         ++uc;
@@ -1884,12 +1907,17 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                     font.setPixelSize((font.pixelSize() * 2) / 3);
                 scaledEngine = font.d->engineForScript(script);
             }
-            feCache.prevFontEngine = engine;
             if (engine)
                 engine->ref.ref();
-            feCache.prevScaledFontEngine = scaledEngine;
+            if (feCache.prevFontEngine)
+                releaseCachedFontEngine(feCache.prevFontEngine);
+            feCache.prevFontEngine = engine;
+
             if (scaledEngine)
                 scaledEngine->ref.ref();
+            if (feCache.prevScaledFontEngine)
+                releaseCachedFontEngine(feCache.prevScaledFontEngine);
+            feCache.prevScaledFontEngine = scaledEngine;
             feCache.prevScript = script;
             feCache.prevPosition = si.position;
             feCache.prevLength = length(&si);
@@ -1899,9 +1927,11 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
             engine = feCache.prevFontEngine;
         else {
             engine = font.d->engineForScript(script);
-            feCache.prevFontEngine = engine;
             if (engine)
                 engine->ref.ref();
+            if (feCache.prevFontEngine)
+                releaseCachedFontEngine(feCache.prevFontEngine);
+            feCache.prevFontEngine = engine;
             feCache.prevScript = script;
             feCache.prevPosition = -1;
             feCache.prevLength = -1;
@@ -2082,7 +2112,8 @@ void QTextEngine::justify(const QScriptLine &line)
         }
     }
 
-    QFixed need = line.width - line.textWidth;
+    QFixed leading = leadingSpaceWidth(line);
+    QFixed need = line.width - line.textWidth - leading;
     if (need < 0) {
         // line overflows already!
         const_cast<QScriptLine &>(line).justified = true;
@@ -2426,7 +2457,7 @@ void QTextEngine::indexAdditionalFormats()
    between the text that gets truncated and the ellipsis. This is important to get
    correctly shaped results for arabic text.
 */
-static bool nextCharJoins(const QString &string, int pos)
+static inline bool nextCharJoins(const QString &string, int pos)
 {
     while (pos < string.length() && string.at(pos).category() == QChar::Mark_NonSpacing)
         ++pos;
@@ -2435,13 +2466,14 @@ static bool nextCharJoins(const QString &string, int pos)
     return string.at(pos).joining() != QChar::OtherJoining;
 }
 
-static bool prevCharJoins(const QString &string, int pos)
+static inline bool prevCharJoins(const QString &string, int pos)
 {
     while (pos > 0 && string.at(pos - 1).category() == QChar::Mark_NonSpacing)
         --pos;
     if (pos == 0)
         return false;
-    return (string.at(pos - 1).joining() == QChar::Dual || string.at(pos - 1).joining() == QChar::Center);
+    QChar::Joining joining = string.at(pos - 1).joining();
+    return (joining == QChar::Dual || joining == QChar::Center);
 }
 
 QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int flags) const
@@ -2651,7 +2683,7 @@ void QTextEngine::splitItem(int item, int pos) const
         QFixed w = 0;
         const QGlyphLayout g = shapedGlyphs(&oldItem);
         for(int j = 0; j < breakGlyph; ++j)
-            w += g.advances_x[j];
+            w += g.advances_x[j] * !g.attributes[j].dontPrint;
 
         newItem.width = oldItem.width - w;
         oldItem.width = w;
@@ -2892,6 +2924,8 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
         QFixed glyphWidth = glyphs.effectiveAdvance(glyph_pos);
         // the approximate width of each individual element of the ligature
         QFixed perItemWidth = glyphWidth / clusterLength;
+        if (perItemWidth <= 0)
+            return si->position + clusterStart;
         QFixed left = x > edge ? edge : edge - glyphWidth;
         int n = ((x - left) / perItemWidth).floor().toInt();
         QFixed dist = x - left - n * perItemWidth;
@@ -2900,7 +2934,7 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
             closestItem--;
         int pos = si->position + clusterStart + closestItem;
         // Jump to the next charStop
-        while (!attrs[pos].charStop && pos < end)
+        while (pos < end && !attrs[pos].charStop)
             pos++;
         return pos;
     }
@@ -2944,7 +2978,7 @@ int QTextEngine::lineNumberForTextPosition(int pos)
         return lines.size() - 1;
     for (int i = 0; i < lines.size(); ++i) {
         const QScriptLine& line = lines[i];
-        if (line.from + line.length > pos)
+        if (line.from + line.length + line.trailingSpaces > pos)
             return i;
     }
     return -1;

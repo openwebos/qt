@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example draganddrop/fridgemagnets
     \title Fridge Magnets Example
 
-    The Fridge Magnets example shows how to supply more than one type
+    \brief The Fridge Magnets example shows how to supply more than one type
     of MIME-encoded data with a drag and drop operation.
 
     \image fridgemagnets-example.png

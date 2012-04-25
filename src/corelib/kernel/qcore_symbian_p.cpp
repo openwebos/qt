@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,6 +45,7 @@
 #include "qcore_symbian_p.h"
 #include <string>
 #include <in_sock.h>
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -115,6 +116,23 @@ public:
     QS60RFsSession() {
         qt_symbian_throwIfError(iFs.Connect());
         qt_symbian_throwIfError(iFs.ShareProtected());
+        //BC with 4.7: create private path on system drive
+        TInt sysdrive = iFs.GetSystemDrive();
+        TInt err = iFs.CreatePrivatePath(sysdrive);
+        if (err != KErrNone && err != KErrAlreadyExists)
+            qWarning("Failed to create private path on system drive.");
+        TFileName pfn = RProcess().FileName();
+        TInt drive;
+        if (pfn.Length() > 0 && iFs.CharToDrive(pfn[0], drive) == KErrNone) {
+            //BC with 4.7: create private path on application drive (except rom or system drive which is done above)
+            if (drive != sysdrive && drive != EDriveZ) {
+                err = iFs.CreatePrivatePath(drive);
+                if (err != KErrNone && err != KErrAlreadyExists)
+                    qWarning("Failed to create private path on application drive.");
+            }
+            //BC with 4.7: set working directory to same drive as application
+            iFs.SetSessionToPrivate(drive);
+        }
     }
 
     ~QS60RFsSession() {
@@ -226,6 +244,38 @@ void QSymbianSocketManager::setDefaultConnection(RConnection* con)
 RConnection* QSymbianSocketManager::defaultConnection() const
 {
     return iDefaultConnection;
+}
+
+void QSymbianSocketManager::addActiveConnection(TUint32 identifier)
+{
+    QMutexLocker l(&iMutex);
+    activeConnectionsMap[identifier]++;
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "addActiveConnection" << identifier << activeConnectionsMap[identifier];
+#endif
+}
+
+void QSymbianSocketManager::removeActiveConnection(TUint32 identifier)
+{
+    QMutexLocker l(&iMutex);
+    int& val(activeConnectionsMap[identifier]);
+    Q_ASSERT(val > 0);
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "removeActiveConnection" << identifier << val - 1;
+#endif
+    if (val <= 1)
+        activeConnectionsMap.remove(identifier);
+    else
+        val--;
+}
+
+QList<TUint32> QSymbianSocketManager::activeConnections() const
+{
+    QMutexLocker l(&iMutex);
+#ifdef QT_BEARERMGMT_SYMBIAN_DEBUG
+    qDebug() << "activeConnections" <<  activeConnectionsMap.keys();
+#endif
+    return activeConnectionsMap.keys();
 }
 
 Q_GLOBAL_STATIC(QSymbianSocketManager, qt_symbianSocketManager);

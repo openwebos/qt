@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -473,8 +473,8 @@ public:
 
 private: //data members
     //TODO: consider changing these to non-pointers as the classes are rather small anyway
-    AnimationData *m_defaultData;
-    AnimationDataV2 *m_currentData;
+    QScopedPointer<AnimationData> m_defaultData;
+    QScopedPointer<AnimationDataV2> m_currentData;
 };
 
 #endif //Q_WS_S60

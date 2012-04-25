@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -793,6 +793,7 @@ XSDTestSuiteHandler::XSDTestSuiteHandler(const QUrl &catalogFile) : m_ts(0)
                 << QLatin1String("schZ012_a")
                 << QLatin1String("stZ041")
                 << QLatin1String("wildZ010");
+
 }
 
 bool XSDTestSuiteHandler::startElement(const QString &namespaceURI,

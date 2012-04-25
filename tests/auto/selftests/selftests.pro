@@ -12,5 +12,8 @@ INSTALLS =
 
 QT = core
 
+integrity: SUBDIRS -= test
 
 CONFIG += parallel_test
+
+CONFIG+=insignificant_test # QTQAINFRA-428

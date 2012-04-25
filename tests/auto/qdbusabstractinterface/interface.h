@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -101,6 +101,7 @@ public:
 
 public slots:
     Q_SCRIPTABLE void voidMethod() {}
+    Q_SCRIPTABLE int sleepMethod(int);
     Q_SCRIPTABLE QString stringMethod() { return "Hello, world"; }
     Q_SCRIPTABLE RegisteredType complexMethod() { return RegisteredType("Hello, world"); }
     Q_SCRIPTABLE QString multiOutMethod(int &value) { value = 42; return "Hello, world"; }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -919,8 +919,9 @@ QString QFont::styleName() const
 /*!
     \since 4.8
 
-    Sets the style name of the font. When set, other style properties
-    like \a style() and \a weight() will be ignored for font matching.
+    Sets the style name of the font to the given \a styleName.
+    When set, other style properties like style() and weight() will be ignored
+    for font matching.
 
     \sa styleName()
 */

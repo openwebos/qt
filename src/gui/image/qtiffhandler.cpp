@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -158,7 +158,13 @@ bool QTiffHandler::canRead(QIODevice *device)
 
     // current implementation uses TIFFClientOpen which needs to be
     // able to seek, so sequential devices are not supported
+    int pos = device->pos();
+    if (pos != 0)
+        device->seek(0);  // need the magic from the beginning
     QByteArray header = device->peek(4);
+    if (pos != 0)
+        device->seek(pos);  // put it back where we found it
+
     return header == QByteArray::fromRawData("\x49\x49\x2A\x00", 4)
            || header == QByteArray::fromRawData("\x4D\x4D\x00\x2A", 4);
 }

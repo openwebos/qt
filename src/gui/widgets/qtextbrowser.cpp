@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -619,7 +619,8 @@ void QTextBrowserPrivate::restoreHistoryEntry(const HistoryEntry entry)
     If you want to load documents stored in the Qt resource system use
     \c{qrc} as the scheme in the URL to load. For example, for the document
     resource path \c{:/docs/index.html} use \c{qrc:/docs/index.html} as
-    the URL with setSource().
+    the URL with setSource(). To access local files, use \c{file} as the
+    scheme in the URL.
 
     \sa QTextEdit, QTextDocument
 */

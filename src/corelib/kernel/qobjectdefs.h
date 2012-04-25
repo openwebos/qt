@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -219,7 +219,7 @@ Q_CORE_EXPORT const char *qFlagLocation(const char *method);
 #define QTOSTRING_HELPER(s) #s
 #define QTOSTRING(s) QTOSTRING_HELPER(s)
 #ifndef QT_NO_DEBUG
-# define QLOCATION "\0"__FILE__":"QTOSTRING(__LINE__)
+# define QLOCATION "\0" __FILE__ ":" QTOSTRING(__LINE__)
 # ifndef QT_NO_KEYWORDS
 #  define METHOD(a)   qFlagLocation("0"#a QLOCATION)
 # endif

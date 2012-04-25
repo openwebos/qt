@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example statemachine/twowaybutton
     \title Two-way Button Example
 
-    The Two-way button example shows how to use \l{The State Machine
+    \brief The Two-way button example shows how to use \l{The State Machine
     Framework} to implement a simple state machine that toggles the current
     state when a button is clicked.
 

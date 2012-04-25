@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -213,15 +213,19 @@ private slots:
     void QTBUG_5765();
     void QTBUG_14132_data() { generic_data("QOCI"); }
     void QTBUG_14132();
+    void QTBUG_21884_data() { generic_data("QSQLITE"); }
+    void QTBUG_21884();
+    void QTBUG_16967_data() { generic_data("QSQLITE"); }
+    void QTBUG_16967(); //clean close
 
     void sqlite_constraint_data() { generic_data("QSQLITE"); }
     void sqlite_constraint();
 
-#if 0
-    void benchmark_data() { generic_data(); }
-    void benchmark();
-#endif
+    void sqlite_real_data() { generic_data("QSQLITE"); }
+    void sqlite_real();
 
+    void aggregateFunctionTypes_data() { generic_data(); }
+    void aggregateFunctionTypes();
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
@@ -328,6 +332,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
                << qTableName("bug6421", __FILE__).toUpper()
                << qTableName("bug5765", __FILE__)
                << qTableName("bug6852", __FILE__)
+               << qTableName("bug21884", __FILE__)
                << qTableName( "qtest_lockedtable", __FILE__ )
                << qTableName( "Planet", __FILE__ )
                << qTableName( "task_250026", __FILE__ )
@@ -3104,6 +3109,102 @@ void tst_QSqlQuery::QTBUG_5765()
     QCOMPARE(q.value(0).toInt(), 123);
 }
 
+/**
+* This test case tests multiple statements in one execution.
+* Sqlite driver doesn't support multiple statement at one time.
+* If more than one statement is given, the exec or prepare function
+* return failure to the client.
+*/
+void tst_QSqlQuery::QTBUG_21884()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+
+    QStringList stList;
+    QString tableName(qTableName("bug21884", __FILE__ ));
+    stList << "create table " + tableName + "(id integer primary key, note string)";
+    stList << "select * from " + tableName + ";";
+    stList << "select * from " + tableName + ";  \t\n\r";
+    stList << "drop table " + tableName;
+
+
+    foreach (const QString& st, stList) {
+        QVERIFY_SQL(q, exec(st));
+    }
+
+    foreach (const QString& st, stList) {
+        QVERIFY_SQL(q, prepare(st));
+        QVERIFY_SQL(q, exec());
+    }
+
+    stList.clear();
+    stList << "create table " + tableName + "(id integer primary key); select * from " + tableName;
+    stList << "create table " + tableName + "(id integer primary key); syntax error!;";
+    stList << "create table " + tableName + "(id integer primary key);;";
+    stList << "create table " + tableName + "(id integer primary key);\'\"\a\b\b\v";
+
+    foreach (const QString&st , stList) {
+        QVERIFY2(!q.prepare(st), qPrintable(QString("the statement is expected to fail! ") + st));
+        QVERIFY2(!q.exec(st), qPrintable(QString("the statement is expected to fail! ") + st));
+    }
+}
+
+/**
+  * This test case test sqlite driver close function. Sqlite driver should close cleanly
+  * even if there is still outstanding prepared statement.
+  */
+void tst_QSqlQuery::QTBUG_16967()
+{
+    QSqlQuery q2;
+    QFETCH(QString, dbName);
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q2 = q;
+        q.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q2 = q;
+        q2.prepare("CREATE TABLE t1 (id INTEGER PRIMARY KEY, str TEXT);");
+        q2.exec();
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q2 = q;
+        q.exec("INSERT INTO t1 (id, str) VALUES(1, \"test1\");");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+    {
+        QSqlDatabase db = QSqlDatabase::database(dbName);
+        CHECK_DATABASE(db);
+        QSqlQuery q(db);
+        q2 = q;
+        q2.exec("SELECT * FROM t1;");
+        db.close();
+        QCOMPARE(db.lastError().type(), QSqlError::NoError);
+    }
+}
+
 void tst_QSqlQuery::oraOCINumber()
 {
     QFETCH( QString, dbName );
@@ -3233,35 +3334,148 @@ void tst_QSqlQuery::sqlite_constraint()
     QCOMPARE(q.lastError().databaseText(), QLatin1String("Raised Abort successfully"));
 }
 
-#if 0
-void tst_QSqlQuery::benchmark()
+void tst_QSqlQuery::sqlite_real()
 {
-    QFETCH( QString, dbName );
-    QSqlDatabase db = QSqlDatabase::database( dbName );
-    CHECK_DATABASE( db );
-    if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    const QString tableName(qTableName("sqliterealtype", __FILE__));
+    tst_Databases::safeDropTable( db, tableName );
 
     QSqlQuery q(db);
-    const QString tableName(qTableName("benchmark", __FILE__));
+    QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INTEGER, realVal REAL)"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, realVal) VALUES (1, 2.3)"));
+    QVERIFY_SQL(q, exec("SELECT realVal FROM " + tableName));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toDouble(), 2.3);
+    QCOMPARE(q.record().field(0).type(), QVariant::Double);
 
-    tst_Databases::safeDropTable( db, tableName );
+    q.prepare("INSERT INTO " + tableName + " (id, realVal) VALUES (?, ?)");
+    QVariant var((double)5.6);
+    q.addBindValue(4);
+    q.addBindValue(var);
+    QVERIFY_SQL(q, exec());
 
-    QVERIFY_SQL(q, exec("CREATE TABLE "+tableName+"(\n"
-                        "MainKey INT NOT NULL,\n"
-                        "OtherTextCol VARCHAR(45) NOT NULL,\n"
-                        "PRIMARY KEY(`MainKey`))"));
-
-    int i=1;
-
-    QBENCHMARK {
-        QVERIFY_SQL(q, exec("INSERT INTO "+tableName+" VALUES("+QString::number(i)+", \"Value"+QString::number(i)+"\")"));
-        i++;
-    }
-
-    tst_Databases::safeDropTable( db, tableName );
+    QVERIFY_SQL(q, exec("SELECT realVal FROM " + tableName + " WHERE ID=4"));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toDouble(), 5.6);
 }
-#endif
+
+void tst_QSqlQuery::aggregateFunctionTypes()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+    {
+        const QString tableName(qTableName("numericFunctionsWithIntValues", __FILE__));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INTEGER)"));
+
+        // First test without any entries
+        QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1)"));
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2)"));
+
+        QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 3);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+
+        QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 1.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 2);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+
+        QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 1);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+
+        QVERIFY_SQL(q, exec("SELECT MAX(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 2);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+    }
+    {
+        const QString tableName(qTableName("numericFunctionsWithDoubleValues", __FILE__));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id DOUBLE)"));
+
+        // First test without any entries
+        QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (1.5)"));
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id) VALUES (2.5)"));
+
+        QVERIFY_SQL(q, exec("SELECT SUM(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 4.0);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT AVG(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 2.0);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 2);
+        QCOMPARE(q.record().field(0).type(), QVariant::Int);
+
+        QVERIFY_SQL(q, exec("SELECT MIN(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 1.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT MAX(id) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 2.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT ROUND(id, 1) FROM " + tableName + " WHERE id=1.5"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 1.5);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+
+        QVERIFY_SQL(q, exec("SELECT ROUND(id, 0) FROM " + tableName + " WHERE id=2.5"));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toDouble(), 3.0);
+        QCOMPARE(q.record().field(0).type(), QVariant::Double);
+    }
+    {
+        const QString tableName(qTableName("stringFunctions", __FILE__));
+        tst_Databases::safeDropTable( db, tableName );
+
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INTEGER, txt VARCHAR(50))"));
+
+        QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.record().field(0).type(), QVariant::Invalid);
+
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, txt) VALUES (1, 'lower')"));
+        QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, txt) VALUES (2, 'upper')"));
+
+        QVERIFY_SQL(q, exec("SELECT MAX(txt) FROM " + tableName));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toString(), QLatin1String("upper"));
+        QCOMPARE(q.record().field(0).type(), QVariant::String);
+    }
+}
 
 QTEST_MAIN( tst_QSqlQuery )
 #include "tst_qsqlquery.moc"

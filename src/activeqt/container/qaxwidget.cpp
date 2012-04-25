@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -408,7 +408,7 @@ private:
     CONTROLINFO control_info;
 
     QSize sizehint;
-    unsigned long ref;
+    LONG ref;
     QAxWidget *widget;
     QAxHostWidget *host;
 #if !defined(Q_WS_WINCE)
@@ -663,8 +663,9 @@ bool QAxClientSite::activateObject(bool initialized, const QByteArray &data)
         if (spAdviseSink && spViewObject) {
             if (spViewObject)
                 spViewObject->SetAdvise(DVASPECT_CONTENT, 0, spAdviseSink);
-            spAdviseSink->Release();
         }
+        if (spAdviseSink)
+            spAdviseSink->Release();
         if (spViewObject)
             spViewObject->Release();
 
@@ -774,16 +775,16 @@ void QAxClientSite::deactivate()
 //**** IUnknown
 unsigned long WINAPI QAxClientSite::AddRef()
 {
-    return ++ref;
+    return InterlockedIncrement(&ref);
 }
 
 unsigned long WINAPI QAxClientSite::Release()
 {
-    if (!--ref) {
+    LONG refCount = InterlockedDecrement(&ref);
+    if (!refCount)
         delete this;
-        return 0;
-    }
-    return ref;
+
+    return refCount;
 }
 
 HRESULT WINAPI QAxClientSite::QueryInterface(REFIID iid, void **iface)
@@ -2148,7 +2149,7 @@ QSize QAxWidget::minimumSizeHint() const
 */
 void QAxWidget::changeEvent(QEvent *e)
 {
-    if (isNull())
+    if (isNull() || !container)
         return;
 
     switch (e->type()) {

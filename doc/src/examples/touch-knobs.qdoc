@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example touch/knobs
     \title Touch Knobs Example
 
-    The Touch Knobs example shows how to create custom controls that
+    \brief The Touch Knobs example shows how to create custom controls that
     accept touch input.
 
     \image touch-knobs-example.png

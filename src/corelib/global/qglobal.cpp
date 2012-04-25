@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1205,6 +1205,7 @@ bool qSharedBuild()
     \value SV_SF_4 \e{This enum value is deprecated.}
     \value SV_API_5_3 Symbian/S60 API version 5.3 release
     \value SV_API_5_4 Symbian/S60 API version 5.4 release
+    \value SV_API_5_5 Symbian/S60 API version 5.5 release
     \value SV_Unknown An unknown and currently unsupported platform
 
     \sa S60Version, WinVersion, MacVersion
@@ -1225,6 +1226,7 @@ bool qSharedBuild()
     \value SV_S60_5_2 Symbian^3 and Symbian Anna
     \value SV_S60_5_3 Symbian/S60 API version 5.3 release
     \value SV_S60_5_4 Symbian/S60 API version 5.4 release
+    \value SV_S60_5_5 Symbian/S60 API version 5.5 release
     \value SV_S60_Unknown An unknown and currently unsupported platform
     \omitvalue SV_S60_None
 
@@ -1821,9 +1823,12 @@ static void symbianInitVersions()
                 } else if (minor == 3) {
                     cachedS60Version = QSysInfo::SV_S60_5_3;
                     cachedSymbianVersion = QSysInfo::SV_API_5_3;
-                } else if (minor >= 4) {
+                } else if (minor == 4) {
                     cachedS60Version = QSysInfo::SV_S60_5_4;
                     cachedSymbianVersion = QSysInfo::SV_API_5_4;
+                } else if (minor >= 5) {
+                    cachedS60Version = QSysInfo::SV_S60_5_5;
+                    cachedSymbianVersion = QSysInfo::SV_API_5_5;
                 }
             }
         }
@@ -1853,6 +1858,9 @@ static void symbianInitVersions()
 #   elif defined(S60_VERSION_5_4)
         cachedS60Version = QSysInfo::SV_S60_5_4;
         cachedSymbianVersion = QSysInfo::SV_API_5_4;
+#   elif defined(S60_VERSION_5_5)
+        cachedS60Version = QSysInfo::SV_S60_5_5;
+        cachedSymbianVersion = QSysInfo::SV_API_5_5;
 #   endif
     }
 #  endif
@@ -2207,16 +2215,13 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
 #elif defined(Q_OS_SYMBIAN)
         // RDebug::Print has a cap of 256 characters so break it up
-        _LIT(format, "[Qt Message] %S");
-        const int maxBlockSize = 256 - ((const TDesC &)format).Length();
+        char format[] = "[Qt Message] %S";
+        const int maxBlockSize = 256 - sizeof(format);
         const TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
-        HBufC* hbuffer = HBufC::New(qMin(maxBlockSize, ptr.Length()));
-        Q_CHECK_PTR(hbuffer);
-        for (int i = 0; i < ptr.Length(); i += hbuffer->Length()) {
-            hbuffer->Des().Copy(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
-            RDebug::Print(format, hbuffer);
+        for (int i = 0; i < ptr.Length(); i += maxBlockSize) {
+            TPtrC8 part(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
+            RDebug::Printf(format, &part);
         }
-        delete hbuffer;
 #else
         fprintf(stderr, "%s\n", buf);
         fflush(stderr);

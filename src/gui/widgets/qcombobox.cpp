@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2497,7 +2497,7 @@ void QComboBox::showPopup()
         } else {
             TRect staConTopRect = TRect();
             AknLayoutUtils::LayoutMetricsRect(AknLayoutUtils::EStaconTop, staConTopRect);
-            listRect.setWidth(listRect.height());
+            listRect.setWidth(screen.height());
             //by default popup is centered on screen in landscape
             listRect.moveCenter(screen.center());
             if (staConTopRect.IsEmpty() && AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom) {

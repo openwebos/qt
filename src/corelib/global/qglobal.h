@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.8.0"
+#define QT_VERSION_STR   "4.8.2"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040800
+#define QT_VERSION 0x040802
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -1629,7 +1629,8 @@ public:
         SV_SF_3 = 50,
         SV_SF_4 = 60,  // Deprecated
         SV_API_5_3 = 70,
-        SV_API_5_4 = 80
+        SV_API_5_4 = 80,
+        SV_API_5_5 = 90
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
@@ -1641,7 +1642,8 @@ public:
         SV_S60_5_1 = SV_SF_2,  // Deprecated
         SV_S60_5_2 = SV_SF_3,
         SV_S60_5_3 = SV_API_5_3,
-        SV_S60_5_4 = SV_API_5_4
+        SV_S60_5_4 = SV_API_5_4,
+        SV_S60_5_5 = SV_API_5_5
     };
     static S60Version s60Version();
 #endif
@@ -1769,6 +1771,10 @@ Q_CORE_EXPORT_INLINE QDebug qCritical();
 inline QNoDebug qDebug();
 #endif
 
+#ifdef QT_NO_WARNING_OUTPUT
+inline QNoDebug qWarning();
+#endif
+
 #define QT_NO_QDEBUG_MACRO while (false) qDebug
 #ifdef QT_NO_DEBUG_OUTPUT
 #  define qDebug QT_NO_QDEBUG_MACRO
@@ -1824,7 +1830,7 @@ inline T *q_check_ptr(T *p) { Q_CHECK_PTR(p); return p; }
 #elif defined(_MSC_VER)
 #  define Q_FUNC_INFO __FUNCSIG__
 #else
-#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC) || defined(Q_OS_SYMBIAN)
+#   if defined(Q_OS_SOLARIS) || defined(Q_CC_XLC) || defined(Q_OS_SYMBIAN) || defined(Q_OS_INTEGRITY)
 #      define Q_FUNC_INFO __FILE__ "(line number unavailable)"
 #   else
         /* These two macros makes it possible to turn the builtin line expander into a
@@ -1924,50 +1930,51 @@ public:
     }
 };
 
+#define Q_GLOBAL_STATIC_INIT(TYPE, NAME)                                      \
+        static QGlobalStatic<TYPE > this_ ## NAME                             \
+                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false }
+
 #define Q_GLOBAL_STATIC(TYPE, NAME)                                           \
     static TYPE *NAME()                                                       \
     {                                                                         \
-        static QGlobalStatic<TYPE > thisGlobalStatic                          \
-                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer && !thisGlobalStatic.destroyed) {       \
+        Q_GLOBAL_STATIC_INIT(TYPE, _StaticVar_);                              \
+        if (!this__StaticVar_.pointer && !this__StaticVar_.destroyed) {       \
             TYPE *x = new TYPE;                                               \
-            if (!thisGlobalStatic.pointer.testAndSetOrdered(0, x))            \
+            if (!this__StaticVar_.pointer.testAndSetOrdered(0, x))            \
                 delete x;                                                     \
             else                                                              \
-                static QGlobalStaticDeleter<TYPE > cleanup(thisGlobalStatic); \
+                static QGlobalStaticDeleter<TYPE > cleanup(this__StaticVar_); \
         }                                                                     \
-        return thisGlobalStatic.pointer;                                      \
+        return this__StaticVar_.pointer;                                      \
     }
 
 #define Q_GLOBAL_STATIC_WITH_ARGS(TYPE, NAME, ARGS)                           \
     static TYPE *NAME()                                                       \
     {                                                                         \
-        static QGlobalStatic<TYPE > thisGlobalStatic                          \
-                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer && !thisGlobalStatic.destroyed) {       \
+        Q_GLOBAL_STATIC_INIT(TYPE, _StaticVar_);                              \
+        if (!this__StaticVar_.pointer && !this__StaticVar_.destroyed) {       \
             TYPE *x = new TYPE ARGS;                                          \
-            if (!thisGlobalStatic.pointer.testAndSetOrdered(0, x))            \
+            if (!this__StaticVar_.pointer.testAndSetOrdered(0, x))            \
                 delete x;                                                     \
             else                                                              \
-                static QGlobalStaticDeleter<TYPE > cleanup(thisGlobalStatic); \
+                static QGlobalStaticDeleter<TYPE > cleanup(this__StaticVar_); \
         }                                                                     \
-        return thisGlobalStatic.pointer;                                      \
+        return this__StaticVar_.pointer;                                      \
     }
 
 #define Q_GLOBAL_STATIC_WITH_INITIALIZER(TYPE, NAME, INITIALIZER)             \
     static TYPE *NAME()                                                       \
     {                                                                         \
-        static QGlobalStatic<TYPE > thisGlobalStatic                          \
-                            = { Q_BASIC_ATOMIC_INITIALIZER(0), false };       \
-        if (!thisGlobalStatic.pointer && !thisGlobalStatic.destroyed) {       \
+        Q_GLOBAL_STATIC_INIT(TYPE, _StaticVar_);                              \
+        if (!this__StaticVar_.pointer && !this__StaticVar_.destroyed) {       \
             QScopedPointer<TYPE > x(new TYPE);                                \
             INITIALIZER;                                                      \
-            if (thisGlobalStatic.pointer.testAndSetOrdered(0, x.data())) {    \
-                static QGlobalStaticDeleter<TYPE > cleanup(thisGlobalStatic); \
+            if (this__StaticVar_.pointer.testAndSetOrdered(0, x.data())) {    \
+                static QGlobalStaticDeleter<TYPE > cleanup(this__StaticVar_); \
                 x.take();                                                     \
             }                                                                 \
         }                                                                     \
-        return thisGlobalStatic.pointer;                                      \
+        return this__StaticVar_.pointer;                                      \
     }
 
 #endif

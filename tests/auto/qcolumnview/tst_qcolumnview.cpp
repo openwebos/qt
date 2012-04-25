@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -461,6 +461,7 @@ void tst_QColumnView::scrollTo()
         view.setCurrentIndex(index);
         QTest::qWait(ANIMATION_DELAY);
         view.scrollTo(index, QAbstractItemView::EnsureVisible);
+        QTest::qWait(ANIMATION_DELAY);
         index = index.parent();
         if (start != level) {
             if (!reverse)

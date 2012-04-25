@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example animation/stickman
     \title Stickman Example
 
-    The Stickman example shows how to animate transitions in a state machine to implement key frame 
+    \brief The Stickman example shows how to animate transitions in a state machine to implement key frame 
     animations.
 
     \image stickman-example.png

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -77,6 +77,7 @@ public:
     QString path;
     QString interface;
     mutable QDBusError lastError;
+    int timeout;
 
     // this is set during creation and never changed
     // it can't be const because QDBusInterfacePrivate has one more check

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -67,12 +67,12 @@ public:
     virtual void updateSoftKeys_sys() {};
 
 protected:
-    static QSoftKeyManager *self;
+    static QScopedPointer<QSoftKeyManager> self;
     QHash<QAction*, Qt::Key> keyedActions;
     QMultiHash<int, QAction*> requestedSoftKeyActions;
     QWidget *initialSoftKeySource;
     bool pendingUpdate;
-#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4)
+#if defined(Q_WS_S60) && !defined(SYMBIAN_VERSION_9_4) && !defined(SYMBIAN_VERSION_9_3) && !defined(SYMBIAN_VERSION_9_2)
     QHash<QAction*, int> softKeyCommandActions;
 #endif
 };

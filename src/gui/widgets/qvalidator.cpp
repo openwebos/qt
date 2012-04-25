@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -400,8 +400,9 @@ QValidator::State QIntValidator::validate(QString & input, int&) const
     qlonglong entered = QLocalePrivate::bytearrayToLongLong(buff.constData(), 10, &ok, &overflow);
     if (overflow || !ok)
         return Invalid;
+
     if (entered >= b && entered <= t) {
-        locale().toInt(input, &ok);
+        locale().toInt(input, &ok, 10);
         return ok ? Acceptable : Intermediate;
     }
 

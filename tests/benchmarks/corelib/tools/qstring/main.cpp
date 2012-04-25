@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,11 @@
 #include <sys/ipc.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#endif
+
+// MAP_ANON is deprecated on Linux, and MAP_ANONYMOUS is not present on Mac
+#ifndef MAP_ANONYMOUS
+# define MAP_ANONYMOUS MAP_ANON
 #endif
 
 #include <private/qsimd_p.h>
@@ -784,12 +789,12 @@ void tst_QString::equals2_data() const
 
 static void __attribute__((noinline)) equals2_selftest()
 {
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     const long pagesize = sysconf(_SC_PAGESIZE);
     void *page1, *page3;
     ushort *page2;
     page1 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+    page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     page3 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
     Q_ASSERT(quintptr(page2) == quintptr(page1) + pagesize || quintptr(page2) == quintptr(page1) - pagesize);
@@ -938,7 +943,7 @@ static inline int ucstrncmp_short_tail(const ushort *p1, const ushort *p2, int l
     return 0;
 }
 
-static inline int bsf_nonzero(register long val)
+static inline int bsf_nonzero(register int val)
 {
     int result;
 # ifdef Q_CC_GNU
@@ -1341,12 +1346,12 @@ void tst_QString::ucstrncmp() const
         };
         static const int functionCount = sizeof func / sizeof func[0];
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
         const long pagesize = sysconf(_SC_PAGESIZE);
         void *page1, *page3;
         ushort *page2;
         page1 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_POPULATE, -1, 0);
+        page2 = (ushort *)mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         page3 = mmap(0, pagesize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
         Q_ASSERT(quintptr(page2) == quintptr(page1) + pagesize || quintptr(page2) == quintptr(page1) - pagesize);

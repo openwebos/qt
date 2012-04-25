@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -827,7 +827,9 @@ QLinuxFbScreen::QLinuxFbScreen(uchar * d, int w,
                               mFormat);
     mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
                               bytesPerLine, mFormat);
+#ifndef QT_NO_CURSOR
     cursor = new QPlatformSoftwareCursor(this);
+#endif
 }
 
 void QLinuxFbScreen::setGeometry(QRect rect)

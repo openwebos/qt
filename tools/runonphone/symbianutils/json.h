@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -48,7 +48,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVector>
 
-namespace tcftrk {
+namespace Coda {
 
 class SYMBIANUTILS_EXPORT JsonValue
 {
@@ -67,7 +67,7 @@ public:
         Boolean,
         Object,
         NullObject,
-        Array,
+        Array
     };
 
     Type m_type;
@@ -94,6 +94,8 @@ public:
     QByteArray toString(bool multiline = false, int indent = 0) const;
     void fromString(const QByteArray &str);
     void setStreamOutput(const QByteArray &name, const QByteArray &content);
+
+    QVariant toVariant() const;
 
 private:
     static QByteArray parseCString(const char *&from, const char *to);
@@ -144,6 +146,6 @@ private:
     QByteArray &m_target;
 };
 
-} // namespace tcftrk
+} // namespace Coda
 
 #endif // SYMBIANUTILS_JSON_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example layouts/flowlayout
     \title Flow Layout Example
 
-    The Flow Layout example demonstrates a custom layout that arranges child 
+    \brief The Flow Layout example demonstrates a custom layout that arranges child 
     widgets from left to right and top to bottom in a top-level widget.
 
     \image flowlayout-example.png Screenshot of the Flow Layout example

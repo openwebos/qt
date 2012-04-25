@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -120,14 +120,14 @@ void QXmlTestLogger::startLogging()
        QTest::qt_asprintf(&buf,
                 "<Environment>\n"
                 "    <QtVersion>%s</QtVersion>\n"
-                "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"
+                "    <QTestVersion>" QTEST_VERSION_STR "</QTestVersion>\n"
                 "    <RandomSeed>%d</RandomSeed>\n"
                 "</Environment>\n", qVersion(), randomSeed);
     } else {
        QTest::qt_asprintf(&buf,
                 "<Environment>\n"
                 "    <QtVersion>%s</QtVersion>\n"
-                "    <QTestVersion>"QTEST_VERSION_STR"</QTestVersion>\n"
+                "    <QTestVersion>" QTEST_VERSION_STR "</QTestVersion>\n"
                 "</Environment>\n", qVersion());
     }
     outputString(buf.constData());

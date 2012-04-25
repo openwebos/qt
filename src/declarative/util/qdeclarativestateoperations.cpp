@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -56,6 +56,13 @@
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qgraphicsitem.h>
+#ifdef Q_OS_WINCE
+// qgraphicsitem.h includes qfunctions_wince.h.
+// qfunctions_wince.h defines a missing posix rewind for WinCE,
+// but this conflicts with rewind method defined in this class.
+// As a workaround we undefine WinCE posix replacement for rewind here.
+#   undef rewind
+#endif
 #include <QtCore/qmath.h>
 
 #include <private/qobject_p.h>
@@ -123,7 +130,7 @@ void QDeclarativeParentChangePrivate::doChange(QDeclarativeItem *targetParent, Q
             }
 
             if (scale != 0)
-                rotation = atan2(transform.m12()/scale, transform.m11()/scale) * 180/M_PI;
+                rotation = atan2(transform.m12()/scale, transform.m11()/scale) * 180/qreal(M_PI);
             else {
                 qmlInfo(q) << QDeclarativeParentChange::tr("Unable to preserve appearance under scale of 0");
                 ok = false;

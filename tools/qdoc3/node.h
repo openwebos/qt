@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,7 +58,15 @@
 
 QT_BEGIN_NAMESPACE
 
+class Node;
+class ClassNode;
 class InnerNode;
+class ExampleNode;
+class QmlClassNode;
+
+typedef QMap<QString, const Node*> NodeMap;
+typedef QMultiMap<QString, Node*> NodeMultiMap;
+typedef QMap<QString, const ExampleNode*> ExampleNodeMap;
 
 class Node
 {
@@ -159,6 +167,7 @@ class Node
     void setTemplateStuff(const QString &templateStuff) { tpl = templateStuff; }
     void setPageType(PageType t) { pageTyp = t; }
     void setPageType(const QString& t);
+    virtual void addDependency(const QString& ) { }
 
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
@@ -194,6 +203,8 @@ class Node
     QString guid() const;
     QString ditaXmlHref();
     QString extractClassName(const QString &string) const;
+    const QmlClassNode* qmlClassNode() const;
+    const ClassNode* declarativeCppNode() const;
 
  protected:
     Node(Type type, InnerNode* parent, const QString& name);
@@ -380,8 +391,10 @@ class FakeNode : public InnerNode
     virtual QString title() const;
     virtual QString fullTitle() const;
     virtual QString subTitle() const;
+    virtual QString imageFileName() const { return QString(); }
     const NodeList &groupMembers() const { return gr; }
     virtual QString nameForLists() const { return title(); }
+    virtual void setImageFileName(const QString& ) { }
 
  private:
     SubType sub;
@@ -390,7 +403,24 @@ class FakeNode : public InnerNode
     NodeList gr;
 };
 
-#ifdef QDOC_QML
+class ExampleNode : public FakeNode
+{
+ public:
+    ExampleNode(InnerNode* parent, const QString& name);
+    virtual ~ExampleNode() { }
+    virtual QString imageFileName() const { return imageFileName_; }
+    virtual void setImageFileName(const QString& ifn) { imageFileName_ = ifn; }
+    virtual void addDependency(const QString& arg) { dependencies_.append(arg); }
+    const QStringList& dependencies() const { return dependencies_; }
+
+ public:
+    static ExampleNodeMap exampleNodeMap;
+
+ private:
+    QString imageFileName_;
+    QStringList dependencies_;
+};
+
 class QmlClassNode : public FakeNode
 {
  public:
@@ -482,7 +512,6 @@ class QmlPropertyNode : public LeafNode
     Trool   wri;
     bool    att;
 };
-#endif
 
 class EnumItem
 {

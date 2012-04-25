@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -648,7 +648,7 @@ void tst_QGL::getSetCheck()
 
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern QGLFormat::OpenGLVersionFlags qOpenGLVersionFlagsFromString(const QString &versionString);
+extern Q_AUTOTEST_EXPORT QGLFormat::OpenGLVersionFlags qOpenGLVersionFlagsFromString(const QString &versionString);
 QT_END_NAMESPACE
 #endif
 

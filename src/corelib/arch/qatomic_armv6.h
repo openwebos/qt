@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -152,6 +152,7 @@ inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
     asm volatile("0:\n"
                  "ldrex %[result], [%[_q_value]]\n"
                  "eors %[result], %[result], %[expectedValue]\n"
+                 "itt eq\n"
                  "strexeq %[result], %[newValue], [%[_q_value]]\n"
                  "teqeq %[result], #1\n"
                  "beq 0b\n"
@@ -210,6 +211,7 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValu
     asm volatile("0:\n"
                  "ldrex %[result], [%[_q_value]]\n"
                  "eors %[result], %[result], %[expectedValue]\n"
+                 "itt eq\n"
                  "strexeq %[result], %[newValue], [%[_q_value]]\n"
                  "teqeq %[result], #1\n"
                  "beq 0b\n"

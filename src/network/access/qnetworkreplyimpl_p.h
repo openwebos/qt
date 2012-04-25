@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,6 +104,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
 #endif
+    Q_PRIVATE_SLOT(d_func(), void _q_cacheDestroyed())
 };
 
 class QNetworkReplyImplPrivate: public QNetworkReplyPrivate
@@ -140,6 +141,7 @@ public:
     void _q_networkSessionConnected();
     void _q_networkSessionFailed();
 #endif
+    void _q_cacheDestroyed();
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);

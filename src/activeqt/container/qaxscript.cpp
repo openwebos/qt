@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -113,7 +113,7 @@ protected:
     
 private:
     QAxScript *script;
-    unsigned long ref;
+    LONG ref;
 };
 
 /*
@@ -129,7 +129,7 @@ QAxScriptSite::QAxScriptSite(QAxScript *s)
 */
 ULONG WINAPI QAxScriptSite::AddRef()
 {
-    return ++ref;
+    return InterlockedIncrement(&ref);
 }
 
 /*
@@ -137,11 +137,11 @@ ULONG WINAPI QAxScriptSite::AddRef()
 */
 ULONG WINAPI QAxScriptSite::Release()
 {
-    if (!--ref) {
+    LONG refCount = InterlockedDecrement(&ref);
+    if (!refCount)
         delete this;
-        return 0;
-    }
-    return ref;
+
+    return refCount;
 }
 
 /*

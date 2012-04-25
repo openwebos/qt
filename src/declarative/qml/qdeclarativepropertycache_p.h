@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -111,7 +111,7 @@ public:
             int relatedIndex; // When IsFunction
         };
         uint overrideIndexIsProperty : 1;
-        int overrideIndex : 31;
+        signed int overrideIndex : 31;
         int revision; 
         int metaObjectOffset;
 

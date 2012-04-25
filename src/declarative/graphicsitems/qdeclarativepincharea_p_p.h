@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -71,7 +71,7 @@ public:
       , pinchRejected(false), pinchActivated(false)
       , pinch(0), pinchStartDist(0), pinchStartScale(1.0)
       , pinchLastScale(1.0), pinchStartRotation(0.0), pinchStartAngle(0.0)
-      , pinchLastAngle(0.0), pinchRotation(0.0)
+      , pinchLastAngle(0.0), pinchRotation(0.0), touchEventsActive(false)
     {
     }
 
@@ -90,6 +90,7 @@ public:
     bool inPinch : 1;
     bool pinchRejected : 1;
     bool pinchActivated : 1;
+    bool touchEventsActive : 1;
     QDeclarativePinch *pinch;
     QPointF sceneStartPoint1;
     QPointF sceneStartPoint2;

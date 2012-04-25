@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example demos/composition
     \title Composition Modes
 
-    This demo shows some of the more advanced composition modes supported by Qt.
+    \brief The Composition Modes demo shows some of the more advanced composition modes supported by Qt.
 
     \image composition-demo.png
 

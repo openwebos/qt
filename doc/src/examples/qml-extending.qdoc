@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,8 @@
 \example declarative/cppextensions/referenceexamples/adding
 \title Extending QML - Adding Types Example
 
-The Adding Types Example shows how to add a new element type, \c Person, to QML.
+\brief The Adding Types Example shows how to add a new element type, \c Person, to QML.
+
 The \c Person type can be used from QML like this:
 
 \snippet examples/declarative/cppextensions/referenceexamples/adding/example.qml 0

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,7 +60,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 #endif
 
 QNetworkConfigurationManagerPrivate::QNetworkConfigurationManagerPrivate()
-    : QObject(), pollTimer(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
+    : QObject(), pollTimer(0), bearerThread(0), mutex(QMutex::Recursive), forcedPolling(0), firstUpdate(true)
 {
     qRegisterMetaType<QNetworkConfiguration>("QNetworkConfiguration");
     qRegisterMetaType<QNetworkConfigurationPrivatePointer>("QNetworkConfigurationPrivatePointer");

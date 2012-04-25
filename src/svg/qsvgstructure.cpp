@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -369,7 +369,7 @@ QSvgNode * QSvgStructureNode::previousSiblingNode(QSvgNode *n) const
 {
     QSvgNode *prev = 0;
     QList<QSvgNode*>::const_iterator itr = m_renderers.constBegin();
-    while (itr != m_renderers.constEnd()) {
+    for (; itr != m_renderers.constEnd(); ++itr) {
         QSvgNode *node = *itr;
         if (node == n)
             return prev;

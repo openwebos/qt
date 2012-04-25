@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -540,6 +540,7 @@ int QTextDocumentPrivate::remove_block(int pos, int *blockFormat, int command, Q
 	int n = blocks.next(b);
 	Q_ASSERT((int)blocks.position(n) == pos + 1);
 	blocks.setSize(b, blocks.size(b) + blocks.size(n) - 1);
+        blocks.fragment(b)->userState = blocks.fragment(n)->userState;
 	b = n;
     }
     *blockFormat = blocks.fragment(b)->format;

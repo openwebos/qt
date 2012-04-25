@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -91,7 +91,11 @@ class FormatTextEdit : public ExpandingTextEdit
     Q_OBJECT
 public:
     FormatTextEdit(QWidget *parent = 0);
+    ~FormatTextEdit();
     void setEditable(bool editable);
+
+signals:
+    void editorDestroyed();
 
 public slots:
     void setPlainText(const QString & text, bool userAction);

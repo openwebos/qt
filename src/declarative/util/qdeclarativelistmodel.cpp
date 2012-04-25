@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -784,6 +784,7 @@ void QDeclarativeListModelParser::setCustomData(QObject *obj, const QByteArray &
     QDeclarativeListModel *rv = static_cast<QDeclarativeListModel *>(obj);
 
     ModelNode *root = new ModelNode(rv->m_nested);
+    rv->m_nested->m_ownsRoot = true;
     rv->m_nested->_root = root;
     QStack<ModelNode *> nodes;
     nodes << root;

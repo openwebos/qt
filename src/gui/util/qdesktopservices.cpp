@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -45,7 +45,9 @@
 
 #include <qdebug.h>
 
-#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
+#if defined(Q_OS_BLACKBERRY)
+#include "qdesktopservices_blackberry.cpp"
+#elif defined(Q_WS_QWS) || defined(Q_WS_QPA)
 #include "qdesktopservices_qws.cpp"
 #elif defined(Q_WS_X11)
 #include "qdesktopservices_x11.cpp"
@@ -176,6 +178,9 @@ void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
     \warning Although many e-mail clients can send attachments and are
     Unicode-aware, the user may have configured their client without these features.
     Also, certain e-mail clients (e.g., Lotus Notes) have problems with long URLs.
+
+    \note On Symbian OS, \c SwEvent capability is required to open the given \a url
+    if the Web browser is already running.
 
     \sa setUrlHandler()
 */

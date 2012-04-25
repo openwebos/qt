@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -710,7 +710,7 @@ bool Q3DataTable::eventFilter( QObject *o, QEvent *e )
 	    return true;
 	}
 	if ( d->dat.mode() != QSql::None ) {
-	    if ( (ke->key() == Qt::Key_Tab) && (c < numCols() - 1) && (!isColumnReadOnly( c+1 ) || d->dat.mode() == QSql::Insert) )
+	    if ( (ke->key() == Qt::Key_Tab) && (c+1 < numCols()) && (!isColumnReadOnly( c+1 ) || d->dat.mode() == QSql::Insert) )
 		d->continuousEdit = true;
 	    else if ( (ke->key() == Qt::Key_BackTab) && (c > 0) && (!isColumnReadOnly( c-1 ) || d->dat.mode() == QSql::Insert) )
 		d->continuousEdit = true;

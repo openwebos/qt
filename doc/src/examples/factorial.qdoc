@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example statemachine/factorial
     \title Factorial States Example
 
-    The Factorial States example shows how to use \l{The State Machine
+    \brief The Factorial States example shows how to use \l{The State Machine
     Framework} to calculate the factorial of an integer.
 
     The statechart for calculating the factorial looks as follows:

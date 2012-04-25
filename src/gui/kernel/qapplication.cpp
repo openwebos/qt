@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -163,6 +163,10 @@ QApplicationPrivate *QApplicationPrivate::self = 0;
 QInputContext *QApplicationPrivate::inputContext = 0;
 
 bool QApplicationPrivate::quitOnLastWindowClosed = true;
+
+#ifdef Q_OS_SYMBIAN
+bool QApplicationPrivate::inputContextBeingCreated = false;
+#endif
 
 #ifdef Q_WS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
@@ -502,7 +506,6 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
-QString QApplicationPrivate::qmljs_debug_arguments;
 #ifdef QT_KEYPAD_NAVIGATION
 #  ifdef Q_OS_SYMBIAN
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
@@ -574,8 +577,6 @@ void QApplicationPrivate::process_cmdline()
         QString s;
         if (arg == "-qdevel" || arg == "-qdebug") {
             // obsolete argument
-        } else if (arg.indexOf("-qmljsdebugger=", 0) != -1) {
-            qmljs_debug_arguments = QString::fromLocal8Bit(arg.right(arg.length() - 15));
         } else if (arg.indexOf("-style=", 0) != -1) {
             s = QString::fromLocal8Bit(arg.right(arg.length() - 7).toLower());
         } else if (arg == "-style" && i < argc-1) {
@@ -873,6 +874,10 @@ void QApplicationPrivate::construct(
     //make sure the plugin is loaded
     if (qt_is_gui_used)
         qt_guiPlatformPlugin();
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    symbianHandleLiteModeStartup();
 #endif
 }
 
@@ -3321,13 +3326,32 @@ bool QApplication::desktopSettingsAware()
     one of the above events. If no keys are being held Qt::NoModifier is
     returned.
 
-    \sa mouseButtons()
+    \sa mouseButtons(), queryKeyboardModifiers()
 */
 
 Qt::KeyboardModifiers QApplication::keyboardModifiers()
 {
     return QApplicationPrivate::modifier_buttons;
 }
+
+/*!
+    \fn Qt::KeyboardModifiers QApplication::queryKeyboardModifiers()
+
+    Queries and returns the state of the modifier keys on the keyboard.
+    Unlike keyboardModifiers, this method returns the actual keys held
+    on the input device at the time of calling the method.
+
+    It does not rely on the keypress events having been received by this
+    process, which makes it possible to check the modifiers while moving
+    a window, for instance. Note that in most cases, you should use
+    keyboardModifiers(), which is faster and more accurate since it contains
+    the state of the modifiers as they were when the currently processed
+    event was received.
+
+    \sa keyboardModifiers()
+
+    \since 4.8
+*/
 
 /*!
     Returns the current state of the buttons on the mouse. The current state is
@@ -3403,7 +3427,35 @@ QString QApplication::sessionKey() const
 }
 #endif
 
+/*!
+    \since 4.7.4
+    \fn void QApplication::aboutToReleaseGpuResources()
 
+    This signal is emitted when application is about to release all
+    GPU resources associated to contexts owned by application.
+
+    The signal is particularly useful if your application has allocated
+    GPU resources directly apart from Qt and needs to do some last-second
+    cleanup.
+
+    \warning This signal is only emitted on Symbian.
+
+    \sa aboutToUseGpuResources()
+*/
+
+/*!
+    \since 4.7.4
+    \fn void QApplication::aboutToUseGpuResources()
+
+    This signal is emitted when application is about to use GPU resources.
+
+    The signal is particularly useful if your application needs to know
+    when GPU resources are be available.
+
+   \warning This signal is only emitted on Symbian.
+
+   \sa aboutToFreeGpuResources()
+*/
 
 /*!
     \since 4.2
@@ -5457,7 +5509,11 @@ QInputContext *QApplication::inputContext() const
         if (keys.contains(QLatin1String("hbim"))) {
             that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("hbim"), that);
         } else if (keys.contains(QLatin1String("coefep"))) {
-            that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
+            if (!that->d_func()->inputContextBeingCreated) {
+                that->d_func()->inputContextBeingCreated = true;
+                that->d_func()->inputContext = QInputContextFactory::create(QLatin1String("coefep"), that);
+                that->d_func()->inputContextBeingCreated = false;
+            }
         } else {
             for (int c = 0; c < keys.size() && !d->inputContext; ++c) {
                 that->d_func()->inputContext = QInputContextFactory::create(keys[c], that);
@@ -6131,11 +6187,6 @@ QPixmap QApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
     Q_UNUSED(cshape);
 #endif
     return QPixmap();
-}
-
-QString QApplicationPrivate::qmljsDebugArgumentsString()
-{
-    return qmljs_debug_arguments;
 }
 
 QT_END_NAMESPACE

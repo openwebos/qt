@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example opengl/grabber
     \title Grabber Example
 
-    The Grabber examples shows how to retrieve the contents of an OpenGL framebuffer.
+    \brief The Grabber examples shows how to retrieve the contents of an OpenGL framebuffer.
 
     \image grabber-example.png
 */

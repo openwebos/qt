@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -175,7 +175,7 @@ QSqlQueryModel::~QSqlQueryModel()
     This only affects databases that don't report back the size of a query
     (see QSqlDriver::hasFeature()).
 
-    To force fetching of the entire database, you can use the following:
+    To force fetching of the entire result set, you can use the following:
 
     \snippet doc/src/snippets/code/src_sql_models_qsqlquerymodel.cpp 0
 

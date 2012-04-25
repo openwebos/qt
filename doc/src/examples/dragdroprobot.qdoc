@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example graphicsview/dragdroprobot
     \title Drag and Drop Robot Example
 
-    The Drag and Drop Robot example shows how to implement Drag and Drop in a
+    \brief The Drag and Drop Robot example shows how to implement Drag and Drop in a
     QGraphicsItem subclass, as well as how to animate items using Qt's
     \l{Animation Framework}.
 

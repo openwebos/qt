@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,8 +29,11 @@
 
 \title FolderListModel - a C++ model plugin
 \example src/imports/folderlistmodel
+\depends helper/qmlapplicationviewer
 
-This plugin shows how to make a C++ model available to QML. It presents
+\brief The FolderListModel plugin example shows how to make a C++ model available to QML.
+
+It presents
 a simple file list for a single folder (directory) and allows the presented
 folder to be changed.
 

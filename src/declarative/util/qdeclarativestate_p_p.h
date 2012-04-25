@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -206,7 +206,9 @@ public:
 
     struct OperationGuard : public QDeclarativeGuard<QDeclarativeStateOperation>
     {
-        OperationGuard(QObject *obj, QList<OperationGuard> *l) : list(l) { (QDeclarativeGuard<QObject>&)*this = obj; }
+        OperationGuard(QObject *obj, QList<OperationGuard> *l) : list(l) { 
+            setObject(static_cast<QDeclarativeStateOperation *>(obj));
+        }
         QList<OperationGuard> *list;
         void objectDestroyed(QDeclarativeStateOperation *) {
             // we assume priv will always be destroyed after objectDestroyed calls

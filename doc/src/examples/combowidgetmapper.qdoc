@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example itemviews/combowidgetmapper
     \title Combo Widget Mapper Example
 
-    The Combo Widget Mapper example shows how to use a custom delegate to
+    \brief The Combo Widget Mapper example shows how to use a custom delegate to
     map information from a model to specific widgets on a form.
 
     \image combowidgetmapper-example.png

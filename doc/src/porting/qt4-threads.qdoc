@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,7 +58,7 @@
     immediately; instead, it is invoked when control returns to the
     event loop of the thread to which the object belongs. The slot is
     executed in the thread where the receiver object lives. See
-    QObject::connect() for details.
+    \l{signals-and-slots-across-threads} and QObject::connect() for details.
 
     Qt 4 also introduces a new synchronization class: QReadWriteLock.
     It is similar to QMutex, except that it distinguishes between

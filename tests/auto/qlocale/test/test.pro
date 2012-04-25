@@ -1,25 +1,21 @@
-load(qttest_p4)
+CONFIG += testcase
+
+TARGET = ../tst_qlocale
+QT = core network testlib
+embedded: QT += gui
 SOURCES += ../tst_qlocale.cpp
 
 !wince*: {
-TARGET = ../tst_qlocale
-
-win32: {
-  CONFIG(debug, debug|release) {
-    TARGET = ../../debug/tst_qlocale
-} else {
-    TARGET = ../../release/tst_qlocale
+  win32: {
+    CONFIG(debug, debug|release) {
+      TARGET = ../../debug/tst_qlocale
+    } else {
+      TARGET = ../../release/tst_qlocale
+    }
   }
-}
 } else {
    TARGET = tst_qlocale
 }
-
-
-
-QT = core
-QT += network
-embedded: QT += gui
 
 wince*: {
    addFiles.files = \
@@ -39,3 +35,5 @@ symbian:contains(S60_VERSION,3.2) {
 }
 
 symbian: INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE  # Needed for e32svr.h in S^3 envs
+
+win32:CONFIG+=insignificant_test # QTQAINFRA-428

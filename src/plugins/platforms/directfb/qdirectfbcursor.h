@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -44,20 +44,24 @@
 
 #include <QPlatformCursor>
 #include <directfb.h>
+
+#include "qdirectfbconvenience.h"
+
+QT_BEGIN_NAMESPACE
+
 class QDirectFbScreen;
 class QDirectFbBlitter;
 
 class QDirectFBCursor : public QPlatformCursor
 {
 public:
-    QDirectFBCursor(QPlatformScreen *screem);
-    void changeCursor(QCursor * cursor, QWidget * widget);
+    QDirectFBCursor(QPlatformScreen *screen);
+    void changeCursor(QCursor *cursor, QWidget *window);
 
 private:
-    IDirectFBDisplayLayer * m_layer;
-    IDirectFBSurface * surface;
-    QPlatformCursorImage * image;
-    QDirectFbBlitter *blitter;
+    QScopedPointer<QPlatformCursorImage> m_image;
 };
+
+QT_END_NAMESPACE
 
 #endif // QDIRECTFBCURSOR_H

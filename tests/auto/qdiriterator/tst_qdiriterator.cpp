@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -599,7 +599,7 @@ void tst_QDirIterator::qtbug15421_hiddenDirs_hiddenFiles()
     // a special call since hidden files need to be "marked" while in Unix
     // anything starting by a '.' is a hidden file.
     // For that reason this test is not run in Windows.
-#if defined Q_OS_WIN || Q_OS_WINCE
+#if defined (Q_OS_WIN) || defined (Q_OS_WINCE)
     QSKIP("To create hidden files a special call is required in Windows.", SkipAll);
 #else
     // Only files

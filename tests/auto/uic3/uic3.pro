@@ -9,3 +9,4 @@ DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 requires(contains(QT_CONFIG,qt3support))
 
+win32:CONFIG+=insignificant_test # QTQAINFRA-428

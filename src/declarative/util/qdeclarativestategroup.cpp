@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,6 +72,11 @@ public:
     static int count_state(QDeclarativeListProperty<QDeclarativeState> *list);
     static QDeclarativeState *at_state(QDeclarativeListProperty<QDeclarativeState> *list, int index);
     static void clear_states(QDeclarativeListProperty<QDeclarativeState> *list);
+
+    static void append_transition(QDeclarativeListProperty<QDeclarativeTransition> *list, QDeclarativeTransition *state);
+    static int count_transitions(QDeclarativeListProperty<QDeclarativeTransition> *list);
+    static QDeclarativeTransition *at_transition(QDeclarativeListProperty<QDeclarativeTransition> *list, int index);
+    static void clear_transitions(QDeclarativeListProperty<QDeclarativeTransition> *list);
 
     QList<QDeclarativeState *> states;
     QList<QDeclarativeTransition *> transitions;
@@ -218,7 +223,35 @@ void QDeclarativeStateGroupPrivate::clear_states(QDeclarativeListProperty<QDecla
 QDeclarativeListProperty<QDeclarativeTransition> QDeclarativeStateGroup::transitionsProperty()
 {
     Q_D(QDeclarativeStateGroup);
-    return QDeclarativeListProperty<QDeclarativeTransition>(this, d->transitions);
+    return QDeclarativeListProperty<QDeclarativeTransition>(this, &d->transitions, &QDeclarativeStateGroupPrivate::append_transition,
+                                                       &QDeclarativeStateGroupPrivate::count_transitions,
+                                                       &QDeclarativeStateGroupPrivate::at_transition,
+                                                       &QDeclarativeStateGroupPrivate::clear_transitions);
+}
+
+void QDeclarativeStateGroupPrivate::append_transition(QDeclarativeListProperty<QDeclarativeTransition> *list, QDeclarativeTransition *trans)
+{
+    QDeclarativeStateGroup *_this = static_cast<QDeclarativeStateGroup *>(list->object);
+    if (trans)
+        _this->d_func()->transitions.append(trans);
+}
+
+int QDeclarativeStateGroupPrivate::count_transitions(QDeclarativeListProperty<QDeclarativeTransition> *list)
+{
+    QDeclarativeStateGroup *_this = static_cast<QDeclarativeStateGroup *>(list->object);
+    return _this->d_func()->transitions.count();
+}
+
+QDeclarativeTransition *QDeclarativeStateGroupPrivate::at_transition(QDeclarativeListProperty<QDeclarativeTransition> *list, int index)
+{
+    QDeclarativeStateGroup *_this = static_cast<QDeclarativeStateGroup *>(list->object);
+    return _this->d_func()->transitions.at(index);
+}
+
+void QDeclarativeStateGroupPrivate::clear_transitions(QDeclarativeListProperty<QDeclarativeTransition> *list)
+{
+    QDeclarativeStateGroup *_this = static_cast<QDeclarativeStateGroup *>(list->object);
+    _this->d_func()->transitions.clear();
 }
 
 /*!

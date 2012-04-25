@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -138,6 +138,8 @@ private slots:
     void textSemantics();
 #endif
     void cursorPositionChanged();
+    void mouseSelection();
+    void mouseSelectionDClick();
     void setTextCursor();
 #ifndef QT_NO_CLIPBOARD
     void undoAvailableAfterPaste();
@@ -783,6 +785,45 @@ void tst_QTextEdit::cursorPositionChanged()
     QCOMPARE(spy2.cursorPositions.count(), 1);
     QCOMPARE(spy2.cursorPositions.at(0), 0);
     QCOMPARE(ed->textCursor().position(), 0);
+}
+
+void tst_QTextEdit::mouseSelection()
+{
+    ed->show();
+    ed->setPlainText(("Hello World"));
+    QTextCursor cursor = ed->textCursor();
+    cursor.setPosition(1);
+    QPoint p1 = ed->cursorRect(cursor).center();
+    cursor.setPosition(10);
+    QPoint p2 = ed->cursorRect(cursor).center();
+    QTest::mousePress(ed->viewport(), Qt::LeftButton, 0, p1);
+    {   QMouseEvent ev(QEvent::MouseMove, p2, Qt::LeftButton, Qt::LeftButton, 0);
+        QCoreApplication::sendEvent(ed->viewport(), &ev); }
+    QTest::mouseRelease(ed->viewport(), Qt::LeftButton, 0, p2);
+    QVERIFY(ed->textCursor().hasSelection());
+    QCOMPARE(ed->textCursor().selectedText(), QString("ello Worl"));
+
+}
+
+void tst_QTextEdit::mouseSelectionDClick()
+{
+    ed->show();
+    ed->setPlainText(("Hello World"));
+    QTextCursor cursor = ed->textCursor();
+    cursor.setPosition(1);
+    QPoint p1 = ed->cursorRect(cursor).center();
+    cursor.setPosition(10);
+    QPoint p2 = ed->cursorRect(cursor).center();
+    QTest::mousePress(ed->viewport(), Qt::LeftButton, 0, p1);
+    QTest::mouseRelease(ed->viewport(), Qt::LeftButton, 0, p1);
+    QTest::mouseDClick(ed->viewport(), Qt::LeftButton, 0, p1);
+    QVERIFY(ed->textCursor().hasSelection());
+    QCOMPARE(ed->textCursor().selectedText(), QString("Hello"));
+    {   QMouseEvent ev(QEvent::MouseMove, p2, Qt::LeftButton, Qt::LeftButton, 0);
+        QCoreApplication::sendEvent(ed->viewport(), &ev); }
+    QTest::mouseRelease(ed->viewport(), Qt::LeftButton, 0, p2);
+    QVERIFY(ed->textCursor().hasSelection());
+    QCOMPARE(ed->textCursor().selectedText(), QString("Hello World"));
 }
 
 void tst_QTextEdit::setTextCursor()
@@ -1861,11 +1902,11 @@ void tst_QTextEdit::selectionChanged()
     QCOMPARE(selectionChangedSpy.count(), 3);
 
     QTest::keyClick(ed, Qt::Key_Right);
-    QCOMPARE(ed->textCursor().position(), 5);
+    QCOMPARE(ed->textCursor().position(), 4);
     QCOMPARE(selectionChangedSpy.count(), 4);
 
     QTest::keyClick(ed, Qt::Key_Right);
-    QCOMPARE(ed->textCursor().position(), 6);
+    QCOMPARE(ed->textCursor().position(), 5);
     QCOMPARE(selectionChangedSpy.count(), 4);
 }
 
@@ -1927,7 +1968,7 @@ void tst_QTextEdit::setText()
 }
 
 QT_BEGIN_NAMESPACE
-extern void qt_setQtEnableTestFont(bool value);
+extern Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
 
 void tst_QTextEdit::fullWidthSelection_data()

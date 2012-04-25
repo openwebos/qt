@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -479,8 +479,19 @@ bool QFileDialog::restoreState(const QByteArray &state)
         history.pop_front();
     setHistory(history);
     setDirectory(lastVisitedDir()->isEmpty() ? currentDirectory : *lastVisitedDir());
-    if (!d->qFileDialogUi->treeView->header()->restoreState(headerData))
+    QHeaderView *headerView = d->qFileDialogUi->treeView->header();
+    if (!headerView->restoreState(headerData))
         return false;
+
+    QList<QAction*> actions = headerView->actions();
+    QAbstractItemModel *abstractModel = d->model;
+#ifndef QT_NO_PROXYMODEL
+    if (d->proxyModel)
+        abstractModel = d->proxyModel;
+#endif
+    int total = qMin(abstractModel->columnCount(QModelIndex()), actions.count() + 1);
+    for (int i = 1; i < total; ++i)
+        actions.at(i - 1)->setChecked(!headerView->isSectionHidden(i));
 
     setViewMode(ViewMode(viewMode));
     return true;
@@ -869,6 +880,7 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
     if (!path.startsWith(QLatin1Char('~')))
         return path;
     QString ret = path;
+#if !defined(Q_OS_INTEGRITY)
     QStringList tokens = ret.split(QDir::separator());
     if (tokens.first() == QLatin1String("~")) {
         ret.replace(0, 1, QDir::homePath());
@@ -880,7 +892,12 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
         passwd *tmpPw;
         char buf[200];
         const int bufSize = sizeof(buf);
-        int err = getpwnam_r(userName.toLocal8Bit().constData(), &pw, buf, bufSize, &tmpPw);
+        int err = 0;
+#if defined(Q_OS_SOLARIS) && (_POSIX_C_SOURCE - 0 < 199506L)
+        tmpPw = getpwnam_r(userName.toLocal8Bit().constData(), &pw, buf, bufSize);
+#else
+        err = getpwnam_r(userName.toLocal8Bit().constData(), &pw, buf, bufSize, &tmpPw);
+#endif
         if (err || !tmpPw)
             return ret;
         const QString homePath = QString::fromLocal8Bit(pw.pw_dir);
@@ -894,6 +911,7 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
     }
     if (expanded != 0)
         *expanded = true;
+#endif
     return ret;
 }
 #endif
@@ -903,7 +921,9 @@ Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path, bool *expanded 
   */
 QStringList QFileDialogPrivate::typedFiles() const
 {
+#ifdef Q_OS_UNIX
     Q_Q(const QFileDialog);
+#endif
     QStringList files;
     QString editText = lineEdit()->text();
     if (!editText.contains(QLatin1Char('"'))) {

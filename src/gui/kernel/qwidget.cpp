@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -320,6 +320,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
 #elif defined(Q_OS_SYMBIAN)
       , symbianScreenNumber(0)
       , fixNativeOrientationCalled(false)
+      , isGLGlobalShareWidget(0)
 #endif
 {
     if (!qApp) {
@@ -351,6 +352,10 @@ QWidgetPrivate::QWidgetPrivate(int version)
 
 QWidgetPrivate::~QWidgetPrivate()
 {
+#ifdef Q_OS_SYMBIAN
+    _q_cleanupWinIds();
+#endif
+
     if (widgetItem)
         widgetItem->wid = 0;
 
@@ -1314,6 +1319,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 #elif defined(Q_WS_QPA)
     if (desktopWidget) {
         int screen = desktopWidget->d_func()->topData()->screenIndex;
+        topData()->screenIndex = screen;
         QPlatformIntegration *platform = QApplicationPrivate::platformIntegration();
         platform->moveToScreen(q, screen);
     }
@@ -2273,10 +2279,16 @@ void QWidgetPrivate::updateIsOpaque()
 #endif
 
 #ifdef Q_WS_S60
-    if (q->windowType() == Qt::Dialog && q->testAttribute(Qt::WA_TranslucentBackground)
-                && S60->avkonComponentsSupportTransparency) {
-        setOpaque(false);
-        return;
+    if (q->testAttribute(Qt::WA_TranslucentBackground)) {
+        if (q->windowType() & Qt::Dialog || q->windowType() & Qt::Popup) {
+            if (S60->avkonComponentsSupportTransparency) {
+                setOpaque(false);
+                return;
+            }
+        } else {
+            setOpaque(false);
+            return;
+        }
     }
 #endif
 
@@ -2296,11 +2308,16 @@ void QWidgetPrivate::updateIsOpaque()
     }
 
     if (q->isWindow() && !q->testAttribute(Qt::WA_NoSystemBackground)) {
+#ifdef Q_WS_S60
+        setOpaque(true);
+        return;
+#else
         const QBrush &windowBrush = q->palette().brush(QPalette::Window);
         if (windowBrush.style() != Qt::NoBrush && windowBrush.isOpaque()) {
             setOpaque(true);
             return;
         }
+#endif
     }
     setOpaque(false);
 }
@@ -2420,11 +2437,19 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int 
 
     if ((flags & DrawAsRoot) && !(q->autoFillBackground() && autoFillBrush.isOpaque())) {
         const QBrush bg = q->palette().brush(QPalette::Window);
-#ifdef Q_WS_QWS
-        if (!(flags & DontSetCompositionMode) && painter->paintEngine()->hasFeature(QPaintEngine::PorterDuff))
-            painter->setCompositionMode(QPainter::CompositionMode_Source); //copy alpha straight in
-#endif
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
+        if (!(flags & DontSetCompositionMode)) {
+            //copy alpha straight in
+            QPainter::CompositionMode oldMode = painter->compositionMode();
+            painter->setCompositionMode(QPainter::CompositionMode_Source);
+            fillRegion(painter, rgn, bg);
+            painter->setCompositionMode(oldMode);
+        } else {
+            fillRegion(painter, rgn, bg);
+        }
+#else
         fillRegion(painter, rgn, bg);
+#endif
     }
 
     if (q->autoFillBackground())
@@ -3346,8 +3371,8 @@ QList<QAction*> QWidget::actions() const
     \property QWidget::enabled
     \brief whether the widget is enabled
 
-    An enabled widget handles keyboard and mouse events; a disabled
-    widget does not.
+    In general an enabled widget handles keyboard and mouse events; a disabled
+    widget does not. An exception is made with \l{QAbstractButton}.
 
     Some widgets display themselves differently when they are
     disabled. For example a button might draw its label grayed out. If
@@ -5707,7 +5732,7 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
     else
         flags |= DontSubtractOpaqueChildren;
 
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_QPA)
     flags |= DontSetCompositionMode;
 #endif
 
@@ -10961,11 +10986,14 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
         break;
     case Qt::WA_TranslucentBackground:
+#if defined(Q_OS_SYMBIAN)
+        setAttribute(Qt::WA_NoSystemBackground, on);
+#else
         if (on) {
             setAttribute(Qt::WA_NoSystemBackground);
             d->updateIsTranslucent();
         }
-
+#endif
         break;
     case Qt::WA_AcceptTouchEvents:
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
@@ -11062,7 +11090,7 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 qreal QWidget::windowOpacity() const
 {
     Q_D(const QWidget);
-    return (isWindow() && d->maybeTopData()) ? d->maybeTopData()->opacity / 255. : 1.0;
+    return (isWindow() && d->maybeTopData()) ? d->maybeTopData()->opacity / qreal(255.) : qreal(1.0);
 }
 
 void QWidget::setWindowOpacity(qreal opacity)
@@ -12685,9 +12713,11 @@ void QWidget::clearMask()
 */
 
 #ifdef Q_OS_SYMBIAN
-void QWidgetPrivate::_q_delayedDestroy(WId winId)
+void QWidgetPrivate::_q_cleanupWinIds()
 {
-    delete winId;
+    foreach (WId wid, widCleanupList)
+        delete wid;
+    widCleanupList.clear();
 }
 #endif
 

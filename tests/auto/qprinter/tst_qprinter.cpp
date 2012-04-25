@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -577,15 +577,22 @@ void tst_QPrinter::outputFormatFromSuffix()
 
 void tst_QPrinter::setGetPaperSize()
 {
-    QPrinter p;
-    p.setOutputFormat(QPrinter::PdfFormat);
-    QSizeF size(500, 10);
-    p.setPaperSize(size, QPrinter::Millimeter);
-    QCOMPARE(p.paperSize(QPrinter::Millimeter), size);
-    QSizeF ptSize = p.paperSize(QPrinter::Point);
-    //qDebug() << ptSize;
-    QVERIFY(qAbs(ptSize.width() - size.width() * (72/25.4)) < 1E-4);
-    QVERIFY(qAbs(ptSize.height() - size.height() * (72/25.4)) < 1E-4);
+    {
+        QPrinter p;
+        p.setOutputFormat(QPrinter::PdfFormat);
+        QSizeF size(500, 10);
+        p.setPaperSize(size, QPrinter::Millimeter);
+        QCOMPARE(p.paperSize(QPrinter::Millimeter), size);
+        QSizeF ptSize = p.paperSize(QPrinter::Point);
+        //qDebug() << ptSize;
+        QVERIFY(qAbs(ptSize.width() - size.width() * (72/25.4)) < 1E-4);
+        QVERIFY(qAbs(ptSize.height() - size.height() * (72/25.4)) < 1E-4);
+    }
+    {
+        QPrinter p;
+        p.setPaperSize(QPrinter::Legal);
+        QCOMPARE(p.paperSize(), QPrinter::Legal);
+    }
 }
 
 void tst_QPrinter::testPageMargins_data()

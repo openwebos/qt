@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -315,7 +315,8 @@ void QProgressBar::setValue(int value)
     d->value = value;
     emit valueChanged(value);
 #ifndef QT_NO_ACCESSIBILITY
-    QAccessible::updateAccessibility(this, 0, QAccessible::ValueChanged);
+    if (isVisible())
+        QAccessible::updateAccessibility(this, 0, QAccessible::ValueChanged);
 #endif
     if (d->repaintRequired())
         repaint();
@@ -341,11 +342,17 @@ int QProgressBar::value() const
 void QProgressBar::setRange(int minimum, int maximum)
 {
     Q_D(QProgressBar);
-    d->minimum = minimum;
-    d->maximum = qMax(minimum, maximum);
-    if ( d->value <(d->minimum-1) || d->value > d->maximum)
-        reset();
+    if (minimum != d->minimum || maximum != d->maximum) {
+        d->minimum = minimum;
+        d->maximum = qMax(minimum, maximum);
+
+        if (d->value < (d->minimum - 1) || d->value > d->maximum)
+            reset();
+        else
+            update();
+    }
 }
+
 /*!
     \property QProgressBar::textVisible
     \brief whether the current completed percentage should be displayed
@@ -462,7 +469,7 @@ QString QProgressBar::text() const
         return result;
     }
 
-    int progress = (qreal(d->value) - d->minimum) * 100.0 / totalSteps;
+    int progress = (qreal(d->value) - d->minimum) * qreal(100.0) / totalSteps;
     result.replace(QLatin1String("%p"), QString::number(progress));
     return result;
 }

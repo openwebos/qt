@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -1361,6 +1361,7 @@ static void initializeDb()
 
                 // let's fake one...
                 equiv = foundry->style(key, QString(), true);
+                equiv->styleName = styleStringHelper(key.weight, QFont::Style(key.style));
                 equiv->smoothScalable = true;
 
                 QtFontSize *equiv_size = equiv->pixelSize(SMOOTH_SCALABLE, true);

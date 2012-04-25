@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -62,17 +62,12 @@ export QWS_MOUSE_PROTO="<driver>[:<driver specific options>]
 
 
 //! [4]
-export QWS_MOUSE_PROTO="Vr41xx:press=500:/dev/misc/ts"
+export QWS_KEYBOARD=<driver>[:<driver specific options>]
 //! [4]
 
 
 //! [5]
-export QWS_KEYBOARD=<driver>[:<driver specific options>]
-//! [5]
-
-
-//! [6]
 export QWS_KEYBOARD="<driver>[:<driver specific options>]
         <driver>[:<driver specific options>]
         <driver>[:<driver specific options>]"
-//! [6]
+//! [5]

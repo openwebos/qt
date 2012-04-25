@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -115,10 +115,10 @@ void Q_CORE_EXPORT qRegisterStaticPluginInstanceFunction(QtPluginInstanceFunctio
 #  endif
 #  define Q_PLUGIN_VERIFICATION_DATA \
     static const char qt_plugin_verification_data[] = \
-      "pattern=""QT_PLUGIN_VERIFICATION_DATA""\n" \
-      "version="QT_VERSION_STR"\n" \
-      "debug="QPLUGIN_DEBUG_STR"\n" \
-      "buildkey="QT_BUILD_KEY;
+      "pattern=QT_PLUGIN_VERIFICATION_DATA\n" \
+      "version=" QT_VERSION_STR "\n" \
+      "debug=" QPLUGIN_DEBUG_STR "\n" \
+      "buildkey=" QT_BUILD_KEY;
 
 #  if defined (Q_OF_ELF) && defined (Q_CC_GNU)
 #  define Q_PLUGIN_VERIFICATION_SECTION \

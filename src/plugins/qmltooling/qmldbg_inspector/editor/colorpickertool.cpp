@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -75,7 +75,9 @@ void ColorPickerTool::mouseMoveEvent(QMouseEvent *event)
 
 void ColorPickerTool::clear()
 {
+#ifndef QT_NO_CURSOR
     view()->setCursor(Qt::CrossCursor);
+#endif
 }
 
 void ColorPickerTool::pickColor(const QPoint &pos)

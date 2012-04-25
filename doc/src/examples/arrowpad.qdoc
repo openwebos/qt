@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example linguist/arrowpad
     \title Arrow Pad Example
 
-    This example is a slightly more involved and introduces a key \e
+    \brief ThArrow Pad Linguist example is a slightly more involved and introduces a key \e
     {Qt Linguist} concept: "contexts". It also shows how to use two
     or more languages.
 

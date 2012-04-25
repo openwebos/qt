@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -114,9 +114,9 @@ public:
     supported format that is as close as possible to the format with
     nearestFormat(). For instance:
 
-    \snippet doc/src/snippets/audio/main.cpp 1
+    \snippet doc/src/snippets/audio/main.cpp 6
     \dots 8
-    \snippet doc/src/snippets/audio/main.cpp 2
+    \snippet doc/src/snippets/audio/main.cpp 7
 
     A QAudioDeviceInfo is used by Qt to construct
     classes that communicate with the device--such as

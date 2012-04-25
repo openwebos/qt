@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -59,6 +59,7 @@
 
 #include <QtCore/qshareddata.h>
 #include <QtNetwork/qsslsocket.h>
+#include <QtNetwork/qssl.h>
 
 QT_BEGIN_HEADER
 
@@ -117,6 +118,9 @@ public:
     // Certificate Authority (CA) settings
     QList<QSslCertificate> caCertificates() const;
     void setCaCertificates(const QList<QSslCertificate> &certificates);
+
+    void setSslOption(QSsl::SslOption option, bool on);
+    bool testSslOption(QSsl::SslOption option) const;
 
     static QSslConfiguration defaultConfiguration();
     static void setDefaultConfiguration(const QSslConfiguration &configuration);

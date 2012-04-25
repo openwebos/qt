@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,8 +29,10 @@
     \example sql/masterdetail
     \title Master Detail Example
 
-    The Master Detail Example shows how to present data from different
-    data sources in the same application. The album titles, and the
+    \brief The Master Detail Example shows how to present data from different
+    data sources in the same application.
+    
+    The album titles, and the
     corresponding artists and release dates, are kept in a
     database, while each album's tracks are stored in an XML
     file.

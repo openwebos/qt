@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -884,6 +884,9 @@ namespace DeliverInDefinedOrder_QTBUG19637 {
 
 void tst_QEventLoop::deliverInDefinedOrder_QTBUG19637()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("Causes test suite to crash - see QTBUG-23974", SkipAll);
+#endif
     using namespace DeliverInDefinedOrder_QTBUG19637;
     qMetaTypeId<QThread*>();
     QThread threads[NbThread];

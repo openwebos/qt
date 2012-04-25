@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,7 +58,7 @@ DragWidget::DragWidget(QWidget *parent)
 
     while (!inputStream.atEnd()) {
         QString word;
-        inputStream >> word;
+        word = inputStream.readLine();
         if (!word.isEmpty()) {
             DragLabel *wordLabel = new DragLabel(word, this);
             wordLabel->move(x, y);

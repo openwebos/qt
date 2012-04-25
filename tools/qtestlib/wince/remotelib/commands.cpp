@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -202,7 +202,7 @@ int qRemotePowerButton(DWORD, BYTE*, DWORD*, BYTE**, IRAPIStream* stream)
     //PPN_OEMBASE Greater than or equal to 0x10000 
     //You can define higher values, such as 0x10001, 0x10002, and so on.
     // Reserved. Set dwData to zero (0). 
-    returnValue = PowerPolicyNotify(PPN_POWERBUTTONPRESSED, 0);
+    returnValue = PowerPolicyNotify(PPN_SUSPENDKEYPRESSED, 0);
 
     if (S_OK != stream->Write(&returnValue, sizeof(returnValue), &bytesRead))
         return -3;

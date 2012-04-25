@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -132,6 +132,8 @@ private slots:
 
     void taskQTBUG4595_dontAssertWhenDocumentSpecifiesUnknownEncoding() const;
     void cloneDTD_QTBUG8398() const;
+    void DTDNotationDecl();
+    void DTDEntityDecl();
 
     void cleanupTestCase() const;
 
@@ -173,7 +175,7 @@ void tst_QDom::setContent_data()
     QTest::addColumn<QStringList>("featuresFalse");
     QTest::addColumn<QString>("res");
 
-/*    QTest::newRow( "01" ) << doc01
+    QTest::newRow( "01" ) << doc01
                        << QStringList()
                        << QString("http://trolltech.com/xml/features/report-whitespace-only-CharData").split(' ')
                        << QString("<!DOCTYPE a1>\n"
@@ -245,7 +247,7 @@ void tst_QDom::setContent_data()
                                    " </b3>\n"
                                    "</a1>\n");
 
-  */   QTest::newRow("05") << QString("<message>\n"
+    QTest::newRow("05") << QString("<message>\n"
                                 "    <body>&lt;b&gt;foo&lt;/b&gt;>]]&gt;</body>\n"
                                 "</message>\n")
                      << QStringList() << QStringList()
@@ -1930,5 +1932,52 @@ void tst_QDom::cloneDTD_QTBUG8398() const
     domDocument2.save(stream, 0);
     QCOMPARE(output, expected);
 }
+
+void tst_QDom::DTDNotationDecl()
+{
+    QString dtd("<?xml version='1.0' encoding='UTF-8'?>\n"
+                   "<!DOCTYPE first [\n"
+                   "<!NOTATION gif SYSTEM 'image/gif'>\n"
+                   "<!NOTATION jpeg SYSTEM 'image/jpeg'>\n"
+                   "]>\n"
+                   "<first/>\n");
+
+    QDomDocument domDocument;
+    QVERIFY(domDocument.setContent(dtd));
+
+    const QDomDocumentType doctype = domDocument.doctype();
+    QCOMPARE(doctype.notations().size(), 2);
+
+    QVERIFY(doctype.namedItem(QString("gif")).isNotation());
+    QCOMPARE(doctype.namedItem(QString("gif")).toNotation().systemId(), QString("image/gif"));
+
+    QVERIFY(doctype.namedItem(QString("jpeg")).isNotation());
+    QCOMPARE(doctype.namedItem(QString("jpeg")).toNotation().systemId(), QString("image/jpeg"));
+}
+
+void tst_QDom::DTDEntityDecl()
+{
+    QString dtd("<?xml version='1.0' encoding='UTF-8'?>\n"
+                   "<!DOCTYPE first [\n"
+                   "<!ENTITY secondFile SYSTEM 'second.xml'>\n"
+                   "<!ENTITY logo SYSTEM \"http://www.w3c.org/logo.gif\" NDATA gif>"
+                   "]>\n"
+                   "<first/>\n");
+
+    QDomDocument domDocument;
+    QVERIFY(domDocument.setContent(dtd));
+
+    const QDomDocumentType doctype = domDocument.doctype();
+    QCOMPARE(doctype.entities().count(), 2);
+
+    QVERIFY(doctype.namedItem(QString("secondFile")).isEntity());
+    QCOMPARE(doctype.namedItem(QString("secondFile")).toEntity().systemId(), QString("second.xml"));
+    QCOMPARE(doctype.namedItem(QString("secondFile")).toEntity().notationName(), QString());
+
+    QVERIFY(doctype.namedItem(QString("logo")).isEntity());
+    QCOMPARE(doctype.namedItem(QString("logo")).toEntity().systemId(), QString("http://www.w3c.org/logo.gif"));
+    QCOMPARE(doctype.namedItem(QString("logo")).toEntity().notationName(), QString("gif"));
+}
+
 QTEST_MAIN(tst_QDom)
 #include "tst_qdom.moc"

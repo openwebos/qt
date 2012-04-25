@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -938,6 +938,8 @@ void tst_QRegExp::testEscapingWildcard_data(){
     QTest::newRow("? Escaped") << "\\?O;" <<  "?O;" << true;
 
     QTest::newRow("[] not escaped") << "[lL]" <<  "l" << true;
+    QTest::newRow("[] escaped") << "\\[\\]" <<  "[]" << true;
+
     QTest::newRow("case [[]") << "[[abc]" <<  "[" << true;
     QTest::newRow("case []abc] match ]") << "[]abc]" <<  "]" << true;
     QTest::newRow("case []abc] match a") << "[]abc]" <<  "a" << true;
@@ -953,7 +955,7 @@ void tst_QRegExp::testEscapingWildcard_data(){
 
     QTest::newRow("a true '\\' in input") << "\\Qt;" <<  "\\Qt;" << true;
     QTest::newRow("two true '\\' in input") << "\\\\Qt;" <<  "\\\\Qt;" << true;
-    QTest::newRow("a '\\' at the end") << "\\\\Qt;" <<  "\\\\Qt;" << true;
+    QTest::newRow("a '\\' at the end") << "\\\\Qt;\\" <<  "\\\\Qt;\\" << true;
 
 }
 void tst_QRegExp::testEscapingWildcard(){

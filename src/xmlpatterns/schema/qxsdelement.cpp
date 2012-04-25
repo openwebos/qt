@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -128,12 +128,12 @@ bool XsdElement::isElement() const
 
 void XsdElement::setType(const SchemaType::Ptr &type)
 {
-    m_type = type;
+    m_type = type.data();
 }
 
 SchemaType::Ptr XsdElement::type() const
 {
-    return m_type;
+    return SchemaType::Ptr(m_type);
 }
 
 void XsdElement::setScope(const Scope::Ptr &scope)

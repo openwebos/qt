@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -278,7 +278,10 @@ bool QDeclarativePinchArea::event(QEvent *event)
         return QDeclarativeItem::event(event);
     switch (event->type()) {
     case QEvent::TouchBegin:
-    case QEvent::TouchUpdate: {
+        d->touchEventsActive = true;
+        // No break, continue to next case.
+    case QEvent::TouchUpdate:
+        if (d->touchEventsActive) {
             QTouchEvent *touch = static_cast<QTouchEvent*>(event);
             d->touchPoints.clear();
             for (int i = 0; i < touch->touchPoints().count(); ++i) {
@@ -287,9 +290,13 @@ bool QDeclarativePinchArea::event(QEvent *event)
                 }
             }
             updatePinch();
+            return true;
         }
-        return true;
+        break;
+    case QEvent::WindowDeactivate:
+        // No break, continue to next case.
     case QEvent::TouchEnd:
+        d->touchEventsActive = false;
         d->touchPoints.clear();
         updatePinch();
         break;

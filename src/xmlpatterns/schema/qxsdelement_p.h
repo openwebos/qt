@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -382,7 +382,7 @@ namespace QPatternist
             XsdElement::WeakList substitutionGroups() const;
 
         private:
-            SchemaType::Ptr                   m_type;
+            SchemaType                        *m_type;
             Scope::Ptr                        m_scope;
             ValueConstraint::Ptr              m_valueConstraint;
             TypeTable::Ptr                    m_typeTable;

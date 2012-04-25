@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example sql/drilldown
     \title Drill Down Example
 
-    The Drill Down example shows how to read data from a database as
+    \brief The Drill Down example shows how to read data from a database as
     well as submit changes, using the QSqlRelationalTableModel and
     QDataWidgetMapper classes.
 

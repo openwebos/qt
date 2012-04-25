@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -42,6 +42,7 @@
 #include "qplatformdefs.h"
 
 #include "qapplication.h"
+#include "qabstracteventdispatcher.h"
 
 #ifndef QT_NO_DRAGANDDROP
 
@@ -70,6 +71,10 @@
 
 #include "qwidget_p.h"
 #include "qcursor_p.h"
+
+#ifndef QT_NO_XFIXES
+#include <X11/extensions/Xfixes.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1112,21 +1117,6 @@ void qt_xdnd_send_leave()
     waiting_for_status = false;
 }
 
-// TODO: remove and use QApplication::currentKeyboardModifiers() in Qt 4.8.
-static Qt::KeyboardModifiers currentKeyboardModifiers()
-{
-    Window root;
-    Window child;
-    int root_x, root_y, win_x, win_y;
-    uint keybstate;
-    for (int i = 0; i < ScreenCount(X11->display); ++i) {
-        if (XQueryPointer(X11->display, QX11Info::appRootWindow(i), &root, &child,
-                          &root_x, &root_y, &win_x, &win_y, &keybstate))
-            return X11->translateModifiers(keybstate & 0x00ff);
-    }
-    return 0;
-}
-
 void QX11Data::xdndHandleDrop(QWidget *, const XEvent * xe, bool passive)
 {
     DEBUG("xdndHandleDrop");
@@ -1183,7 +1173,7 @@ void QX11Data::xdndHandleDrop(QWidget *, const XEvent * xe, bool passive)
 
         // Drop coming from another app? Update keyboard modifiers.
         if (!qt_xdnd_dragging) {
-            QApplicationPrivate::modifier_buttons = currentKeyboardModifiers();
+            QApplicationPrivate::modifier_buttons = QApplication::queryKeyboardModifiers();
         }
 
         QDropEvent de(qt_xdnd_current_position, possible_actions, dropData,
@@ -1433,6 +1423,21 @@ void QDragManager::cancel(bool deleteSource)
 }
 
 static
+bool windowInteractsWithPosition(const QPoint & pos, Window w, int shapeType)
+{
+    int nrectanglesRet, dummyOrdering;
+    XRectangle *rectangles = XShapeGetRectangles(QX11Info::display(), w, shapeType, &nrectanglesRet, &dummyOrdering);
+    bool interacts = true;
+    if (rectangles) {
+        interacts = false;
+        for (int i = 0; !interacts && i < nrectanglesRet; ++i)
+            interacts = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
+        XFree(rectangles);
+    }
+    return interacts;
+}
+
+static
 Window findRealWindow(const QPoint & pos, Window w, int md)
 {
     if (xdnd_data.deco && w == xdnd_data.deco->effectiveWinId())
@@ -1447,6 +1452,7 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
 
         if (attr.map_state == IsViewable
             && QRect(attr.x,attr.y,attr.width,attr.height).contains(pos)) {
+            bool windowContainsMouse = true;
             {
                 Atom   type = XNone;
                 int f;
@@ -1456,8 +1462,15 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
                 XGetWindowProperty(X11->display, w, ATOM(XdndAware), 0, 0, False,
                                    AnyPropertyType, &type, &f,&n,&a,&data);
                 if (data) XFree(data);
-                if (type)
-                    return w;
+                if (type) {
+                    // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
+                    // need an && here so that in the case one is set and the other is not we still get the correct result.
+#if !defined(Q_OS_SOLARIS)
+                    windowContainsMouse = windowInteractsWithPosition(pos, w, ShapeInput) && windowInteractsWithPosition(pos, w, ShapeBounding);
+#endif
+                    if (windowContainsMouse)
+                        return w;
+                }
             }
 
             Window r, p;
@@ -1478,7 +1491,10 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
             }
 
             // No children!
-            return w;
+            if (!windowContainsMouse)
+                return 0;
+            else
+                return w;
         }
     }
     return 0;
@@ -1958,7 +1974,10 @@ Qt::DropAction QDragManager::drag(QDrag * o)
         timer.start();
         do {
             XEvent event;
-            if (XCheckTypedEvent(X11->display, ClientMessage, &event))
+            // Pass the event through the event dispatcher filter so that applications
+            // which install an event filter on the dispatcher get to handle it first.
+            if (XCheckTypedEvent(X11->display, ClientMessage, &event) &&
+                !QAbstractEventDispatcher::instance()->filterEvent(&event))
                 qApp->x11ProcessEvent(&event);
 
             // sleep 50 ms, so we don't use up CPU cycles all the time.

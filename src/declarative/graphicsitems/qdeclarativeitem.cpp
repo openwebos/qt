@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -3600,8 +3600,11 @@ void QDeclarativeItem::setSize(const QSizeF &size)
 bool QDeclarativeItem::hasActiveFocus() const
 {
     Q_D(const QDeclarativeItem);
-    return focusItem() == this ||
-           (d->flags & QGraphicsItem::ItemIsFocusScope && focusItem() != 0);
+    QGraphicsItem *fi = focusItem();
+    QGraphicsScene *s = scene();
+    bool hasOrWillGainFocus = fi && fi->isVisible() && (!s || s->focusItem() == fi);
+    bool isOrIsScopeOfFocusItem = (fi == this || (d->flags & QGraphicsItem::ItemIsFocusScope));
+    return hasOrWillGainFocus && isOrIsScopeOfFocusItem;
 }
 
 /*!

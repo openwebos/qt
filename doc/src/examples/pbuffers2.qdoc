@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example opengl/pbuffers2
     \title Pixel Buffers 2 Example
 
-    The Pixel Buffers 2 example demonstrates how to use the
+    \brief The Pixel Buffers 2 example demonstrates how to use the
     QGLPixelBuffer class to render into an off-screen buffer and use
     the contents as a dynamic texture in a QGLWidget.
 

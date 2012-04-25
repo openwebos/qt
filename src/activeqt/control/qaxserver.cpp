@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -91,7 +91,7 @@ QAxFactory *qAxFactory()
         QStringList keys(qax_factory->featureList());
         for (int i = 0; i < keys.count(); ++i) {
             QString key(keys.at(i));
-            qRegisterMetaType((key + QLatin1Char('*')).toLatin1(), (void**)0);
+            qRegisterMetaType((key + QLatin1Char('*')).toLatin1(), (void**)(quintptr)-1);
         }
     }
     return qax_factory;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -72,6 +72,7 @@ private slots:
     void clear();
     void pixmapKey();
     void noLeak();
+    void strictCacheLimit();
 };
 
 static QPixmapCache::KeyData* getPrivate(QPixmapCache::Key &key)
@@ -498,7 +499,7 @@ void tst_QPixmapCache::pixmapKey()
 }
 
 QT_BEGIN_NAMESPACE
-extern int q_QPixmapCache_keyHashSize();
+extern Q_AUTOTEST_EXPORT int q_QPixmapCache_keyHashSize();
 QT_END_NAMESPACE
 
 void tst_QPixmapCache::noLeak()
@@ -515,6 +516,30 @@ void tst_QPixmapCache::noLeak()
     int newSize = q_QPixmapCache_keyHashSize();
 
     QCOMPARE(oldSize, newSize);
+}
+
+
+void tst_QPixmapCache::strictCacheLimit()
+{
+    const int limit = 1024; // 1024 KB
+
+    QPixmapCache::clear();
+    QPixmapCache::setCacheLimit(limit);
+
+    // insert 200 64x64 pixmaps
+    // 3200 KB for 32-bit depths
+    // 1600 KB for 16-bit depths
+    // not counting the duplicate entries
+    for (int i = 0; i < 200; ++i) {
+        QPixmap pixmap(64, 64);
+        pixmap.fill(Qt::transparent);
+
+        QString id = QString::number(i);
+        QPixmapCache::insert(id + "-a", pixmap);
+        QPixmapCache::insert(id + "-b", pixmap);
+    }
+
+    QVERIFY(QPixmapCache::totalUsed() <= limit);
 }
 
 QTEST_MAIN(tst_QPixmapCache)

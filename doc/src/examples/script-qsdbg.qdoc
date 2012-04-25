@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,6 +29,6 @@
     \example script/qsdbg
     \title Qt Script Debugger Example
 
-    The Qt Script Debugger example shows how to enable the Qt Script debugger
+    \brief The Qt Script Debugger example shows how to enable the Qt Script debugger
     for command line debugging.
 */

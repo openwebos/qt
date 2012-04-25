@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -2966,11 +2966,12 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
             AnchorData *ad = variables.at(i);
             ad->sizeAtPreferred = ad->result - g_offset;
         }
-
-        // Make sure we delete the simplex solver -before- we delete the
-        // constraints used by it.
-        delete simplex;
     }
+
+    // Make sure we delete the simplex solver -before- we delete the
+    // constraints used by it.
+    delete simplex;
+
     // Delete constraints and variables we created.
     qDeleteAll(preferredConstraints);
     qDeleteAll(preferredVariables);

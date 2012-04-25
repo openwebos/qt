@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -60,6 +60,7 @@ public:
 private slots:
     void binding();
     void whenAfterValue();
+    void deletedObject();
 
 private:
     QDeclarativeEngine engine;
@@ -109,6 +110,22 @@ void tst_qdeclarativebinding::whenAfterValue()
 
     rect->setProperty("changeColor", true);
     QCOMPARE(rect->color(), QColor("red"));
+
+    delete rect;
+}
+
+//QTBUG-20692
+void tst_qdeclarativebinding::deletedObject()
+{
+    QDeclarativeEngine engine;
+    QDeclarativeComponent c(&engine, QUrl::fromLocalFile(SRCDIR "/data/deletedObject.qml"));
+    QDeclarativeRectangle *rect = qobject_cast<QDeclarativeRectangle*>(c.create());
+    QVERIFY(rect != 0);
+
+    QApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+
+    //don't crash
+    rect->setProperty("activateBinding", true);
 
     delete rect;
 }

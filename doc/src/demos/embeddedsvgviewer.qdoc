@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -28,6 +28,8 @@
 /*!
     \example demos/embedded/embeddedsvgviewer
     \title Embedded SVG Viewer Demonstration
+
+    \brief The Embedded SVG Viewer demo shows Graphics View SVG rendering in an embedded context.
 
     \image embeddedsvgviewer-demo.png
 */

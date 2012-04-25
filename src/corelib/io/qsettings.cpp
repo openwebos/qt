@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -66,13 +66,12 @@
 
 #ifndef QT_NO_QOBJECT
 #include "qcoreapplication.h"
+#endif
 
 #ifdef Q_OS_WIN // for homedirpath reading from registry
 #include "qt_windows.h"
 #include <private/qsystemlibrary_p.h>
-
-#endif // Q_OS_WIN
-#endif // QT_NO_QOBJECT
+#endif
 
 #ifdef Q_OS_VXWORKS
 #  include <ioLib.h>
@@ -791,6 +790,9 @@ bool QSettingsPrivate::iniUnescapedStringList(const QByteArray &str, int from, i
                                               QString &stringResult, QStringList &stringListResult,
                                               QTextCodec *codec)
 {
+#ifdef QT_NO_TEXTCODE
+    Q_UNUSED(codec);
+#endif
     static const char escapeCodes[][2] =
     {
         { 'a', '\a' },
@@ -1024,9 +1026,6 @@ static QString windowsConfigPath(int type)
 {
     QString result;
 
-#ifndef QT_NO_QOBJECT
-    // We can't use QLibrary if there is QT_NO_QOBJECT is defined
-    // This only happens when bootstrapping qmake.
 #ifndef Q_OS_WINCE
     QSystemLibrary library(QLatin1String("shell32"));
 #else
@@ -1039,8 +1038,6 @@ static QString windowsConfigPath(int type)
         SHGetSpecialFolderPath(0, path, type, FALSE);
         result = QString::fromWCharArray(path);
     }
-
-#endif // QT_NO_QOBJECT
 
     if (result.isEmpty()) {
         switch (type) {
@@ -1114,11 +1111,11 @@ static void initDefaultPaths(QMutexLocker *locker)
             userPath += QLatin1String(".config");
 #endif
         } else if (*env == '/') {
-            userPath = QLatin1String(env);
+            userPath = QFile::decodeName(env);
         } else {
             userPath = homePath;
             userPath += QLatin1Char('/');
-            userPath += QLatin1String(env);
+            userPath += QFile::decodeName(env);
         }
         userPath += QLatin1Char('/');
 
@@ -2338,6 +2335,25 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     %COMMON_APPDATA% path is usually \tt{C:\\Documents and
     Settings\\All Users\\Application Data}.
 
+    On Symbian, the following files are used for both IniFormat and
+    NativeFormat (in this example, we assume that the application is
+    installed on the \c e-drive and its Secure ID is \c{0xECB00931}):
+
+    \list 1
+    \o \c{c:\data\.config\MySoft\Star Runner.conf}
+    \o \c{c:\data\.config\MySoft.conf}
+    \o \c{e:\private\ecb00931\MySoft\Star Runner.conf}
+    \o \c{e:\private\ecb00931\MySoft.conf}
+    \endlist
+
+    The SystemScope settings location is determined from the installation
+    drive and Secure ID (UID3) of the application. If the application is
+    built-in on the ROM, the drive used for SystemScope is \c c:.
+
+    \note Symbian SystemScope settings are by default private to the
+    application and not shared between applications, unlike other
+    environments.
+
     The paths for the \c .ini and \c .conf files can be changed using
     setPath(). On Unix and Mac OS X, the user can override them by by
     setting the \c XDG_CONFIG_HOME environment variable; see
@@ -2394,6 +2410,53 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     On other platforms than Windows, "Default" and "." would be
     treated as regular subkeys.
+
+    \section2 Securing application settings in Symbian
+
+    UserScope settings in Symbian are writable by any application by
+    default. To protect the application settings from access and tampering
+    by other applications, the settings need to be placed in the private
+    secure area of the application. This can be done by specifying the
+    settings storage path directly to the private area. The following
+    snippet changes the UserScope to \c{c:/private/ecb00931/MySoft.conf}
+    (provided the application is installed on the \c{c-drive} and its
+    Secure ID is \c{0xECB00931}:
+
+    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 30
+
+    Framework libraries (like Qt itself) may store configuration and cache
+    settings using UserScope, which is accessible and writable by other
+    applications. If the application is very security sensitive or uses
+    high platform security capabilities, it may be prudent to also force
+    framework settings to be stored in the private directory of the
+    application. This can be done by changing the default path of UserScope
+    before QApplication is created:
+
+    \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 31
+
+    Note that this may affect framework libraries' functionality if they expect
+    the settings to be shared between applications.
+
+    \section2 Changing the location of global Qt settings on Mac OS X
+
+    On Mac OS X, the global Qt settings (stored in \c com.trolltech.plist)
+    are stored in the application settings file in two situations:
+
+    \list 1
+    \o If the application runs in a Mac OS X sandbox (on Mac OS X 10.7 or later) or
+    \o If the \c Info.plist file of the application contains the key \c "ForAppStore" with the value \c "yes"
+    \endlist
+
+    In these situations, the application settings file is named using
+    the bundle identifier of the application, which must consequently
+    be set in the application's \c Info.plist file.
+
+    This feature is provided to ease the acceptance of Qt applications into
+    the Mac App Store, as the default behaviour of storing global Qt
+    settings in the \c com.trolltech.plist file does not conform with Mac
+    App Store file system usage requirements. For more information
+    about submitting Qt applications to the Mac App Store, see
+    \l{mac-differences.html#Preparing a Qt application for Mac App Store submission}{Preparing a Qt application for Mac App Store submission}.
 
     \section2 Platform Limitations
 
@@ -3429,6 +3492,8 @@ void QSettings::setUserIniPath(const QString &dir)
     \row                                                        \o SystemScope \o \c /etc/xdg
     \row    \o{1,2} Mac OS X    \o{1,2} IniFormat               \o UserScope   \o \c $HOME/.config
     \row                                                        \o SystemScope \o \c /etc/xdg
+    \row    \o{1,2} Symbian     \o{1,2} NativeFormat, IniFormat \o UserScope   \o \c c:/data/.config
+    \row                                                        \o SystemScope \o \c <drive>/private/<uid>
     \endtable
 
     The default UserScope paths on Unix and Mac OS X (\c

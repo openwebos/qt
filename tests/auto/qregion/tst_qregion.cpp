@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -977,7 +977,7 @@ void tst_QRegion::regionToPath_data()
 
 #ifdef QT_BUILD_INTERNAL
 QT_BEGIN_NAMESPACE
-extern QPainterPath qt_regionToPath(const QRegion &region);
+extern Q_AUTOTEST_EXPORT QPainterPath qt_regionToPath(const QRegion &region);
 QT_END_NAMESPACE
 #endif
 

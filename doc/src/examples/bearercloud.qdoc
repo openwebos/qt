@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example network/bearercloud
     \title Bearer Cloud Example
 
-    The Bearer Cloud example shows how to use the Bearer Management API to monitor the
+    \brief The Bearer Cloud example shows how to use the Bearer Management API to monitor the
     connectivity state of the local device.
 
     \image bearercloud-example.png Screenshot of the Bearer Cloud example

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example tools/codecs
     \title Codecs Example
 
-    The Codecs example demonstrates the principles behind importing and exporting text
+    \brief The Codecs example demonstrates the principles behind importing and exporting text
     using codecs to ensure that characters are encoded properly, avoiding loss of data
     and retaining the correct symbols used in various scripts.
 

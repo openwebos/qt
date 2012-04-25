@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -174,7 +174,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     if (entry.isEmpty() || entry.isRoot())
         return entry;
 
-#if !defined(Q_OS_MAC) && _POSIX_VERSION < 200809L
+#if !defined(Q_OS_MAC) && !defined(Q_OS_QNX) && _POSIX_VERSION < 200809L
     // realpath(X,0) is not supported
     Q_UNUSED(data);
     return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
@@ -223,7 +223,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 //static
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
-    if (entry.isAbsolute())
+    if (entry.isAbsolute() && entry.isClean())
         return entry;
 
     QByteArray orig = entry.nativeFilePath();
@@ -264,11 +264,13 @@ QString QFileSystemEngine::resolveUserName(uint userId)
 #endif
 
     struct passwd *pw = 0;
+#if !defined(Q_OS_INTEGRITY)
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
     struct passwd entry;
     getpwuid_r(userId, &entry, buf.data(), buf.size(), &pw);
 #else
     pw = getpwuid(userId);
+#endif
 #endif
     if (pw)
         return QFile::decodeName(QByteArray(pw->pw_name));
@@ -286,6 +288,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
 #endif
 
     struct group *gr = 0;
+#if !defined(Q_OS_INTEGRITY)
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
     size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
     if (size_max == -1)
@@ -304,6 +307,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     }
 #else
     gr = getgrgid(groupId);
+#endif
 #endif
     if (gr)
         return QFile::decodeName(QByteArray(gr->gr_name));
@@ -621,6 +625,13 @@ QString QFileSystemEngine::tempPath()
 {
 #ifdef QT_UNIX_TEMP_PATH_OVERRIDE
     return QLatin1String(QT_UNIX_TEMP_PATH_OVERRIDE);
+#elif defined(Q_OS_BLACKBERRY)
+    QString temp = QFile::decodeName(qgetenv("TEMP"));
+    if (temp.isEmpty()) {
+        qWarning("TEMP environment variable not set. Cannot determine temporary directory");
+        return QString();
+    }
+    return QDir::cleanPath(temp);
 #else
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));
     if (temp.isEmpty())

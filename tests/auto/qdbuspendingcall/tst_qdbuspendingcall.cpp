@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -426,7 +426,7 @@ void tst_QDBusPendingCall::watcher_waitForFinished_threaded()
     QTestEventLoop::instance().connect(&thread, SIGNAL(finished()), SLOT(exitLoop()));
     thread.start();
     QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!thread.isRunning());
+    QVERIFY(thread.wait(3000));
     QVERIFY(!QTestEventLoop::instance().timeout());
 }
 

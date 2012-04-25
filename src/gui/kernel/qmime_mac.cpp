@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -520,13 +520,15 @@ static PtrGraphicsExportDoExport ptrGraphicsExportDoExport = 0;
 
 static bool resolveMimeQuickTimeSymbols()
 {
-    if (ptrGraphicsImportSetDataHandle == 0) {
+    static bool triedResolve = false;
+    if (!triedResolve) {
         QLibrary library(QLatin1String("/System/Library/Frameworks/QuickTime.framework/QuickTime"));
         ptrGraphicsImportSetDataHandle = reinterpret_cast<PtrGraphicsImportSetDataHandle>(library.resolve("GraphicsImportSetDataHandle"));
         ptrGraphicsImportCreateCGImage = reinterpret_cast<PtrGraphicsImportCreateCGImage>(library.resolve("GraphicsImportCreateCGImage"));
         ptrGraphicsExportSetInputCGImage = reinterpret_cast<PtrGraphicsExportSetInputCGImage>(library.resolve("GraphicsExportSetInputCGImage"));
         ptrGraphicsExportSetOutputHandle = reinterpret_cast<PtrGraphicsExportSetOutputHandle>(library.resolve("GraphicsExportSetOutputHandle"));
         ptrGraphicsExportDoExport = reinterpret_cast<PtrGraphicsExportDoExport>(library.resolve("GraphicsExportDoExport"));
+        triedResolve = true;
     }
 
     return ptrGraphicsImportSetDataHandle != 0

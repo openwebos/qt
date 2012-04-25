@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -96,6 +96,11 @@ void qt_mac_cgimage_data_free(void *info, const void *memoryToFree, size_t)
     } else {
         if (QMacPixmapData::validDataPointers.contains(pmdata) == false) {
             free(const_cast<void *>(memoryToFree));
+            // mark data as freed
+            if (pmdata->pixels == memoryToFree)
+                pmdata->pixels = 0;
+            if (pmdata->pixelsToFree == memoryToFree)
+                pmdata->pixelsToFree = 0;
             return;
         }
         if (pmdata->pixels == pmdata->pixelsToFree) {
@@ -284,6 +289,10 @@ void QMacPixmapData::fromImage(const QImage &img,
     // different size or depth, make a new pixmap
     resize(w, h);
 
+    // exit if resize failed
+    if (is_null)
+        return;
+
     quint32 *dptr = pixels, *drow;
     const uint dbpr = bytesPerRow;
 
@@ -379,6 +388,9 @@ QImage QMacPixmapData::toImage() const
                   QImage::Format_RGB32);
 
     QImage image(w, h, format);
+        // exit if image was not created (out of memory)
+    if (image.isNull())
+        return image;
     quint32 *sptr = pixels, *srow;
     const uint sbpr = bytesPerRow;
     if (format == QImage::Format_MonoLSB) {
@@ -515,10 +527,11 @@ QMacPixmapData::~QMacPixmapData()
     delete pengine;  // Make sure we aren't drawing on the context anymore.
     if (cg_data) {
         CGImageRelease(cg_data);
-    } else if (!cg_dataBeingReleased && pixels != pixelsToFree) {
-        free(pixels);
     }
-    free(pixelsToFree);
+    if (pixels && (pixels != pixelsToFree))
+        free(pixels);
+    if (pixelsToFree)
+        free(pixelsToFree);
 }
 
 void QMacPixmapData::macSetAlphaChannel(const QMacPixmapData *pix, bool asMask)
@@ -636,7 +649,7 @@ void QMacPixmapData::macReleaseCGImageRef()
 // copy them over. This is to preserve the fact that CGImageRef's are immutable.
 void QMacPixmapData::macCreatePixels()
 {
-    const int numBytes = bytesPerRow * h;
+    int numBytes = bytesPerRow * h;
     quint32 *base_pixels;
     if (pixelsToFree && pixelsToFree != pixels) {
         // Reuse unused block of memory lying around from a previous callback.
@@ -645,10 +658,24 @@ void QMacPixmapData::macCreatePixels()
     } else {
         // We need a block of memory to do stuff with.
         base_pixels = static_cast<quint32 *>(malloc(numBytes));
+        if (!base_pixels) {
+            qWarning("Failed to allocate memory for pixmap data, setting to NULL");
+            numBytes = 0;
+            w = 0;
+            h = 0;
+            is_null = 0;
+            bytesPerRow=0;
+        }
     }
 
-    if (pixels)
+    // only copy when both buffers exist
+    if (pixels && base_pixels)
         memcpy(base_pixels, pixels, qMin(pixelsSize, (uint) numBytes));
+
+    // free pixels before assigning new memory
+    if (pixels)
+        free(pixels);
+
     pixels = base_pixels;
     pixelsSize = numBytes;
 }
@@ -752,7 +779,8 @@ static PtrglReadPixels ptrglReadPixels = 0;
 
 static bool resolveOpenGLSymbols()
 {
-    if (ptrCGLChoosePixelFormat == 0) {
+    static bool triedResolve = false;
+    if (!triedResolve) {
         QLibrary library(QLatin1String("/System/Library/Frameworks/OpenGL.framework/OpenGL"));
         ptrCGLChoosePixelFormat = (PtrCGLChoosePixelFormat)(library.resolve("CGLChoosePixelFormat"));
         ptrCGLClearDrawable = (PtrCGLClearDrawable)(library.resolve("CGLClearDrawable"));
@@ -765,6 +793,7 @@ static bool resolveOpenGLSymbols()
         ptrglPixelStorei = (PtrglPixelStorei)(library.resolve("glPixelStorei"));
         ptrglReadBuffer = (PtrglReadBuffer)(library.resolve("glReadBuffer"));
         ptrglReadPixels = (PtrglReadPixels)(library.resolve("glReadPixels"));
+        triedResolve = true;
     }
     return ptrCGLChoosePixelFormat && ptrCGLClearDrawable && ptrCGLCreateContext
         && ptrCGLDestroyContext && ptrCGLDestroyPixelFormat && ptrCGLSetCurrentContext
@@ -851,7 +880,33 @@ static void qt_mac_grabDisplayRect(CGDirectDisplayID display, const QRect &displ
     ptrCGLDestroyContext(glContextObj); // and destroy the context
 }
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
 // Returns a pixmap containing the screen contents at rect.
+static QPixmap qt_mac_grabScreenRect_10_6(const QRect &rect)
+{
+    const int maxDisplays = 128; // 128 displays should be enough for everyone.
+    CGDirectDisplayID displays[maxDisplays];
+    CGDisplayCount displayCount;
+    const CGRect cgRect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
+    const CGDisplayErr err = CGGetDisplaysWithRect(cgRect, maxDisplays, displays, &displayCount);
+
+    if (err && displayCount == 0)
+        return QPixmap();
+    QPixmap windowPixmap(rect.size());
+    for (uint i = 0; i < displayCount; ++i) {
+        const CGRect bounds = CGDisplayBounds(displays[i]);
+        // Translate to display-local coordinates
+        QRect displayRect = rect.translated(qRound(-bounds.origin.x), qRound(-bounds.origin.y));
+        QCFType<CGImageRef> image = CGDisplayCreateImageForRect(displays[i],
+            CGRectMake(displayRect.x(), displayRect.y(), displayRect.width(), displayRect.height()));
+        QPixmap pix = QPixmap::fromMacCGImageRef(image);
+        QPainter painter(&windowPixmap);
+        painter.drawPixmap(-bounds.origin.x, -bounds.origin.y, pix);
+    }
+    return windowPixmap;
+}
+#endif
+
 static QPixmap qt_mac_grabScreenRect(const QRect &rect)
 {
     if (!resolveOpenGLSymbols())
@@ -927,7 +982,12 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
     QRect rect(globalCoord.x() + x, globalCoord.y() + y, w, h);
 
 #ifdef QT_MAC_USE_COCOA
-    return qt_mac_grabScreenRect(rect);
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
+        return qt_mac_grabScreenRect_10_6(rect);
+    else
+#endif
+        return qt_mac_grabScreenRect(rect);
 #else
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4) {
@@ -1141,15 +1201,19 @@ void QMacPixmapData::copy(const QPixmapData *data, const QRect &rect)
     const int x = rect.x();
     const int y = rect.y();
     char *dest = reinterpret_cast<char*>(pixels);
-    const char *src = reinterpret_cast<const char*>(macData->pixels + x) + y * macData->bytesPerRow;
-    for (int i = 0; i < h; ++i) {
-        memcpy(dest, src, w * 4);
-        dest += bytesPerRow;
-        src += macData->bytesPerRow;
-    }
 
-    has_alpha = macData->has_alpha;
-    has_mask = macData->has_mask;
+    // only copy data buffer if destination buffer exists (resize might have failed)
+    if (dest) {
+        const char *src = reinterpret_cast<const char*>(macData->pixels + x) + y * macData->bytesPerRow;
+        for (int i = 0; i < h; ++i) {
+            memcpy(dest, src, w * 4);
+            dest += bytesPerRow;
+            src += macData->bytesPerRow;
+        }
+
+        has_alpha = macData->has_alpha;
+        has_mask = macData->has_mask;
+    }
 }
 
 bool QMacPixmapData::scroll(int dx, int dy, const QRect &rect)

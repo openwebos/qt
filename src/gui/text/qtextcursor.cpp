@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -421,11 +421,18 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
         break;
     }
     case QTextCursor::PreviousCharacter:
-        newPosition = priv->previousCursorPosition(position, QTextLayout::SkipCharacters);
+        if (mode == QTextCursor::MoveAnchor && position != adjusted_anchor)
+            newPosition = qMin(position, adjusted_anchor);
+        else
+            newPosition = priv->previousCursorPosition(position, QTextLayout::SkipCharacters);
         break;
     case QTextCursor::Left:
-        newPosition = visualMovement ? priv->leftCursorPosition(position)
-                                     : priv->previousCursorPosition(position, QTextLayout::SkipCharacters);
+        if (mode == QTextCursor::MoveAnchor && position != adjusted_anchor)
+            newPosition = visualMovement ? qMax(position, adjusted_anchor)
+                                         : qMin(position, adjusted_anchor);
+        else
+            newPosition = visualMovement ? priv->leftCursorPosition(position)
+                                         : priv->previousCursorPosition(position, QTextLayout::SkipCharacters);
         break;
     case QTextCursor::StartOfWord: {
         if (relativePos == 0)
@@ -535,11 +542,18 @@ bool QTextCursorPrivate::movePosition(QTextCursor::MoveOperation op, QTextCursor
         break;
     }
     case QTextCursor::NextCharacter:
-        newPosition = priv->nextCursorPosition(position, QTextLayout::SkipCharacters);
+        if (mode == QTextCursor::MoveAnchor && position != adjusted_anchor)
+            newPosition = qMax(position, adjusted_anchor);
+        else
+            newPosition = priv->nextCursorPosition(position, QTextLayout::SkipCharacters);
         break;
     case QTextCursor::Right:
-        newPosition = visualMovement ? priv->rightCursorPosition(position)
-                                     : priv->nextCursorPosition(position, QTextLayout::SkipCharacters);
+        if (mode == QTextCursor::MoveAnchor && position != adjusted_anchor)
+            newPosition = visualMovement ? qMin(position, adjusted_anchor)
+                                         : qMax(position, adjusted_anchor);
+        else
+            newPosition = visualMovement ? priv->rightCursorPosition(position)
+                                         : priv->nextCursorPosition(position, QTextLayout::SkipCharacters);
         break;
     case QTextCursor::NextWord:
     case QTextCursor::WordRight:
@@ -1511,11 +1525,11 @@ void QTextCursor::deletePreviousChar()
     const QTextFragmentData * const frag = fragIt.value();
     int fpos = fragIt.position();
     QChar uc = d->priv->buffer().at(d->anchor - fpos + frag->stringPosition);
-    if (d->anchor > fpos && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
+    if (d->anchor > fpos && uc.isLowSurrogate()) {
         // second half of a surrogate, check if we have the first half as well,
         // if yes delete both at once
         uc = d->priv->buffer().at(d->anchor - 1 - fpos + frag->stringPosition);
-        if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00)
+        if (uc.isHighSurrogate())
             --d->anchor;
     }
 

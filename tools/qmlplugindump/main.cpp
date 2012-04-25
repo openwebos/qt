@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -147,7 +147,32 @@ QByteArray convertToId(const QByteArray &cppName)
     return cppToId.value(cppName, cppName);
 }
 
-QSet<const QMetaObject *> collectReachableMetaObjects(const QString &importCode, QDeclarativeEngine *engine)
+QByteArray convertToId(const QMetaObject *mo)
+{
+    QByteArray className(mo->className());
+    if (!className.isEmpty())
+        return convertToId(className);
+
+    // likely a metaobject generated for an extended qml object
+    if (mo->superClass()) {
+        className = convertToId(mo->superClass());
+        className.append("_extended");
+        return className;
+    }
+
+    static QHash<const QMetaObject *, QByteArray> generatedNames;
+    className = generatedNames.value(mo);
+    if (!className.isEmpty())
+        return className;
+
+    qWarning() << "Found a QMetaObject without a className, generating a random name";
+    className = QByteArray("error-unknown-name-");
+    className.append(QByteArray::number(generatedNames.size()));
+    generatedNames.insert(mo, className);
+    return className;
+}
+
+QSet<const QMetaObject *> collectReachableMetaObjects(const QList<QDeclarativeType *> &skip = QList<QDeclarativeType *>())
 {
     QSet<const QMetaObject *> metas;
     metas.insert(FriendlyQObject::qtMeta());
@@ -195,7 +220,9 @@ QSet<const QMetaObject *> collectReachableMetaObjects(const QString &importCode,
 
     // find even more QMetaObjects by instantiating QML types and running
     // over the instances
-    foreach (const QDeclarativeType *ty, QDeclarativeMetaType::qmlTypes()) {
+    foreach (QDeclarativeType *ty, QDeclarativeMetaType::qmlTypes()) {
+        if (skip.contains(ty))
+            continue;
         if (ty->isExtendedType())
             continue;
         if (!ty->isCreatable())
@@ -208,21 +235,14 @@ QSet<const QMetaObject *> collectReachableMetaObjects(const QString &importCode,
         if (tyName.isEmpty())
             continue;
 
-        QByteArray code = importCode.toUtf8();
-        code += tyName;
-        code += " {}\n";
-
-        QDeclarativeComponent c(engine);
-        c.setData(code, QUrl::fromLocalFile(pluginImportPath + "/typeinstance.qml"));
-
         inObjectInstantiation = tyName;
-        QObject *object = c.create();
+        QObject *object = ty->create();
         inObjectInstantiation.clear();
 
         if (object)
             collectReachableMetaObjects(object, &metas);
         else
-            qWarning() << "Could not create" << tyName << ":" << c.errorString();
+            qWarning() << "Could not create" << tyName;
     }
 
     return metas;
@@ -246,7 +266,7 @@ public:
     {
         qml->writeStartObject("Component");
 
-        QByteArray id = convertToId(meta->className());
+        QByteArray id = convertToId(meta);
         qml->writeScriptBinding(QLatin1String("name"), enquote(id));
 
         for (int index = meta->classInfoCount() - 1 ; index >= 0 ; --index) {
@@ -258,7 +278,7 @@ public:
         }
 
         if (meta->superClass())
-            qml->writeScriptBinding(QLatin1String("prototype"), enquote(convertToId(meta->superClass()->className())));
+            qml->writeScriptBinding(QLatin1String("prototype"), enquote(convertToId(meta->superClass())));
 
         QSet<const QDeclarativeType *> qmlTypes = qmlTypesByCppName.value(meta->className());
         if (!qmlTypes.isEmpty()) {
@@ -288,8 +308,12 @@ public:
             qml->writeArrayBinding(QLatin1String("exports"), exports);
 
             if (const QMetaObject *attachedType = (*qmlTypes.begin())->attachedPropertiesType()) {
-                qml->writeScriptBinding(QLatin1String("attachedType"), enquote(
-                                            convertToId(attachedType->className())));
+                // Can happen when a type is registered that returns itself as attachedPropertiesType()
+                // because there is no creatable type to attach to.
+                if (attachedType != meta) {
+                    qml->writeScriptBinding(QLatin1String("attachedType"), enquote(
+                                                convertToId(attachedType)));
+                }
             }
         }
 
@@ -548,8 +572,8 @@ int main(int argc, char *argv[])
     }
 
     // find all QMetaObjects reachable from the builtin module
-    QByteArray importCode("import QtQuick 1.0\n");
-    QSet<const QMetaObject *> defaultReachable = collectReachableMetaObjects(importCode, engine);
+    QSet<const QMetaObject *> defaultReachable = collectReachableMetaObjects();
+    QList<QDeclarativeType *> defaultTypes = QDeclarativeMetaType::qmlTypes();
 
     // this will hold the meta objects we want to dump information of
     QSet<const QMetaObject *> metas;
@@ -557,6 +581,20 @@ int main(int argc, char *argv[])
     if (action == Builtins) {
         metas = defaultReachable;
     } else {
+        // find a valid QtQuick import
+        QByteArray importCode;
+        QDeclarativeType *qtObjectType = QDeclarativeMetaType::qmlType(&QObject::staticMetaObject);
+        if (!qtObjectType) {
+            qWarning() << "Could not find QtObject type";
+            importCode = QByteArray("import QtQuick 1.0\n");
+        } else {
+            QByteArray module = qtObjectType->qmlTypeName();
+            module = module.mid(0, module.lastIndexOf('/'));
+            importCode = QString("import %1 %2.%3\n").arg(module,
+                                                          QString::number(qtObjectType->majorVersion()),
+                                                          QString::number(qtObjectType->minorVersion())).toUtf8();
+        }
+
         // find all QMetaObjects reachable when the specified module is imported
         if (action != Path) {
             importCode += QString("import %0 %1\n").arg(pluginImportUri, pluginImportVersion).toAscii();
@@ -581,7 +619,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        QSet<const QMetaObject *> candidates = collectReachableMetaObjects(importCode, engine);
+        QSet<const QMetaObject *> candidates = collectReachableMetaObjects(defaultTypes);
         candidates.subtract(defaultReachable);
 
         // Also eliminate meta objects with the same classname.
@@ -615,7 +653,7 @@ int main(int argc, char *argv[])
     // put the metaobjects into a map so they are always dumped in the same order
     QMap<QString, const QMetaObject *> nameToMeta;
     foreach (const QMetaObject *meta, metas)
-        nameToMeta.insert(convertToId(meta->className()), meta);
+        nameToMeta.insert(convertToId(meta), meta);
 
     Dumper dumper(&qml);
     if (relocatable)
@@ -632,7 +670,7 @@ int main(int argc, char *argv[])
     qml.writeEndObject();
     qml.writeEndDocument();
 
-    std::cout << bytes.constData();
+    std::cout << bytes.constData() << std::flush;
 
     // workaround to avoid crashes on exit
     QTimer timer;

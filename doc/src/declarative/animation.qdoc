@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -141,7 +141,7 @@ There are several methods of assigning behavior animations to properties. The
 \c{Behavior on <property>} declaration is a convenient way of assigning a
 behavior animation onto a property.
 
-See the \l {declarative/animation/behaviors}{Behaviors example} for a
+See the \l {declarative/animation/behaviors/behavior-example}{Behaviors example} for a
 demonstration of behavioral animations.
 
 \section1 Playing Animations in Parallel or in Sequence

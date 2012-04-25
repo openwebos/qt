@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -183,6 +183,7 @@ QSslSocketBackendPrivate::QSslSocketBackendPrivate()
 
 QSslSocketBackendPrivate::~QSslSocketBackendPrivate()
 {
+    destroySslContext();
 }
 
 QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(SSL_CIPHER *cipher)
@@ -254,7 +255,11 @@ bool QSslSocketBackendPrivate::initSslContext()
 init_context:
     switch (configuration.protocol) {
     case QSsl::SslV2:
+#ifndef OPENSSL_NO_SSL2
         ctx = q_SSL_CTX_new(client ? q_SSLv2_client_method() : q_SSLv2_server_method());
+#else
+        ctx = 0; // SSL 2 not supported by the system, but chosen deliberately -> error
+#endif
         break;
     case QSsl::SslV3:
         ctx = q_SSL_CTX_new(client ? q_SSLv3_client_method() : q_SSLv3_server_method());
@@ -285,12 +290,37 @@ init_context:
         return false;
     }
 
-    // Enable all bug workarounds.
-    if (configuration.protocol == QSsl::TlsV1SslV3 || configuration.protocol == QSsl::SecureProtocols) {
-        q_SSL_CTX_set_options(ctx, SSL_OP_ALL|SSL_OP_NO_SSLv2);
-    } else {
-        q_SSL_CTX_set_options(ctx, SSL_OP_ALL);
-    }
+    // Enable bug workarounds.
+    long options;
+    if (configuration.protocol == QSsl::TlsV1SslV3 || configuration.protocol == QSsl::SecureProtocols)
+        options = SSL_OP_ALL|SSL_OP_NO_SSLv2;
+    else
+        options = SSL_OP_ALL;
+
+    // This option is disabled by default, so we need to be able to clear it
+    if (configuration.sslOptions & QSsl::SslOptionDisableEmptyFragments)
+        options |= SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
+    else
+        options &= ~SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS;
+
+#ifdef SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION
+    // This option is disabled by default, so we need to be able to clear it
+    if (configuration.sslOptions & QSsl::SslOptionDisableLegacyRenegotiation)
+        options &= ~SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+    else
+        options |= SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION;
+#endif
+
+#ifdef SSL_OP_NO_TICKET
+    if (configuration.sslOptions & QSsl::SslOptionDisableSessionTickets)
+        options |= SSL_OP_NO_TICKET;
+#endif
+#ifdef SSL_OP_NO_COMPRESSION
+    if (configuration.sslOptions & QSsl::SslOptionDisableCompression)
+        options |= SSL_OP_NO_COMPRESSION;
+#endif
+
+    q_SSL_CTX_set_options(ctx, options);
 
     // Initialize ciphers
     QByteArray cipherString;
@@ -419,12 +449,10 @@ init_context:
             tlsHostName = hostName;
         QByteArray ace = QUrl::toAce(tlsHostName);
         // only send the SNI header if the URL is valid and not an IP
-        if (!ace.isEmpty() && !QHostAddress().setAddress(tlsHostName)) {
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+        if (!ace.isEmpty()
+            && !QHostAddress().setAddress(tlsHostName)
+            && !(configuration.sslOptions & QSsl::SslOptionDisableServerNameIndication)) {
             if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.data()))
-#else
-            if (!q_SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, TLSEXT_NAMETYPE_host_name, ace.constData()))
-#endif
                 qWarning("could not set SSL_CTRL_SET_TLSEXT_HOSTNAME, Server Name Indication disabled");
         }
     }
@@ -454,6 +482,22 @@ init_context:
         q_SSL_set_accept_state(ssl);
 
     return true;
+}
+
+void QSslSocketBackendPrivate::destroySslContext()
+{
+    if (ssl) {
+        q_SSL_free(ssl);
+        ssl = 0;
+    }
+    if (ctx) {
+        q_SSL_CTX_free(ctx);
+        ctx = 0;
+    }
+    if (pkey) {
+        q_EVP_PKEY_free(pkey);
+        pkey = 0;
+    }
 }
 
 /*!
@@ -1013,10 +1057,17 @@ void QSslSocketBackendPrivate::transmit()
             int encryptedBytesRead = q_BIO_read(writeBio, data.data(), pendingBytes);
 
             // Write encrypted data from the buffer to the socket.
-            plainSocket->write(data.constData(), encryptedBytesRead);
+            qint64 actualWritten = plainSocket->write(data.constData(), encryptedBytesRead);
 #ifdef QSSLSOCKET_DEBUG
-            qDebug() << "QSslSocketBackendPrivate::transmit: wrote" << encryptedBytesRead << "encrypted bytes to the socket";
+            qDebug() << "QSslSocketBackendPrivate::transmit: wrote" << encryptedBytesRead << "encrypted bytes to the socket" << actualWritten << "actual.";
 #endif
+            if (actualWritten < 0) {
+                //plain socket write fails if it was in the pending close state.
+                q->setErrorString(plainSocket->errorString());
+                q->setSocketError(plainSocket->error());
+                emit q->error(plainSocket->error());
+                return;
+            }
             transmitting = true;
         }
 
@@ -1246,12 +1297,15 @@ bool QSslSocketBackendPrivate::startHandshake()
     // Start translating errors.
     QList<QSslError> errors;
 
-    if (QSslCertificatePrivate::isBlacklisted(configuration.peerCertificate)) {
-        QSslError error(QSslError::CertificateBlacklisted, configuration.peerCertificate);
-        errors << error;
-        emit q->peerVerifyError(error);
-        if (q->state() != QAbstractSocket::ConnectedState)
-            return false;
+    // check the whole chain for blacklisting (including root, as we check for subjectInfo and issuer)
+    foreach (const QSslCertificate &cert, configuration.peerCertificateChain) {
+        if (QSslCertificatePrivate::isBlacklisted(cert)) {
+            QSslError error(QSslError::CertificateBlacklisted, cert);
+            errors << error;
+            emit q->peerVerifyError(error);
+            if (q->state() != QAbstractSocket::ConnectedState)
+                return false;
+        }
     }
 
     bool doVerifyPeer = configuration.peerVerifyMode == QSslSocket::VerifyPeer
@@ -1366,19 +1420,10 @@ void QSslSocketBackendPrivate::disconnectFromHost()
 
 void QSslSocketBackendPrivate::disconnected()
 {
-    if (ssl) {
-        q_SSL_free(ssl);
-        ssl = 0;
-    }
-    if (ctx) {
-        q_SSL_CTX_free(ctx);
-        ctx = 0;
-    }
-    if (pkey) {
-        q_EVP_PKEY_free(pkey);
-        pkey = 0;
-    }
-
+    if (plainSocket->bytesAvailable() <= 0)
+        destroySslContext();
+    //if there is still buffered data in the plain socket, don't destroy the ssl context yet.
+    //it will be destroyed when the socket is deleted.
 }
 
 QSslCipher QSslSocketBackendPrivate::sessionCipher() const

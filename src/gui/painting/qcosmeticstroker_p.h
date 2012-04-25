@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -78,10 +78,12 @@ public:
 
     // used to avoid drop outs or duplicated points
     enum Direction {
-        TopToBottom,
-        BottomToTop,
-        LeftToRight,
-        RightToLeft
+        TopToBottom = 0x1,
+        BottomToTop = 0x2,
+        LeftToRight = 0x4,
+        RightToLeft = 0x8,
+        VerticalMask = 0x3,
+        HorizontalMask = 0xc
     };
 
     QCosmeticStroker(QRasterPaintEngineState *s, const QRect &dr)

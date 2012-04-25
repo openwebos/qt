@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -104,9 +104,11 @@ FindDialog::FindDialog(QWidget *parent)
     connect(backSoftKeyAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     addAction(backSoftKeyAction);
 #else
+//! [6]
     buttonBox = new QDialogButtonBox(Qt::Vertical);
     buttonBox->addButton(findButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(moreButton, QDialogButtonBox::ActionRole);
+//! [6]
 
     connect(moreButton, SIGNAL(toggled(bool)), extension, SLOT(setVisible(bool)));
 #endif

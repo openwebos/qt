@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -167,15 +167,15 @@ bool QLocalServerPrivate::listen(const QString &requestedServerName)
  */
 void QLocalServerPrivate::closeServer()
 {
-    if (-1 != listenSocket)
-        QT_CLOSE(listenSocket);
-    listenSocket = -1;
-
     if (socketNotifier) {
         socketNotifier->setEnabled(false); // Otherwise, closed socket is checked before deleter runs
         socketNotifier->deleteLater();
         socketNotifier = 0;
     }
+
+    if (-1 != listenSocket)
+        QT_CLOSE(listenSocket);
+    listenSocket = -1;
 
     if (!fullServerName.isEmpty())
         QFile::remove(fullServerName);

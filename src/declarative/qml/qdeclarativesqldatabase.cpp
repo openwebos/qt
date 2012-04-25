@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -175,7 +175,7 @@ static const char* sqlerror[] = {
 static QString qmlsqldatabase_databasesPath(QScriptEngine *engine)
 {
     QDeclarativeScriptEngine *qmlengine = static_cast<QDeclarativeScriptEngine*>(engine);
-    return qmlengine->offlineStoragePath
+    return QDir::toNativeSeparators(qmlengine->offlineStoragePath)
             + QDir::separator() + QLatin1String("Databases");
 }
 

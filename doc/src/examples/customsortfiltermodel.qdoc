@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -29,7 +29,7 @@
     \example itemviews/customsortfiltermodel
     \title Custom Sort/Filter Model Example
 
-    The Custom Sort/Filter Model example illustrates how to subclass
+    \brief The Custom Sort/Filter Model example illustrates how to subclass
     QSortFilterProxyModel to perform advanced sorting and filtering.
 
     \image customsortfiltermodel-example.png Screenshot of the Custom Sort/Filter Model Example

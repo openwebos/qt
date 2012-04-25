@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -68,6 +68,7 @@ struct QGLWindowSurfacePrivate;
 
 Q_OPENGL_EXPORT QGLWidget* qt_gl_share_widget();
 Q_OPENGL_EXPORT void qt_destroy_gl_share_widget();
+bool qt_initializing_gl_share_widget();
 
 class QGLWindowSurfaceGLPaintDevice : public QGLPaintDevice
 {

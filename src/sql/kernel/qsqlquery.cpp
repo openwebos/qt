@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -337,6 +337,9 @@ bool QSqlQuery::isNull(int field) const
 
   Note that the last error for this query is reset when exec() is
   called.
+
+  For SQLite, the query string can contain only one statement at a time.
+  If more than one statements is give, the function returns false.
 
   Example:
 
@@ -886,6 +889,9 @@ void QSqlQuery::clear()
   until it is executed the first time. In this case, preparing a
   syntactically wrong query succeeds, but every consecutive exec()
   will fail.
+
+  For SQLite, the query string can contain only one statement at a time.
+  If more than one statements are give, the function returns false.
 
   Example:
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -73,11 +73,14 @@ public:
     QString source() const;
     void setSource(const QString &source);
 
+    QString fileSource() const;
+    void setFileSource(const QString &filePath);
+
     bool isParsed() const;
     bool parse();
 
     bool hasError() const;
-    QList<QDeclarativeError> errors() const;
+    QList<QDeclarativeError> errors(const QString &uri) const;
 
     struct Plugin
     {
@@ -129,6 +132,7 @@ private:
     QList<QDeclarativeError> _errors;
     QUrl _url;
     QString _source;
+    QString _filePathSouce;
     QList<Component> _components;
     QList<Plugin> _plugins;
 #ifdef QT_CREATOR
