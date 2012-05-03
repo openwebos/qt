@@ -2,9 +2,13 @@ TEMPLATE = subdirs
 
 SUBDIRS += minimal
 SUBDIRS += linuxfb
-#SUBDIRS += palm
-#SUBDIRS += webos
-SUBDIRS += goodlife
+
+contains(DEFINES, GOODLIFE) {
+    SUBDIRS += goodlife
+} else {
+    SUBDIRS += palm
+    SUBDIRS += webos
+}
 
 contains(QT_CONFIG, wayland) {
     SUBDIRS += wayland
