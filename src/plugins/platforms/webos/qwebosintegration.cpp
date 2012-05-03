@@ -44,7 +44,7 @@ QWebOSIntegration::QWebOSIntegration(bool offscreen)
     qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
 //QApplication::setStyle(new QWebOSStyle);
     m_clipboard = new QWebOSClipboard();
-    m_primaryScreen = new QWebOSScreen(1/*EGL_DEFAULT_DISPLAY*/, offscreen);
+    m_primaryScreen = new QWebOSScreen((EGLNativeDisplayType) 1/*EGL_DEFAULT_DISPLAY*/, offscreen);
     if(!offscreen) {
 //        m_tpHandler = new QPAHiddTpHandler(m_primaryScreen);
 //        m_kbdHandler = new QPAHiddKbdHandler;
