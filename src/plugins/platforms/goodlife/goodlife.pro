@@ -37,10 +37,10 @@ HEADERS += $$QT_SOURCE_TREE/src/gui/embedded/qkbd_qws.h \
 SOURCES += $$QT_SOURCE_TREE/src/gui/embedded/qkbd_qws.cpp
 
 
-INCLUDEPATH += ${SYSLIB_ROOT}/include/kadaptor \
-               ${SYSLIB_ROOT}/include/kdriver
+INCLUDEPATH += ${INC_OPENSRC}/kadaptor \
+               ${INC_OPENSRC}/kdriver
 
-LIBPATH += ${SYSLIB_ROOT}/lib
+LIBPATH += ${LIB_OPENSRC}
 
 LIBS        += -lkadaptor
 
