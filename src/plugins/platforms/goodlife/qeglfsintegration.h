@@ -58,6 +58,7 @@ class QEglFSIntegration : public QPlatformIntegration
 {
 public:
     QEglFSIntegration(bool soft);
+    ~QEglFSIntegration();
 
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
@@ -72,8 +73,10 @@ private:
     QPlatformFontDatabase *mFontDb;
     QList<QPlatformScreen *> mScreens;
     QEglFSScreen *m_primaryScreen;
-    QLinuxKeyboardHandler *m_kbdHandler;
-    QLinuxMouseHandler *m_mouseHandler;
+
+    QList<QLinuxMouseHandler *> m_mouses;
+    QList<QLinuxKeyboardHandler *> m_keyboards;
+
     bool soft;
 };
 

@@ -14,6 +14,7 @@ HEADERS =   qeglfsintegration.h \
             qeglfswindow.h \
             qeglfswindowsurface.h \
             qeglfsscreen.h \
+            qinputdevicescanner.h \
             qlinuxkeyboard.h \
             qlinuxmouse.h \
             qgoodlifecursor.h \
@@ -26,6 +27,7 @@ SOURCES =   main.cpp \
             qeglfswindow.cpp \
             qeglfswindowsurface.cpp \
             qeglfsscreen.cpp \
+            qinputdevicescanner.cpp \
             qlinuxkeyboard.cpp \
             qlinuxmouse.cpp \
             qgoodlifecursor.cpp \
@@ -37,12 +39,12 @@ HEADERS += $$QT_SOURCE_TREE/src/gui/embedded/qkbd_qws.h \
 SOURCES += $$QT_SOURCE_TREE/src/gui/embedded/qkbd_qws.cpp
 
 
-INCLUDEPATH += ${INC_OPENSRC}/kadaptor \
-               ${INC_OPENSRC}/kdriver
+INCLUDEPATH  += ${INC_OPENSRC}/kadaptor \
+                ${INC_OPENSRC}/kdriver
 
-LIBPATH += ${LIB_OPENSRC}
+QMAKE_LIBDIR += ${LIB_OPENSRC}
 
-LIBS        += -lkadaptor
+LIBS         += -lkadaptor
 
 include(../fontdatabases/genericunix/genericunix.pri)
 

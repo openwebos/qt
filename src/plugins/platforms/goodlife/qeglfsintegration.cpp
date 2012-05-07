@@ -44,6 +44,7 @@
 
 #include "qeglfswindow.h"
 #include "qeglfswindowsurface.h"
+#include "qinputdevicescanner.h"
 
 #include "qgenericunixfontdatabase.h"
 
@@ -68,11 +69,55 @@ QEglFSIntegration::QEglFSIntegration(bool soft)
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
 #endif
 
-    QString kbdSpec = QString(qgetenv("QPA_KEYBOARD"));
-    m_kbdHandler = new QLinuxKeyboardHandler((const QString &)kbdSpec);
+    QString keyboardName = qgetenv("QPA_KEYBOARD");
+    QString mouseName    = qgetenv("QPA_MOUSE");
 
-    QString mouseSpec = QString(qgetenv("QPA_MOUSE"));
-    m_mouseHandler = new QLinuxMouseHandler((const QString &)mouseSpec);
+    QInputDeviceScanner *scanner = new QInputDeviceScanner();
+
+    if( scanner )
+    {
+        scanner->scan();
+    }
+
+    if( keyboardName.length() > 0 )
+    {
+        m_keyboards.append(new QLinuxKeyboardHandler(keyboardName));
+    }
+    else
+    {
+        // If the environment variables are not set,
+        // we append keyboards from scanner.
+
+        for( int i = 0; i < scanner->getNumOfKeyboards(); i++ )
+        {
+            QString keyboard = scanner->getKeyboardName(i);
+
+            m_keyboards.append(new QLinuxKeyboardHandler(keyboard));
+        }
+    }
+
+    if( mouseName.length() > 0 )
+    {
+        m_mouses.append(new QLinuxMouseHandler(mouseName));
+    }
+    else
+    {
+        // If the environment variables are not set,
+        // we append mouses from scanner.
+
+        for( int i = 0; i < scanner->getNumOfMouses(); i++ )
+        {
+            QString mouse = scanner->getMouseName(i);
+
+            m_mouses.append(new QLinuxMouseHandler(mouse));
+        }
+    }
+
+    if( scanner )
+    {
+        delete scanner;
+        scanner = NULL;
+    }
 
     this->soft = soft;
 
@@ -80,6 +125,21 @@ QEglFSIntegration::QEglFSIntegration(bool soft)
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration\n");
 #endif
+}
+
+QEglFSIntegration::~QEglFSIntegration()
+{
+    qDebug("%s() Called", __func__);
+
+    if( m_mouses.count() )
+    {
+        m_mouses.clear();
+    }
+
+    if( m_keyboards.count() )
+    {
+        m_keyboards.clear();
+    }
 }
 
 bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) const
