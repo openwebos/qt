@@ -1,9 +1,8 @@
 /****************************************************************************
 **
-** Copyright (C) 2010 Palm Inc and/or its subsidiary(-ies).
+** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
 ** All rights reserved.
 **
-** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
