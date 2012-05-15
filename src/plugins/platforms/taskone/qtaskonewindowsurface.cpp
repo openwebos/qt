@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,53 +40,63 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#include "qtaskonewindowsurface.h"
 
-#include "qeglfsscreen.h"
+#include <QtGui/QPlatformGLContext>
 
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
-
-#include "qwebosclipboard.h"
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-QT_BEGIN_HEADER
+#include <QtOpenGL/private/qgl_p.h>
+#include <QtOpenGL/private/qglpaintdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+class QTaskOnePaintDevice : public QGLPaintDevice
 {
 public:
-    QEglFSIntegration(bool soft);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QTaskOnePaintDevice(QTaskOneScreen *screen, QWidget *widget)
+        :QGLPaintDevice(), m_screen(screen)
+    {
+    #ifdef QEGL_EXTRA_DEBUG
+        qWarning("QTaskOnePaintDevice %p, %p, %p",this, screen, widget);
+    #endif
+    }
 
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    QSize size() const { return m_screen->geometry().size(); }
+    QGLContext* context() const { return QGLContext::fromPlatformGLContext(m_screen->platformContext());}
 
-    QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
+    QPaintEngine *paintEngine() const { return qt_qgl_paint_engine(); }
 
+    void  beginPaint(){
+        QGLPaintDevice::beginPaint();
+    }
 private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
-
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
-
-    bool soft;
-    QWebOSClipboard* m_clipboard;
+    QTaskOneScreen *m_screen;
+    QGLContext *m_context;
 };
 
-QT_END_NAMESPACE
-QT_END_HEADER
 
+QTaskOneWindowSurface::QTaskOneWindowSurface( QTaskOneScreen *screen, QWidget *window )
+    :QWindowSurface(window)
+{
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QTaskOneWindowSurface %p, %p", window, screen);
 #endif
+    m_paintDevice = new QTaskOnePaintDevice(screen,window);
+}
+
+void QTaskOneWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
+{
+    Q_UNUSED(widget);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QTaskOneWindowSurface::flush %p",widget);
+#endif
+    widget->platformWindow()->glContext()->swapBuffers();
+}
+
+void QTaskOneWindowSurface::resize(const QSize &size)
+{
+    Q_UNUSED(size);
+}
+
+QT_END_NAMESPACE

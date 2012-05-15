@@ -1,9 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -40,53 +38,77 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#ifndef QTASKONECURSORDRAW_H
+#define QTASKONECURSORDRAW_H
 
-#include "qeglfsscreen.h"
+#include <qobject.h>
+#include <Qt>
 
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
+#include "gfx_kadp.h"
 
-#include "qwebosclipboard.h"
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
+#define TASKONE_SCREEN_WIDTH  1920
+#define TASKONE_SCREEN_HEIGHT 1080
 
-QT_BEGIN_HEADER
+#define TASKONE_MOUSE_WIDTH  1280
+#define TASKONE_MOUSE_HEIGHT 720
 
-QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+typedef struct
+{
+	LX_GFX_SURFACE_T* 	pCursorSurface;
+	ulong				width;
+	ulong				height;
+	long				bitDepth;
+	long				colorType;
+	ulong				imageID;
+	ulong				progrssImgIndex;
+}CURSOR_DRAW_INFO_T;
+
+typedef struct {
+	void *pData;
+	int leftLength;
+}BUFFER_T;
+
+typedef struct {
+	char 	fileName[4];
+	ulong 	width;
+	ulong 	height;
+	long	bitDepth;
+	long 	colorType;
+}CURSOR_FILE_INFO_T;
+
+
+class QTaskOneCursorDraw : public QObject
 {
 public:
-    QEglFSIntegration(bool soft);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QTaskOneCursorDraw();
 
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+	int setPosition(uint x, uint y, uint w, uint h,
+						uint hotspot, uint gapx, uint gapy, float cursorWidthRatio,
+						float cursorHeightRatio);
 
-    QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
+	int setVisible(bool visible);
+	int setCursorImg(int index);
+
+	
+private:
+	int Cursor_LoadPNG(CURSOR_FILE_INFO_T *pCursorFileList);
+    void setConfigFBDev();
+	int setClearFBDev(void);
+	void initGfx();	
+    void initFBDev();
+    bool createCursorSurface(LX_GFX_SURFACE_T **ppSurface, 
+                             unsigned int width, 
+                             unsigned int height, 
+                             signed int bitDepth, 
+                             signed int colorType);
+    bool setBackgroundColor(unsigned int x, unsigned int y,
+                            unsigned int w, unsigned int h,
+                            unsigned int color);
+    bool update();
 
 private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
-
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
-
-    bool soft;
-    QWebOSClipboard* m_clipboard;
+    QString m_cursorImgPath;
 };
 
-QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif
+#endif // QTASKONECURSORDRAW_H

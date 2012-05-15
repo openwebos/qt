@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,53 +40,50 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#include "qtaskonewindow.h"
 
-#include "qeglfsscreen.h"
-
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
-
-#include "qwebosclipboard.h"
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-QT_BEGIN_HEADER
+#include <QtGui/QWindowSystemInterface>
+#include <QApplication>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+QTaskOneWindow::QTaskOneWindow(QWidget *w, QTaskOneScreen *screen)
+    : QPlatformWindow(w), m_screen(screen)
 {
-public:
-    QEglFSIntegration(bool soft);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
-
-private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
-
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
+    static int serialNo = 0;
+    m_winid  = ++serialNo;
+//    QApplication::setActiveWindow(w);
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QTaskOneWindow %p: %p %p 0x%x\n", this, w, screen, uint(m_winid));
 #endif
+}
 
-    bool soft;
-    QWebOSClipboard* m_clipboard;
-};
+
+void QTaskOneWindow::setGeometry(const QRect &)
+{
+    // We only support full-screen windows
+    QRect rect(m_screen->availableGeometry());
+    QWindowSystemInterface::handleGeometryChange(this->widget(), rect);
+
+    // Since toplevels are fullscreen, propegate the screen size back to the widget
+    widget()->setGeometry(rect);
+
+    QPlatformWindow::setGeometry(rect);
+}
+
+WId QTaskOneWindow::winId() const
+{
+    return m_winid;
+}
+
+
+QPlatformGLContext *QTaskOneWindow::glContext() const
+{
+#ifdef QEGL_EXTRA_DEBUG
+    qWarning("QTaskOneWindow::glContext %p\n", m_screen->platformContext());
+#endif
+    Q_ASSERT(m_screen);
+     return m_screen->platformContext();
+}
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif

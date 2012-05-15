@@ -1,11 +1,10 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** GNU Lesser General Public License Usage
@@ -40,53 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#include "../../linux-g++/qplatformdefs.h"
 
-#include "qeglfsscreen.h"
+#define Q_WS_QPA
+#undef Q_WS_QWS
 
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
+#define QT_QPA_DEFAULT_PLATFORM_NAME "eglfs"
 
-#include "qwebosclipboard.h"
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-class QEglFSIntegration : public QPlatformIntegration
-{
-public:
-    QEglFSIntegration(bool soft);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
-
-private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
-
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
-
-    bool soft;
-    QWebOSClipboard* m_clipboard;
-};
-
-QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif

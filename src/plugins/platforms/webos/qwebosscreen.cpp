@@ -160,6 +160,16 @@ void QWebOSScreen::createAndSetPlatformContext()
 
     EGLNativeWindowType eglWindow = 0;
 
+#ifdef TASKONE
+    // It should be fixed to assign by requested window size.
+    eglWindow = (fbdev_window *)malloc(sizeof(fbdev_window));
+    eglWindow->x = 0;
+    eglWindow->y = 0;
+    eglWindow->width = 1280;
+    eglWindow->height = 720;
+    eglWindow->bStretchToDisplay = TRUE;
+#endif
+
     if(m_offscreen) 
     {
 //        qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "3   ****************";

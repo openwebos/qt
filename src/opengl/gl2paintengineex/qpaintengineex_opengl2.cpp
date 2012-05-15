@@ -108,6 +108,8 @@ extern bool qt_applefontsmoothing_enabled;
 
 #if !defined(QT_MAX_CACHED_GLYPH_SIZE)
 #  define QT_MAX_CACHED_GLYPH_SIZE 200
+#else
+#  define QT_MAX_CACHED_GLYPH_SIZE 64
 #endif
 
 Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);

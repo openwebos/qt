@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,53 +40,71 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#include "qtaskonecursor.h"
+#include "qtaskonecursordraw.h"
 
-#include "qeglfsscreen.h"
+#include "qtaskoneintegration.h"
+#include "qtaskonescreen.h"
+#include "qtaskonewindow.h"
 
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
+#include <QtGui/QBitmap>
 
-#include "qwebosclipboard.h"
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-QT_BEGIN_HEADER
+#define POSD_CURSOR_ID  LX_FBDEV_ID_CSR0
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+QTaskOneCursor::QTaskOneCursor(QTaskOneScreen *screen)
+    : QPlatformCursor(screen)
 {
-public:
-    QEglFSIntegration(bool soft);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    qDebug("[whatsub] %s() Called", __func__);
 
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    graphic = new QPlatformCursorImage(0, 0, 0, 0, 0, 0);
 
-    QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
+    drawer = new QTaskOneCursorDraw();
 
-private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
+    setCursor(Qt::ArrowCursor);
+}
 
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
+void QTaskOneCursor::setCursor(Qt::CursorShape shape)
+{
+	qDebug("JCY : %s[%d] ", __FUNCTION__,__LINE__);
 
-    bool soft;
-    QWebOSClipboard* m_clipboard;
-};
+    //graphic->set(shape);
+    drawer->setCursorImg(0);
+	setVisible();
+}
+
+void QTaskOneCursor::drawCursor(const QPoint &p)
+{
+
+	if(drawer->setPosition(p.x(), p.y(), 0, 0, 0, 0, 0, 1,1) != 0)
+	{
+		qDebug("JCY : %s[%d] - setPosition Error", __FUNCTION__,__LINE__);
+	}
+}
+
+int QTaskOneCursor::setVisible(void)
+{
+	qDebug("JCY : %s[%d] ", __FUNCTION__,__LINE__);
+	drawer->setVisible(TRUE);
+}
+int QTaskOneCursor::setInVisible(void)
+{
+	qDebug("JCY : %s[%d] ", __FUNCTION__,__LINE__);
+	drawer->setVisible(FALSE);
+}
+
+void QTaskOneCursor::pointerEvent(const QMouseEvent &e)
+{
+    drawCursor(e.pos());
+}
+
+void QTaskOneCursor::changeCursor(QCursor *cursor, QWidget *widget)
+{
+    if (!widget)
+        return;
+
+    int id = cursor->handle();
+}
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif

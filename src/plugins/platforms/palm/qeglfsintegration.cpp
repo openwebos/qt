@@ -53,6 +53,7 @@
 #include <QtOpenGL/private/qpixmapdata_gl_p.h>
 #include <QtOpenGL/private/qpixmapdata_egl_p.h>
 #include <EGL/egl.h>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,9 +65,18 @@ QEglFSIntegration::QEglFSIntegration(bool soft)
     : mFontDb(new QGenericUnixFontDatabase()),
       m_clipboard(new QWebOSClipboard())
 {
+/*
+#if defined(TASKONE)
+    m_primaryScreen = new QEglFSScreen((EGLNativeDisplayType)1);
+    qDebug("+++++++++++++++++++++++++ OPENING FRAME BUFFER 1++++++++++++++++++++++++++++++");
+#else*/
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
+    qDebug("+++++++++++++++++++++++++ OPENING FRAME BUFFER 0++++++++++++++++++++++++++++++");
+#ifndef TASKONE
     m_tpHandler = new QPAHiddTpHandler(m_primaryScreen);
     m_kbdHandler = new QPAHiddKbdHandler;
+#endif
+
     this->soft = soft;
 
     mScreens.append(m_primaryScreen);

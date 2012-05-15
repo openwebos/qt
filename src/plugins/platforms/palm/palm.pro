@@ -11,10 +11,7 @@ SOURCES =   main.cpp \
             ../eglconvenience/qeglplatformcontext.cpp \
             qeglfswindow.cpp \
             qeglfswindowsurface.cpp \
-            qeglfsscreen.cpp \
-            hiddtp_qpa.cpp \
-            HalInputControl.cpp \
-            hiddkbd_qpa.cpp
+            qeglfsscreen.cpp
 
 HEADERS =   qeglfsintegration.h \
             ../eglconvenience/qeglconvenience.h \
@@ -22,24 +19,31 @@ HEADERS =   qeglfsintegration.h \
             qeglfswindow.h \
             qeglfswindowsurface.h \
             qeglfsscreen.h \
-            hidd_qpa.h \
-            hiddtp_qpa.h \
-            InputControl.h \
-            HalInputControl.h \
             FlickGesture.h \
             ScreenEdgeFlickGesture.h \
-            hiddkbd_qpa.h \
             webosDeviceKeymap.h
 
 INCLUDEPATH += ../clipboards
 SOURCES += ../clipboards/qwebosclipboard.cpp
 HEADERS += ../clipboards/qwebosclipboard.h
 
+!contains(DEFINES, TASKONE) {
+HEADERS +=  hidd_qpa.h \
+            hiddtp_qpa.h \
+            InputControl.h \
+            HalInputControl.h \
+            hiddkbd_qpa.h
+
+SOURCES +=  hiddtp_qpa.cpp \
+            HalInputControl.cpp \
+            hiddkbd_qpa.cpp
+
+LIBS_PRIVATE += -lhal -lhid -ldl
+}
 
 include(../fontdatabases/genericunix/genericunix.pri)
 
 QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
 LIBS_PRIVATE +=$$QT_LIBS_GLIB
-LIBS_PRIVATE += -lhal -lhid -ldl
 target.path += $$[QT_INSTALL_PLUGINS]/platforms
 INSTALLS += target

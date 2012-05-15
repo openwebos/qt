@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,53 +40,44 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#ifndef QTASKONESCREEN_H
+#define QTASKONESCREEN_H
 
-#include "qeglfsscreen.h"
+#include <QPlatformScreen>
 
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
+#include <QtCore/QTextStream>
 
-#include "qwebosclipboard.h"
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-QT_BEGIN_HEADER
+#include <EGL/egl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+class QPlatformGLContext;
+class QTaskOneCursor;
+
+class QTaskOneScreen : public QPlatformScreen //huh: FullScreenScreen ;) just to follow namespace
 {
 public:
-    QEglFSIntegration(bool soft);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QTaskOneScreen(EGLNativeDisplayType display);
+    ~QTaskOneScreen();
 
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    QRect geometry() const;
+    int depth() const;
+    QImage::Format format() const;
 
-    QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
+    QPlatformGLContext *platformContext() const;
 
 private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
+    void createAndSetPlatformContext() const;
+    void createAndSetPlatformContext();
 
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
-
-    bool soft;
-    QWebOSClipboard* m_clipboard;
+    QRect m_geometry;
+    int m_depth;
+    QImage::Format m_format;
+    QPlatformGLContext *m_platformContext;
+    EGLDisplay m_dpy;
+    EGLSurface m_surface;
+    QTaskOneCursor *m_cursor;
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif
+#endif // QTASKONESCREEN_H

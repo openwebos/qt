@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,7 +40,8 @@
 **
 ****************************************************************************/
 
-#include "qeglfsscreen.h"
+#include "qtaskonescreen.h"
+#include "qtaskonecursor.h"
 
 #include "../eglconvenience/qeglconvenience.h"
 #include "../eglconvenience/qeglplatformcontext.h"
@@ -57,7 +58,7 @@ extern "C" {
 #endif
     EGLDisplay disp = NULL;
     void setEglSwapInterval(int interval) {
-        printf("==================================================Turning vsync %s\n", interval ? "on" : "off");
+        printf("Turning vsync %s\n", interval ? "on" : "off");
         eglSwapInterval(disp, interval);
     }
 #ifdef __cplusplus
@@ -99,14 +100,14 @@ static struct AttrInfo attrs[] = {
     {-1, 0}};
 #endif //QEGL_EXTRA_DEBUG
 
-QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
+QTaskOneScreen::QTaskOneScreen(EGLNativeDisplayType display)
     : m_depth(32)
     , m_format(QImage::Format_Invalid)
     , m_platformContext(0)
     , m_surface(0)
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
+    qWarning("QTaskOneScreen %p\n", this);
 #endif
 
     EGLint major, minor;
@@ -142,13 +143,20 @@ QEglFSScreen::QEglFSScreen(EGLNativeDisplayType display)
             swapInterval = 1;
     }
     eglSwapInterval(m_dpy, swapInterval);
+
+    m_cursor = new QTaskOneCursor(this);
 }
 
-void QEglFSScreen::createAndSetPlatformContext() const {
-    const_cast<QEglFSScreen *>(this)->createAndSetPlatformContext();
+QTaskOneScreen::~QTaskOneScreen()
+{
+    delete m_cursor;
 }
 
-void QEglFSScreen::createAndSetPlatformContext()
+void QTaskOneScreen::createAndSetPlatformContext() const {
+    const_cast<QTaskOneScreen *>(this)->createAndSetPlatformContext();
+}
+
+void QTaskOneScreen::createAndSetPlatformContext()
 {
     QPlatformWindowFormat platformFormat = QPlatformWindowFormat::defaultFormat();
 
@@ -168,7 +176,7 @@ void QEglFSScreen::createAndSetPlatformContext()
         platformFormat.setGreenBufferSize(8);
         platformFormat.setBlueBufferSize(8);
         m_depth = 32;
-        m_format = QImage::Format_ARGB32_Premultiplied;
+        m_format = QImage::Format_RGB32;
     }
     if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty()) {
         platformFormat.setSampleBuffers(true);
@@ -187,7 +195,7 @@ void QEglFSScreen::createAndSetPlatformContext()
     kdRealizeWindow(window,&eglWindow);
 #endif
 
-#ifdef TASKONE
+#ifdef TASKONE_EGL_MODIFIED
     // It should be fixed to assign by requested window size.
     eglWindow = (fbdev_window *)malloc(sizeof(fbdev_window));
     eglWindow->x = 0;
@@ -237,7 +245,7 @@ void QEglFSScreen::createAndSetPlatformContext()
 
 }
 
-QRect QEglFSScreen::geometry() const
+QRect QTaskOneScreen::geometry() const
 {
     if (m_geometry.isNull()) {
         createAndSetPlatformContext();
@@ -245,26 +253,24 @@ QRect QEglFSScreen::geometry() const
     return m_geometry;
 }
 
-int QEglFSScreen::depth() const
+int QTaskOneScreen::depth() const
 {
     return m_depth;
 }
 
-QImage::Format QEglFSScreen::format() const
+QImage::Format QTaskOneScreen::format() const
 {
     if (m_format == QImage::Format_Invalid)
         createAndSetPlatformContext();
     return m_format;
 }
-QPlatformGLContext *QEglFSScreen::platformContext() const
+QPlatformGLContext *QTaskOneScreen::platformContext() const
 {
     if (!m_platformContext) {
-        QEglFSScreen *that = const_cast<QEglFSScreen *>(this);
+        QTaskOneScreen *that = const_cast<QTaskOneScreen *>(this);
         that->createAndSetPlatformContext();
     }
     return m_platformContext;
 }
-
-
 
 QT_END_NAMESPACE

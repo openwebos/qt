@@ -96,7 +96,9 @@ void QEglFSWindowSurface::flush(QWidget *widget, const QRegion &region, const QP
 
 void QEglFSWindowSurface::resize(const QSize &size)
 {
-    Q_UNUSED(size);
+    QWindowSurface::resize(size);
+
+    qWarning() << __PRETTY_FUNCTION__ << size;
 }
 
 QT_END_NAMESPACE

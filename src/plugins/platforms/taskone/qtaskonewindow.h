@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,53 +40,30 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#ifndef QTASKONEWINDOW_H
+#define QTASKONEWINDOW_H
 
-#include "qeglfsscreen.h"
+#include "qtaskoneintegration.h"
+#include "qtaskonescreen.h"
 
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
-
-#include "qwebosclipboard.h"
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-QT_BEGIN_HEADER
+#include <QPlatformWindow>
+#include <QtGui/QWidget>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+class QTaskOneWindow : public QPlatformWindow
 {
 public:
-    QEglFSIntegration(bool soft);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QTaskOneWindow(QWidget *w, QTaskOneScreen *screen);
 
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    void setGeometry(const QRect &);
+    WId winId() const;
 
-    QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
+    QPlatformGLContext *glContext() const;
 
 private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
-
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
-
-    bool soft;
-    QWebOSClipboard* m_clipboard;
+    QTaskOneScreen *m_screen;
+    WId m_winid;
 };
-
 QT_END_NAMESPACE
-QT_END_HEADER
-
-#endif
+#endif // QEGLWINDOW_H

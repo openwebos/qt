@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,53 +40,44 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#ifndef QTASKONECURSOR_H
+#define QTASKONECURSOR_H
 
-#include "qeglfsscreen.h"
+#include <QtGui/QPlatformCursor>
+#include <QtGui/QPlatformCursorImage>
 
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
-
-#include "qwebosclipboard.h"
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-QT_BEGIN_HEADER
+class QTaskOneScreen;
+class QTaskOneCursorDraw;
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+class QTaskOneCursor : QPlatformCursor
 {
 public:
-    QEglFSIntegration(bool soft);
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
+    QTaskOneCursor(QTaskOneScreen *screen);
 
-    QList<QPlatformScreen *> screens() const { return mScreens; }
+    void changeCursor(QCursor * cursor, QWidget * widget);
+    void pointerEvent(const QMouseEvent &e);
 
-    QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
+protected:
+    void setCursor(Qt::CursorShape shape);
+    void drawCursor(const QPoint &p);
+
+
+	int setPosition(uint x, uint y, uint w, uint h,
+						uint hotspot, uint gapx, uint gapy, float cusorWidthRatio,
+						float cursorHeightRatio);
+
+	int setVisible(void);
+	int setInVisible(void);
+
+
+    QPlatformCursorImage * graphic;
 
 private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
-
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
-
-    bool soft;
-    QWebOSClipboard* m_clipboard;
+    QTaskOneCursorDraw *drawer;
 };
 
 QT_END_NAMESPACE
-QT_END_HEADER
 
-#endif
+#endif // QTASKONECURSOR_H

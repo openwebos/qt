@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -40,17 +40,13 @@
 **
 ****************************************************************************/
 
-#ifndef EGLINTEGRATION_H
-#define EGLINTEGRATION_H
+#ifndef TASKONEINTEGRATION_H
+#define TASKONEINTEGRATION_H
 
-#include "qeglfsscreen.h"
+#include "qtaskonescreen.h"
+#include "qlinuxkeyboard.h"
+#include "qlinuxmouse.h"
 
-#if !defined(TASKONE)
-#include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
-
-#include "qwebosclipboard.h"
 #include <QtGui/QPlatformIntegration>
 #include <QtGui/QPlatformScreen>
 
@@ -58,10 +54,12 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSIntegration : public QPlatformIntegration
+class QTaskOneIntegration : public QPlatformIntegration
 {
 public:
-    QEglFSIntegration(bool soft);
+    QTaskOneIntegration(bool soft);
+    ~QTaskOneIntegration();
+
     bool hasCapability(QPlatformIntegration::Capability cap) const;
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
     QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
@@ -70,20 +68,16 @@ public:
     QList<QPlatformScreen *> screens() const { return mScreens; }
 
     QPlatformFontDatabase *fontDatabase() const;
-    virtual QPlatformClipboard *clipboard() const;
 
 private:
     QPlatformFontDatabase *mFontDb;
     QList<QPlatformScreen *> mScreens;
-    QEglFSScreen *m_primaryScreen;
+    QTaskOneScreen *m_primaryScreen;
 
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
+    QList<QLinuxMouseHandler *> m_mouses;
+    QList<QLinuxKeyboardHandler *> m_keyboards;
 
     bool soft;
-    QWebOSClipboard* m_clipboard;
 };
 
 QT_END_NAMESPACE
