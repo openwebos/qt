@@ -55,6 +55,7 @@
 #include <EGL/egl.h>
 #include <QDebug>
 
+#include "QtOpenGL/private/qpixmapdata_gl_p.h"
 QT_BEGIN_NAMESPACE
 
 QPlatformClipboard* QEglFSIntegration::clipboard() const {
@@ -101,7 +102,12 @@ QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) co
     if(soft)
       return new QRasterPixmapData(type);
     else
-      return new QEglGLPixmapData(type);
+// We have to think about either improving on the performance of EglGLPixmapData
+// or having QWebKit not copy around so many images at all. For now Raster gives
+// us *just* about enough speed.
+// FIXME make QEglGLPixmapData faster and re-enable here.
+//      return new QEglGLPixmapData(type);
+      return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWidget *widget, WId winId) const
