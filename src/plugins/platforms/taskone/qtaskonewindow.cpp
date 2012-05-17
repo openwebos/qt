@@ -52,7 +52,7 @@ QTaskOneWindow::QTaskOneWindow(QWidget *w, QTaskOneScreen *screen)
 {
     static int serialNo = 0;
     m_winid  = ++serialNo;
-//    QApplication::setActiveWindow(w);
+    QApplication::setActiveWindow(w);
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QTaskOneWindow %p: %p %p 0x%x\n", this, w, screen, uint(m_winid));
 #endif

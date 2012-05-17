@@ -76,7 +76,6 @@ QTaskOneIntegration::QTaskOneIntegration(bool soft)
         scanner->scan();
     }
 
-#ifdef USE_KEYBOARD // Now, it has a problem. It should be fixed.
     if( keyboardName.length() > 0 )
     {
         m_keyboards.append(new QLinuxKeyboardHandler(keyboardName));
@@ -93,7 +92,6 @@ QTaskOneIntegration::QTaskOneIntegration(bool soft)
             m_keyboards.append(new QLinuxKeyboardHandler(keyboard));
         }
     }
-#endif
 
     if( mouseName.length() > 0 )
     {
