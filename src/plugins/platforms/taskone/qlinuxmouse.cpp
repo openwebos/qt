@@ -22,6 +22,7 @@
 ****************************************************************************/
 
 #include "qlinuxmouse.h"
+#include "qtaskonedefs.h"
 
 #include <Qt>
 #include <QKeyEvent>
@@ -38,11 +39,8 @@
 
 #include <qdebug.h>
 
-#define TASKONE_SCREEN_WIDTH  1920
-#define TASKONE_SCREEN_HEIGHT 1080
-
 QLinuxMouseHandler::QLinuxMouseHandler(const QString &specification)
-    : m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0), m_xoffset(0), m_yoffset(0), m_buttons(0), d(0)
+    : m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0), m_xoffset(0), m_yoffset(0), m_buttons(0)
 {
     qDebug() << "QLinuxMouseHandler" << specification;
 
@@ -143,6 +141,12 @@ void QLinuxMouseHandler::readMouseData()
             } else if (data->code == REL_Y) {
                 m_y += data->value;
                 posChanged = true;
+            }
+            else if (data->code == REL_WHEEL) {
+                int delta = 120 * data->value;
+                QWindowSystemInterface::handleWheelEvent(QApplication::activeWindow(), QPoint(m_x, m_y),
+                                                         QPoint(m_x, m_y),
+                                                         delta, Qt::Vertical);
             }
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
             m_buttons = data->value ? Qt::LeftButton : Qt::NoButton;

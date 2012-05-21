@@ -37,13 +37,16 @@ public:
 
     int getNumOfMouses();
     int getNumOfKeyboards();
+    int getNumOfMotions();
 
     const QString & getMouseName(int idx);
     const QString & getKeyboardName(int idx);
+    const QString & getMotionName(int idx);
 
 private:
     QList<QString> m_listOfMouse;
     QList<QString> m_listOfKeyboard;
+    QList<QString> m_listOfMotion;
 };
 
 #endif /* QINPUT_DEVICE_SCANNER_H */
