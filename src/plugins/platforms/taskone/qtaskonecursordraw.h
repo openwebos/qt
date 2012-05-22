@@ -46,12 +46,7 @@
 
 #include "gfx_kadp.h"
 
-#define TASKONE_SCREEN_WIDTH  1920
-#define TASKONE_SCREEN_HEIGHT 1080
-
-#define TASKONE_MOUSE_WIDTH  1280
-#define TASKONE_MOUSE_HEIGHT 720
-
+#include "qtaskonedefs.h"
 
 typedef struct
 {

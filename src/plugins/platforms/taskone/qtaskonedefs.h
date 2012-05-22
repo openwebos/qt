@@ -1,9 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
 ** Copyright (C) 2012 TaskOne
 ** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -40,50 +38,14 @@
 **
 ****************************************************************************/
 
-#ifndef TASKONEINTEGRATION_H
-#define TASKONEINTEGRATION_H
+#ifndef QTASKONEDEFS_H
+#define QTASKONEDEFS_H
 
-#include "qtaskonescreen.h"
-#include "qlinuxkeyboard.h"
-#include "qlinuxmouse.h"
-#include "qtaskonemotion.h"
+#define TASKONE_SCREEN_WIDTH  1920
+#define TASKONE_SCREEN_HEIGHT 1080
 
-#include <QtGui/QPlatformIntegration>
-#include <QtGui/QPlatformScreen>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-class QTaskOneIntegration : public QPlatformIntegration
-{
-public:
-    QTaskOneIntegration(bool soft);
-    ~QTaskOneIntegration();
-
-    bool hasCapability(QPlatformIntegration::Capability cap) const;
-    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-    QPlatformWindow *createPlatformWindow(QWidget *widget, WId winId) const;
-    QWindowSurface *createWindowSurface(QWidget *widget, WId winId) const;
-
-    QList<QPlatformScreen *> screens() const { return mScreens; }
-
-    QPlatformFontDatabase *fontDatabase() const;
-
-private:
-    QPlatformFontDatabase *mFontDb;
-    QList<QPlatformScreen *> mScreens;
-    QTaskOneScreen *m_primaryScreen;
-
-    QList<QLinuxMouseHandler *> m_mouses;
-    QList<QLinuxKeyboardHandler *> m_keyboards;
-    QList<QTaskOneMotionHandler *> m_motions;
-		
-
-    bool soft;
-};
-
-QT_END_NAMESPACE
-QT_END_HEADER
+#define TASKONE_MOUSE_WIDTH  1280
+#define TASKONE_MOUSE_HEIGHT 720
 
 #endif
+
