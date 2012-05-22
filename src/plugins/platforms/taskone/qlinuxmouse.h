@@ -53,7 +53,6 @@ private:
     bool m_compression;
     bool m_smooth;
     int m_jitterLimitSquared;
-    QLinuxMouseHandlerData *d;
 };
 
 #endif /* QLINUX_MOUSE_H */
