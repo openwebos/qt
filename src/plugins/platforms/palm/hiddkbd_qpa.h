@@ -30,7 +30,7 @@
 #include "webosDeviceKeymap.h"
 #include <hid/IncsPublic/HidLib.h>
 
-#include <hal/hal.h>
+#include <nyx/nyx_client.h>
 #include <QWSKeyboardHandler>
 
 #define MAX_HIDD_EVENTS 100
@@ -103,13 +103,13 @@ private:
 	};
 
 	Qt::Key lookupKey(int code, int value, bool* consume);
-	Qt::Key lookupSwitch(hal_keys_custom_key_t code);
+	Qt::Key lookupSwitch(nyx_keys_custom_key_t code);
 
     bool homeKeyDoubleClickTimeout();
 
 	int m_keyFd;
 	QSocketNotifier *m_keyNotifier;
-	hal_device_handle_t m_halKeysHandle;
+	nyx_device_handle_t m_nyxKeysHandle;
 
 	bool m_shiftKeyDown;
 	bool m_altKeyDown;
@@ -120,7 +120,7 @@ private:
 
 	int m_inputDevFd;
 	QSocketNotifier *m_inputDevNotifier;
-	hal_device_handle_t m_halInputDevHandle;
+	nyx_device_handle_t m_nyxInputDevHandle;
 
 	std::map<int, DeviceInfo*> m_deviceIdMap;
 

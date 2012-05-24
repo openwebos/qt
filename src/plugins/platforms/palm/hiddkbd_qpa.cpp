@@ -30,7 +30,7 @@
 #include "hiddkbd_qpa.h"
 #include <hid/IncsPublic/HidLib.h>
 #include "InputControl.h"
-#include "HalInputControl.h"
+#include "NyxInputControl.h"
 #include "webosDeviceKeymap.h"
 #include <dlfcn.h>
 
@@ -44,7 +44,7 @@ extern "C" {
 }
 
 QPAHiddKbdHandler::QPAHiddKbdHandler() :
-      m_halKeysHandle(0)
+      m_nyxKeysHandle(0)
     , m_shiftKeyDown(false)
     , m_altKeyDown(false)
     , m_optKeyDown(false)
@@ -62,28 +62,26 @@ QPAHiddKbdHandler::QPAHiddKbdHandler() :
 	    }
 	}
 
-	/* initial HAL support: veng */
-	/* fine-tuning  support for HAL: dk 12/22/2010 */
-	hal_error_t error = HAL_ERROR_SUCCESS;
+	nyx_error_t error = NYX_ERROR_NONE;
 
-	InputControl* ic = new HalInputControl(HAL_DEVICE_KEYS, "Main");
+	InputControl* ic = new NyxInputControl(NYX_DEVICE_KEYS, "Main");
 	if (NULL == ic)
 	{
 		g_critical("Unable to obtain InputControl");
 		return;
 	}
 
-	m_halKeysHandle = ic->getHandle();
-	if (NULL == m_halKeysHandle)
+	m_nyxKeysHandle = ic->getHandle();
+	if (NULL == m_nyxKeysHandle)
 	{
-		g_critical("Unable to obtain m_halKeysHandle");
+		g_critical("Unable to obtain m_nyxKeysHandle");
 		return;
 	}
 
-	error = hal_device_get_event_source(m_halKeysHandle, &m_keyFd);
-	if (error != HAL_ERROR_SUCCESS)
+	error = nyx_device_get_event_source(m_nyxKeysHandle, &m_keyFd);
+	if (error != NYX_ERROR_NONE)
 	{
-		g_critical("Unable to obtain m_halKeysHandle event_source");
+		g_critical("Unable to obtain m_nyxKeysHandle event_source");
 		return;
 	}
 
@@ -91,17 +89,17 @@ QPAHiddKbdHandler::QPAHiddKbdHandler() :
 	connect(m_keyNotifier, SIGNAL(activated(int)), this, SLOT(readKeyData()));
 
     // inputdev
-    ic = new HalInputControl(HAL_DEVICE_BLUETOOTH_INPUT_DETECT, "Main");
+    ic = new NyxInputControl(NYX_DEVICE_BLUETOOTH_INPUT_DETECT, "Main");
     if (NULL != ic)
     {
-        m_halInputDevHandle = ic->getHandle();
-        if (m_halInputDevHandle)
+        m_nyxInputDevHandle = ic->getHandle();
+        if (m_nyxInputDevHandle)
         {
             int bluetooth_input_detect_source_fd = 0;
-            error = hal_device_get_event_source(m_halInputDevHandle, 
+            error = nyx_device_get_event_source(m_nyxInputDevHandle,
                     &bluetooth_input_detect_source_fd);
 
-            if (error != HAL_ERROR_SUCCESS)
+            if (error != NYX_ERROR_NONE)
             {
                 g_critical("Unable to obtain fusionHandle event_source");
                 return;
@@ -121,26 +119,26 @@ QPAHiddKbdHandler::~QPAHiddKbdHandler() {
 
 void QPAHiddKbdHandler::readInputDevData()
 {
-	hal_error_t error = HAL_ERROR_SUCCESS;
-	hal_event_handle_t event_handle = NULL;
+	nyx_error_t error = NYX_ERROR_NONE;
+	nyx_event_handle_t event_handle = NULL;
 
-	while ((error = hal_device_get_event(m_halInputDevHandle, &event_handle)) == HAL_ERROR_SUCCESS && event_handle != NULL)
+	while ((error = nyx_device_get_event(m_nyxInputDevHandle, &event_handle)) == NYX_ERROR_NONE && event_handle != NULL)
 	{
-        hal_bluetooth_input_detect_event_item_t data;
+        nyx_bluetooth_input_detect_event_item_t data;
 
-        error = hal_bluetooth_input_detect_event_get_data(event_handle, &data);
-        if (error != HAL_ERROR_SUCCESS)
+        error = nyx_bluetooth_input_detect_event_get_data(event_handle, &data);
+        if (error != NYX_ERROR_NONE)
             g_critical("failed to get bluetooth input detect event data");
 
         switch (data.event_type)
         {
-            case HAL_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_ID_ADD: 
+            case NYX_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_ID_ADD:
                 {
 				    m_curDeviceId = data.value;
 					g_debug("QPAHiddKbdHandler: Added BT input device id: %d", m_curDeviceId);
                 }
                 break;
-             case HAL_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_ID_REMOVE:
+             case NYX_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_ID_REMOVE:
                 {
 		    
 				    DeviceInfo *devInfo = m_deviceIdMap[data.value];
@@ -156,7 +154,7 @@ void QPAHiddKbdHandler::readInputDevData()
 		                        }
 				} 
 				break;
-            case HAL_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_KEYBOARD_TYPE:
+            case NYX_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_KEYBOARD_TYPE:
                 {
 				    // TODO: add qmap option
 					// keymap=xx.qmap
@@ -197,7 +195,7 @@ void QPAHiddKbdHandler::readInputDevData()
 			    }
 				break;
 
-            case HAL_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_COUNTRY:
+            case NYX_BLUETOOTH_INPUT_DETECT_EVENT_DEVICE_COUNTRY:
 				g_debug("QPAHiddKbdHandler: BT keyboard country set to %d", data.value);
 				m_curDeviceCountry = data.value;
 			    break;
@@ -210,28 +208,26 @@ void QPAHiddKbdHandler::readInputDevData()
 }
 
 void QPAHiddKbdHandler::readKeyData() {
-	/* initial HAL support: veng */
-	/* fine-tuning  support for HAL: dk 12/22/2010 */
-	hal_error_t error = HAL_ERROR_SUCCESS;
-	hal_event_handle_t event_handle = NULL;
-	while ((error = hal_device_get_event(m_halKeysHandle, &event_handle)) == HAL_ERROR_SUCCESS && event_handle != NULL)
+	nyx_error_t error = NYX_ERROR_NONE;
+	nyx_event_handle_t event_handle = NULL;
+	while ((error = nyx_device_get_event(m_nyxKeysHandle, &event_handle)) == NYX_ERROR_NONE && event_handle != NULL)
 	{
 		int key = 0; 
 		int keycode = 0;
-		hal_key_type_t key_type;
+		nyx_key_type_t key_type;
 		bool is_auto_repeat = false;
 		bool is_press = false;
 		bool consumeKey = false;
 
-		error = hal_keys_event_get_key(event_handle, &keycode);
-		if (error == HAL_ERROR_SUCCESS)
-			error = hal_keys_event_get_key_type(event_handle, &key_type);
-		if (error == HAL_ERROR_SUCCESS)
-			error = hal_keys_event_get_key_is_auto_repeat(event_handle, &is_auto_repeat);
-		if (error == HAL_ERROR_SUCCESS)
-			error = hal_keys_event_get_key_is_press(event_handle, &is_press);
+		error = nyx_keys_event_get_key(event_handle, &keycode);
+		if (error == NYX_ERROR_NONE)
+			error = nyx_keys_event_get_key_type(event_handle, &key_type);
+		if (error == NYX_ERROR_NONE)
+			error = nyx_keys_event_get_key_is_auto_repeat(event_handle, &is_auto_repeat);
+		if (error == NYX_ERROR_NONE)
+			error = nyx_keys_event_get_key_is_press(event_handle, &is_press);
 
-		if (error != HAL_ERROR_SUCCESS)
+		if (error != NYX_ERROR_NONE)
 		{
 			g_critical("Unable to obtain event_handle properties");
 			return;
@@ -239,13 +235,13 @@ void QPAHiddKbdHandler::readKeyData() {
 
 		int keyValue = is_press ? 1 : 0;
 
-		if (key_type == HAL_KEY_TYPE_STANDARD)
+		if (key_type == NYX_KEY_TYPE_STANDARD)
 		{
 			key = lookupKey(keycode, keyValue, &consumeKey);
 		}
-		else if (key_type == HAL_KEY_TYPE_CUSTOM)
+		else if (key_type == NYX_KEY_TYPE_CUSTOM)
 		{
-			key = lookupSwitch((hal_keys_custom_key_t)keycode);
+			key = lookupSwitch((nyx_keys_custom_key_t)keycode);
 // NOTE: uncomment this block to re-enable the Home double-tap functionality
 /*
 			if (key == Qt::Key_CoreNavi_Home)
@@ -287,10 +283,10 @@ void QPAHiddKbdHandler::readKeyData() {
 		}
 		else
 		{
-			error = hal_device_release_event(m_halKeysHandle, event_handle);
-			if (error != HAL_ERROR_SUCCESS)
+			error = nyx_device_release_event(m_nyxKeysHandle, event_handle);
+			if (error != NYX_ERROR_NONE)
 			{
-				g_critical("Unable to release m_halKeysHandle event");
+				g_critical("Unable to release m_nyxKeysHandle event");
 				return;
 			}
 			//reset the event handle
@@ -300,10 +296,10 @@ void QPAHiddKbdHandler::readKeyData() {
 
 		if (consumeKey)
 		{
-			error = hal_device_release_event(m_halKeysHandle, event_handle);
-			if (error != HAL_ERROR_SUCCESS)
+			error = nyx_device_release_event(m_nyxKeysHandle, event_handle);
+			if (error != NYX_ERROR_NONE)
 			{
-				g_critical("Unable to release m_halKeysHandle event");
+				g_critical("Unable to release m_nyxKeysHandle event");
 				return;
 			}
 			//reset the event handle
@@ -333,10 +329,10 @@ void QPAHiddKbdHandler::readKeyData() {
 		//handler->processKeyEvent(0, (Qt::Key) key, modifiers, is_press, is_auto_repeat);
 		QKeyEvent* e = new QKeyEvent((is_press ? QEvent::KeyPress : QEvent::KeyRelease), (Qt::Key)key, modifiers);
 		QApplication::postEvent((QObject*)QApplication::activeWindow(), (QEvent*)e);
-		error = hal_device_release_event(m_halKeysHandle, event_handle);
-		if (error != HAL_ERROR_SUCCESS)
+		error = nyx_device_release_event(m_nyxKeysHandle, event_handle);
+		if (error != NYX_ERROR_NONE)
 		{
-			g_critical("Unable to release m_halKeysHandle event");
+			g_critical("Unable to release m_nyxKeysHandle event");
 			return;
 		}
 		event_handle = NULL;
@@ -415,7 +411,7 @@ Qt::Key QPAHiddKbdHandler::lookupKey(int keyCode, int keyValue, bool* consumeKey
 	return (Qt::Key) key;
 }
 
-Qt::Key QPAHiddKbdHandler::lookupSwitch(hal_keys_custom_key_t code)
+Qt::Key QPAHiddKbdHandler::lookupSwitch(nyx_keys_custom_key_t code)
 {
 	int key = 0;
 
@@ -423,67 +419,67 @@ Qt::Key QPAHiddKbdHandler::lookupSwitch(hal_keys_custom_key_t code)
 	{
 		// veng-bug: add? return Qt::Key_HeadsetButton;
 
-		case HAL_KEYS_CUSTOM_KEY_VOL_UP:
+		case NYX_KEYS_CUSTOM_KEY_VOL_UP:
 			key = Qt::Key_VolumeUp;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_VOL_DOWN:
+		case NYX_KEYS_CUSTOM_KEY_VOL_DOWN:
 			key = Qt::Key_VolumeDown;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_POWER_ON:
+		case NYX_KEYS_CUSTOM_KEY_POWER_ON:
 			key = Qt::Key_Power;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_HOME:	
+		case NYX_KEYS_CUSTOM_KEY_HOME:
 			key = Qt::Key_CoreNavi_Home;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_RINGER_SW:
+		case NYX_KEYS_CUSTOM_KEY_RINGER_SW:
 			key = Qt::Key_Ringer;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_SLIDER_SW:	
+		case NYX_KEYS_CUSTOM_KEY_SLIDER_SW:
 			key = Qt::Key_Slider;
 			break;
-        case HAL_KEYS_CUSTOM_KEY_HEADSET_BUTTON:
+        case NYX_KEYS_CUSTOM_KEY_HEADSET_BUTTON:
             key = Qt::Key_HeadsetButton;
             break;
-		case HAL_KEYS_CUSTOM_KEY_HEADSET_PORT:	
+		case NYX_KEYS_CUSTOM_KEY_HEADSET_PORT:
 			key = Qt::Key_Headset;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_HEADSET_PORT_MIC:
+		case NYX_KEYS_CUSTOM_KEY_HEADSET_PORT_MIC:
 			key = Qt::Key_HeadsetMic;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_OPTICAL:
+		case NYX_KEYS_CUSTOM_KEY_OPTICAL:
 			key = Qt::Key_Optical;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_PLAY:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_PLAY:
 			key = Qt::Key_MediaPlay;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_PAUSE:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_PAUSE:
 			key = Qt::Key_MediaPause;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_STOP:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_STOP:
 			key = Qt::Key_MediaStop;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_NEXT:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_NEXT:
 			key = Qt::Key_MediaNext;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_PREVIOUS:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_PREVIOUS:
 			key = Qt::Key_MediaPrevious;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_REPEAT_ALL:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_REPEAT_ALL:
 			key = Qt::Key_MediaRepeatAll;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_REPEAT_TRACK:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_REPEAT_TRACK:
 			key = Qt::Key_MediaRepeatTrack;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_REPEAT_NONE:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_REPEAT_NONE:
 			key = Qt::Key_MediaRepeatNone;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_SHUFFLE_ON:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_SHUFFLE_ON:
 			key = Qt::Key_MediaShuffleOn;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_MEDIA_SHUFFLE_OFF:
+		case NYX_KEYS_CUSTOM_KEY_MEDIA_SHUFFLE_OFF:
 			key = Qt::Key_MediaShuffleOff;
 			break;
-		case HAL_KEYS_CUSTOM_KEY_UNDEFINED:			
+		case NYX_KEYS_CUSTOM_KEY_UNDEFINED:
 		default:
 			key = 0;
 			break;

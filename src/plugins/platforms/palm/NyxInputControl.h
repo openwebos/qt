@@ -21,24 +21,24 @@
 ****************************************************************************/
 
 
-#ifndef _HALINPUTCONTROL_H_
-#define _HALINPUTCONTROL_H_
+#ifndef _NYXINPUTCONTROL_H_
+#define _NYXINPUTCONTROL_H_
 
 #include "InputControl.h"
 
-class HalInputControl: public InputControl {
+class NyxInputControl: public InputControl {
 public:
-    HalInputControl(hal_device_type_t type, hal_device_id_t id);
-    virtual ~HalInputControl();
+    NyxInputControl(nyx_device_type_t type, nyx_device_id_t id);
+    virtual ~NyxInputControl();
 
     virtual bool on();
     virtual bool off();
     virtual bool setRate(int rate);
 
-    virtual hal_device_handle_t getHandle() { return m_handle; }
+    virtual nyx_device_handle_t getHandle() { return m_handle; }
 
 private:
-    hal_device_handle_t m_handle;
+    nyx_device_handle_t m_handle;
 };
 
-#endif /* _HALINPUTCONTROL_H_ */
+#endif /* _NYXINPUTCONTROL_H_ */
