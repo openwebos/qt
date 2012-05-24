@@ -31,14 +31,14 @@ HEADERS += ../clipboards/qwebosclipboard.h
 HEADERS +=  hidd_qpa.h \
             hiddtp_qpa.h \
             InputControl.h \
-            HalInputControl.h \
+            NyxInputControl.h \
             hiddkbd_qpa.h
 
 SOURCES +=  hiddtp_qpa.cpp \
-            HalInputControl.cpp \
+            NyxInputControl.cpp \
             hiddkbd_qpa.cpp
 
-LIBS_PRIVATE += -lhal -lhid -ldl
+LIBS_PRIVATE += -lnyx -lhid -ldl
 }
 
 include(../fontdatabases/genericunix/genericunix.pri)

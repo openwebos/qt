@@ -32,7 +32,8 @@
 #include <glib.h>
 
 #include <hid/IncsPublic/HidLib.h>
-#include <hal/hal.h>
+#include <nyx/nyx_client.h>
+
 #include "FlickGesture.h"
 #include "ScreenEdgeFlickGesture.h"
 #include "InputControl.h"
@@ -103,8 +104,7 @@ private:
 	QElapsedTimer m_touchTimer;
 	qint64 m_mousePressTime;
 	
-    	/* fine-tuning  support for HAL: dk 12/22/2010 */
-	hal_device_handle_t m_halPenHandle;
+	nyx_device_handle_t m_nyxPenHandle;
 	int m_penFd;
 
 	int m_metaActiveTouchesCount;
