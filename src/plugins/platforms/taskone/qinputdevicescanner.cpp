@@ -99,6 +99,11 @@ void QInputDeviceScanner::scan()
                     }
                 }
             }
+            else if(deviceName.contains("M-RCU - Builtin"))
+            {
+                qDebug() << QString("Found Motion: ") << devEvent;
+                m_listOfMotion.append(devEvent);
+            }
 
             fileEvent.close();
         }
@@ -115,6 +120,11 @@ int QInputDeviceScanner::getNumOfKeyboards()
     return m_listOfKeyboard.count();
 }
 
+int QInputDeviceScanner::getNumOfMotions()
+{
+    return m_listOfMotion.count();
+}
+
 const QString & QInputDeviceScanner::getMouseName(int idx)
 {
     return m_listOfMouse.at(idx);
@@ -125,4 +135,8 @@ const QString & QInputDeviceScanner::getKeyboardName(int idx)
     return m_listOfKeyboard.at(idx);
 }
 
+const QString & QInputDeviceScanner::getMotionName(int idx)
+{
+    return m_listOfMotion.at(idx);	
+}
 

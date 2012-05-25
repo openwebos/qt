@@ -68,6 +68,7 @@ QTaskOneIntegration::QTaskOneIntegration(bool soft)
 
     QString keyboardName = qgetenv("QPA_KEYBOARD");
     QString mouseName    = qgetenv("QPA_MOUSE");
+    QString motionName   = qgetenv("QPA_MOTION");
 
     QInputDeviceScanner *scanner = new QInputDeviceScanner();
 
@@ -76,7 +77,6 @@ QTaskOneIntegration::QTaskOneIntegration(bool soft)
         scanner->scan();
     }
 
-#ifdef USE_KEYBOARD // Now, it has a problem. It should be fixed.
     if( keyboardName.length() > 0 )
     {
         m_keyboards.append(new QLinuxKeyboardHandler(keyboardName));
@@ -93,7 +93,6 @@ QTaskOneIntegration::QTaskOneIntegration(bool soft)
             m_keyboards.append(new QLinuxKeyboardHandler(keyboard));
         }
     }
-#endif
 
     if( mouseName.length() > 0 )
     {
@@ -111,6 +110,25 @@ QTaskOneIntegration::QTaskOneIntegration(bool soft)
             m_mouses.append(new QLinuxMouseHandler(mouse));
         }
     }
+
+#ifdef USE_MOTION
+    if( motionName.length() > 0 )
+    {
+        m_motions.append(new QTaskOneMotionHandler(motionName));
+    }
+    else
+    {
+        // If the environment variables are not set,
+        // we append mouses from scanner.
+
+        if( scanner->getNumOfMotions() > 0 )
+        {
+            QString motion = scanner->getMotionName(0);
+
+            m_motions.append(new QTaskOneMotionHandler(motion));
+        }
+    }
+#endif
 
     if( scanner )
     {
