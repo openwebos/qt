@@ -35,7 +35,7 @@
 
 #include "hiddtp_qpa.h"
 #include "InputControl.h"
-#include "HalInputControl.h"
+#include "NyxInputControl.h"
 #include "FlickGesture.h"
 #include "ScreenEdgeFlickGesture.h" 
 #include "qeglfsscreen.h"
@@ -70,7 +70,7 @@ extern "C" {
 
 QPAHiddTpHandler::QPAHiddTpHandler(QEglFSScreen*  m_screen)
 	: m_mousePressTime(0)
-	, m_halPenHandle(0)
+	, m_nyxPenHandle(0)
 	, m_penFd(0)
 	, m_metaActiveTouchesCount(0)
 	, m_sendPenCancel (false)
@@ -82,19 +82,17 @@ QPAHiddTpHandler::QPAHiddTpHandler(QEglFSScreen*  m_screen)
 	flickGesture = new FlickGesture;
 	m_screenEdgeFlickGesture = new ScreenEdgeFlickGesture;
 	m_touchTimer.start();
-	/* initial HAL support: veng */
-	/* fine-tuning  support for HAL: dk 12/22/2010 */
-	InputControl* ic = new HalInputControl(HAL_DEVICE_TOUCHPANEL, "Main");
+	InputControl* ic = new NyxInputControl(NYX_DEVICE_TOUCHPANEL, "Main");
 	m_tpInput = ic;
 	if (ic)
 	{
-		m_halPenHandle = ic->getHandle();
-		if (m_halPenHandle)
+		m_nyxPenHandle = ic->getHandle();
+		if (m_nyxPenHandle)
         	{
-			hal_error_t error = HAL_ERROR_SUCCESS;
-			error = hal_device_get_event_source(m_halPenHandle, &m_penFd);
+			nyx_error_t error = NYX_ERROR_NONE;
+			error = nyx_device_get_event_source(m_nyxPenHandle, &m_penFd);
 
-			if (error != HAL_ERROR_SUCCESS)
+			if (error != NYX_ERROR_NONE)
 			{
 				g_critical("Unable to obtain touchpanel event_source");
 				return;
@@ -165,23 +163,20 @@ Qt::Key QPAHiddTpHandler::lookupGesture(uint16_t value) {
 }
 
 void QPAHiddTpHandler::readHiddData() {
-	/* initial HAL support: veng */
-	/* fine-tuning  support for HAL: dk 12/22/2010 */
-
-	hal_error_t error = HAL_ERROR_SUCCESS;
-	hal_event_handle_t event_handle = NULL;
-	hal_touchpanel_event_item_t* touches;
+	nyx_error_t error = NYX_ERROR_NONE;
+	nyx_event_handle_t event_handle = NULL;
+	nyx_touchpanel_event_item_t* touches;
 	int count = 0;
 
-	if (m_halPenHandle == NULL) return;
+	if (m_nyxPenHandle == NULL) return;
 
-	while ((error = hal_device_get_event(m_halPenHandle, &event_handle)) == HAL_ERROR_SUCCESS && event_handle != NULL)
+	while ((error = nyx_device_get_event(m_nyxPenHandle, &event_handle)) == NYX_ERROR_NONE && event_handle != NULL)
 	{
 
-		error = hal_touchpanel_event_get_touches(event_handle, &touches, &count);
-		if (error != HAL_ERROR_SUCCESS)
+		error = nyx_touchpanel_event_get_touches(event_handle, &touches, &count);
+		if (error != NYX_ERROR_NONE)
 		{
-			g_critical("Unable to obtain m_halPenHandle event touches");
+			g_critical("Unable to obtain m_nyxPenHandle event touches");
 			return;
 		}
 
@@ -190,7 +185,7 @@ void QPAHiddTpHandler::readHiddData() {
     
 		for (int j=0; j<count; j++)
 		{
-			hal_touchpanel_event_item_t* touch = touches++;
+			nyx_touchpanel_event_item_t* touch = touches++;
     
 			hiddTouches.append(HiddTouch());
 			currentTouch = &hiddTouches[hiddTouches.size()-1];
@@ -212,18 +207,18 @@ void QPAHiddTpHandler::readHiddData() {
 				currentTouch->yVelocity = touch->yVelocity;
 			}
   
-			if (HAL_TOUCHPANEL_STATE_DOWN == touch->state)
+			if (NYX_TOUCHPANEL_STATE_DOWN == touch->state)
 			{
 				currentTouch->state = FingerDown;
 			}
-			else if (HAL_TOUCHPANEL_STATE_UP == touch->state)
+			else if (NYX_TOUCHPANEL_STATE_UP == touch->state)
 			{
 				currentTouch->state = FingerUp;
 			}
 		}
     
-		hal_device_release_event(m_halPenHandle, event_handle);
-		if (error != HAL_ERROR_SUCCESS)
+		nyx_device_release_event(m_nyxPenHandle, event_handle);
+		if (error != NYX_ERROR_NONE)
 		{
 			g_critical("Unable to release event_handle event");
 			return;
