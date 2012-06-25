@@ -2,7 +2,7 @@ TARGET = qwebos
 TEMPLATE = lib
 CONFIG += plugin warn_off
 
-QT += opengl core-private gui-private opengl-private
+QT += opengl core-private gui-private opengl-private xml
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
 #include(externalplugin.pri)
@@ -20,7 +20,7 @@ SOURCES =   main.cpp \
             qwebosscreen.cpp \
             ../eglconvenience/qeglconvenience.cpp \
             ../eglconvenience/qeglplatformcontext.cpp \
-            qbasicunixfontdatabase.cpp
+            qwebosfontdatabase.cpp
 #            qeglplatformcontext.cpp \
 #            qweboswindowevents.cpp \
 #            qwebosstyle.cpp
@@ -29,7 +29,7 @@ HEADERS =   qwebosintegration.h \
             qweboswindow.h \
             qweboswindowsurface.h \
             qwebosscreen.h \
-            qbasicunixfontdatabase.h \
+            qwebosfontdatabase.h \
             ../eglconvenience/qeglconvenience.h \
             ../eglconvenience/qeglplatformcontext.h \
 #            qeglplatformcontext.h \
