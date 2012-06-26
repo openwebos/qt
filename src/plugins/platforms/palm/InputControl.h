@@ -24,7 +24,7 @@
 #ifndef _INPUTCONTROL_H_
 #define _INPUTCONTROL_H_
 
-#include <hal/hal.h>
+#include <nyx/nyx_client.h>
 
 class InputControl
 {
@@ -36,7 +36,7 @@ public:
     virtual bool off() = 0;
     virtual bool setRate(int rate) =0;
 
-    virtual hal_device_handle_t getHandle() = 0;
+    virtual nyx_device_handle_t getHandle() = 0;
 };
 
 #endif /* _INPUTCONTROL_H_ */
