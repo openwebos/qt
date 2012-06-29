@@ -244,26 +244,60 @@ bool QEglGLPixmapData::hasAlphaChannel() const
     return m_hasAlpha;    
 }
 
-extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
+extern QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha);
 
 QImage QEglGLPixmapData::toImage() const
 {
+    TRACE();
+    // We should not do so many toImage calls alltogether. This is what is slowing us down right now.
+    // QWK should keep a cache of transformed images instead of re-doing it every frame.
+    // FIXME make QWebKit not do so many QPixmap(QImage(pixmap.toImage).transform()) style transformations.
     if (!isValid())
         return QImage();
 
-    if (m_fbo) {
-//        copyBackFromRenderFbo(true);
-    } else if (!m_source.isNull()) {
+    if (!m_source.isNull()) {
         return m_source;
     } else if (m_dirty || m_hasFillColor) {
-        return fillImage(m_fillColor);
+        m_source = fillImage(m_fillColor);
+        return m_source;
     } else {
         ensureCreated();
     }
+    // read the image from the FBO to memory
+    if(m_fbo) {
+        // we read the data back from the fbo
+        m_ctx->makeCurrent();
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_fbo);
+        // this does glReadPixels - not very fast!
+        QImage temp=qt_gl_read_framebuffer(QSize(w, h), true, true);
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+        m_source=temp;
+        m_ctx->doneCurrent();
+        return temp;
+    }
+    else if (m_texture.id) {
+        // we read back from the texture by binding its id as a framebuffer
+        // is this in the OpenGL standard? It seems to work
+        m_ctx->makeCurrent();
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_texture.id);
+        // this does glReadPixels - not very fast
+        QImage temp=qt_gl_read_framebuffer(QSize(w, h), true, true);
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+        // should we cache the fetched image locally to speed up future access?
+        // m_source=temp;
+        m_ctx->doneCurrent();
+        return temp;
+    }
+    else {
+        QImage temp(w,h, QImage::Format_ARGB32_Premultiplied);
+        // FIXME indicating something went wrong, neither of above cases worked - look out for yellow images
+        temp.fill(Qt::yellow);
+        m_source=temp;
+        return temp;
+    }
 
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
-    glBindTexture(GL_TEXTURE_2D, m_texture.id);
-    return qt_gl_read_texture(QSize(w, h), true, true);
 }
 
 QPaintEngine* QEglGLPixmapData::paintEngine() const
