@@ -80,7 +80,6 @@ QWebOSWindowSurface::QWebOSWindowSurface(QWebOSScreen *screen, QWidget *window, 
 
 void QWebOSWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
-    Q_UNUSED(widget);
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
