@@ -13,6 +13,8 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QWebOSClipboard;
+class QWebOSFontDatabase;
+
 class QWebOSIntegration : public QPlatformIntegration
 {
 public:
@@ -27,7 +29,7 @@ public:
     QPlatformFontDatabase *fontDatabase() const;
     virtual QPlatformClipboard *clipboard() const;
 private:
-    QPlatformFontDatabase *mFontDb;
+    QWebOSFontDatabase *mFontDb;
     QList<QPlatformScreen *> mScreens;
     QWebOSScreen *m_primaryScreen;
     bool m_offscreen;

@@ -19,10 +19,9 @@
 #include "qweboswindow.h"
 #include "qweboswindowsurface.h"
 
-#include "qbasicunixfontdatabase.h"
-
 #include <QtGui/QPlatformWindow>
 #include "qwebosclipboard.h"
+#include "qwebosfontdatabase.h"
 #include <QtGui/QPlatformWindowFormat>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtOpenGL/private/qpixmapdata_egl_p.h>
@@ -38,7 +37,7 @@ QPlatformClipboard* QWebOSIntegration::clipboard() const {
 }
 
 QWebOSIntegration::QWebOSIntegration(bool offscreen)
-    : mFontDb(new QBasicUnixFontDatabase())
+    : mFontDb(new QWebOSFontDatabase())
       ,m_offscreen(offscreen)
 {
     qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
