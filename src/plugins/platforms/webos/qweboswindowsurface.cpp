@@ -79,11 +79,15 @@ QWebOSWindowSurface::QWebOSWindowSurface(QWebOSScreen *screen, QWidget *window, 
 
 void QWebOSWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
     Q_UNUSED(widget);
     Q_UNUSED(region);
     Q_UNUSED(offset);
-    
+
+    // QGraphicsView contains a QWidget for its frame, even if it is not visible. Any repaint
+    // on that frame widget will cause an extra buffer swap, causing problems. This filters out
+    // that swap.
+    if(qobject_cast<QGraphicsView*>(widget))
+        return;
     widget->platformWindow()->glContext()->swapBuffers();
 }
 
