@@ -99,15 +99,7 @@ QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) co
 #ifdef QEGL_EXTRA_DEBUG
     qWarning("QEglIntegration::createPixmapData %d\n", type);
 #endif
-    if(soft)
-      return new QRasterPixmapData(type);
-    else
-// We have to think about either improving on the performance of EglGLPixmapData
-// or having QWebKit not copy around so many images at all. For now Raster gives
-// us *just* about enough speed.
-// FIXME make QEglGLPixmapData faster and re-enable here.
-//      return new QEglGLPixmapData(type);
-      return new QRasterPixmapData(type);
+    return new QRasterPixmapData(type);
 }
 
 QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWidget *widget, WId winId) const

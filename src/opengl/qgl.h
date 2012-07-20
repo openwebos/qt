@@ -364,8 +364,6 @@ public:
 
     void deleteTexture(GLuint tx_id);
 
-    void setTextureOptions(const QPixmap& pixmap, BindOptions options);
-
     void drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
     void drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget = GL_TEXTURE_2D);
 
