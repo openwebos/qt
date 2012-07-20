@@ -65,8 +65,7 @@ class EglScreenPrivate : public QWSGraphicsSystem
 public:
 
     virtual QPixmapData* createPixmapData(QPixmapData::PixelType type) const {
-        //return new QGLPixmapData(type);
-		return new QEglGLPixmapData(type);
+        return new QGLPixmapData(type);
     }
 
 };
