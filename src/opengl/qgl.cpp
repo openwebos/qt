@@ -1602,6 +1602,9 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
 }
 
 struct QGLContextGroupList {
+    // this had to be recursive since we got into a deadlock from QtWebkit when switching backends
+    QGLContextGroupList()
+        : m_mutex(QMutex::Recursive) {};
     void append(QGLContextGroup *group) {
         QMutexLocker locker(&m_mutex);
         m_list.append(group);
