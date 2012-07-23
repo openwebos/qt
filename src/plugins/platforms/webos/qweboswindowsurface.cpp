@@ -42,10 +42,11 @@ public:
     QSize size() const { return m_screen->geometry().size(); }
     QGLContext* context() const { return QGLContext::fromPlatformGLContext(m_screen->platformContext());}
 
-    QPaintEngine *paintEngine() const { qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************"; return qt_qgl_paint_engine(); }
+    QPaintEngine *paintEngine() const {
+        return qt_qgl_paint_engine();
+    }
 
     void  beginPaint(){
-        qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
         QGLPaintDevice::beginPaint();
     }
 private:
@@ -79,11 +80,14 @@ QWebOSWindowSurface::QWebOSWindowSurface(QWebOSScreen *screen, QWidget *window, 
 
 void QWebOSWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
 {
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
-    Q_UNUSED(widget);
     Q_UNUSED(region);
     Q_UNUSED(offset);
-    
+
+    // QGraphicsView contains a QWidget for its frame, even if it is not visible. Any repaint
+    // on that frame widget will cause an extra buffer swap, causing problems. This filters out
+    // that swap.
+    if(qobject_cast<QGraphicsView*>(widget))
+        return;
     widget->platformWindow()->glContext()->swapBuffers();
 }
 
@@ -109,12 +113,10 @@ void QWebOSWindowSurface::flush(QWidget *widget, const QRegion &region, const QP
 
 QWebOSWindowSurface::~QWebOSWindowSurface()
 {
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
 }
 
 void QWebOSWindowSurface::resize(const QSize &size)
 {
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
     Q_UNUSED(size);
 }
 

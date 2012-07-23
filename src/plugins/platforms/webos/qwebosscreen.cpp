@@ -84,9 +84,8 @@ QWebOSScreen::QWebOSScreen(EGLNativeDisplayType display, bool offscreen)
 //    , m_nrWindow(0)
     , m_direct(false)
 {
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglScreen %p\n", this);
+    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
 #endif
 
     EGLint major, minor;
@@ -120,7 +119,6 @@ QWebOSScreen::QWebOSScreen(EGLNativeDisplayType display, bool offscreen)
     }
     eglSwapInterval(m_dpy, swapInterval);
 
-    qDebug() << "\t\t\t\t\**************  Returning from "<< __PRETTY_FUNCTION__ << "****************";
 }
 
 void QWebOSScreen::createAndSetPlatformContext() const {
@@ -129,7 +127,6 @@ void QWebOSScreen::createAndSetPlatformContext() const {
 
 void QWebOSScreen::createAndSetPlatformContext()
 {
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "1  ****************";
     QPlatformWindowFormat platformFormat = QPlatformWindowFormat::defaultFormat();
 
     platformFormat.setWindowApi(QPlatformWindowFormat::OpenGL);
@@ -153,8 +150,6 @@ void QWebOSScreen::createAndSetPlatformContext()
     if (!qgetenv("QT_QPA_EGLFS_MULTISAMPLE").isEmpty()) {
         platformFormat.setSampleBuffers(true);
     }
-
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "2   ****************";
 
     EGLConfig config = q_configFromQPlatformWindowFormat(m_dpy, platformFormat);
 
@@ -204,7 +199,6 @@ void QWebOSScreen::createAndSetPlatformContext()
     }
     else
     {
-        qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "4   ****************";
         m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, NULL);
     }
 
@@ -237,11 +231,9 @@ void QWebOSScreen::createAndSetPlatformContext()
     attribList[temp++] = 2; // GLES version 2
     attribList[temp++] = EGL_NONE;
     
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "6   ****************";
 
     //start me in offscreen mode
     m_platformContext = new QEGLPlatformContext(m_dpy,config,attribList,m_surface,EGL_OPENGL_ES_API);
-    //qDebug("\t\t\t\tPlatform Context : %p", m_platformContext);
 
     EGLint w,h;                    // screen size detection
     eglQuerySurface(m_dpy, m_surface, EGL_WIDTH, &w);
@@ -251,9 +243,6 @@ void QWebOSScreen::createAndSetPlatformContext()
 
     glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
 
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "7   ****************";
-    //m_platformContext->makeCurrent();
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "8   ****************";
 }
 
 //void QWebOSScreen::directRendering(bool enable)
@@ -293,7 +282,6 @@ int QWebOSScreen::depth() const
 
 QImage::Format QWebOSScreen::format() const
 {
-    qDebug() << "\t\t\t\t\**************"<< __PRETTY_FUNCTION__ << "****************";
     if (m_format == QImage::Format_Invalid)
         createAndSetPlatformContext();
     return m_format;

@@ -1602,6 +1602,9 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
 }
 
 struct QGLContextGroupList {
+    // this had to be recursive since we got into a deadlock from QtWebkit when switching backends
+    QGLContextGroupList()
+        : m_mutex(QMutex::Recursive) {};
     void append(QGLContextGroup *group) {
         QMutexLocker locker(&m_mutex);
         m_list.append(group);
@@ -2618,11 +2621,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 #if !defined(QT_OPENGL_ES_1)
     if (target == GL_TEXTURE_2D && pd->classId() == QPixmapData::OpenGLClass) {
 
-#if defined(QT_OPENGL_ES_2)		
-        const QEglGLPixmapData *data = static_cast<const QEglGLPixmapData *>(pd);
-#else
         const QGLPixmapData *data = static_cast<const QGLPixmapData *>(pd);
-#endif
 
         if (data->isValidContext(q)) {
 			data->bind();
@@ -2892,24 +2891,6 @@ void QGLContext::deleteTexture(GLuint id)
         return;
     glDeleteTextures(1, &id);
 }
-
-void QGLContext::setTextureOptions(const QPixmap& pixmap, BindOptions options)
-{
-    QPixmapData *pd = pixmap.pixmapData();
-
-#if defined(QT_OPENGL_ES_2)     
-    if (pd->classId() == QPixmapData::OpenGLClass) {
-        const QEglGLPixmapData *data = static_cast<const QEglGLPixmapData *>(pd);
-        if (data->isValidContext(this)) {
-            data->bind();
-            data->texture()->options = options;
-        }
-    }
-#else
-    Q_UNUSED(pd);
-#endif
-}
-
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
 /*! \internal */
