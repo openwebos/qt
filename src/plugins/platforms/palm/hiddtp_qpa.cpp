@@ -38,7 +38,6 @@
 #include "NyxInputControl.h"
 #include "FlickGesture.h"
 #include "ScreenEdgeFlickGesture.h" 
-#include "qeglfsscreen.h"
 
 // One page worth of events (4096/16)
 #define MAX_HIDD_EVENTS 256
@@ -68,7 +67,7 @@ extern "C" {
 }
 
 
-QPAHiddTpHandler::QPAHiddTpHandler(QEglFSScreen*  m_screen)
+QPAHiddTpHandler::QPAHiddTpHandler(int width, int height)
 	: m_mousePressTime(0)
 	, m_nyxPenHandle(0)
 	, m_penFd(0)
@@ -76,9 +75,9 @@ QPAHiddTpHandler::QPAHiddTpHandler(QEglFSScreen*  m_screen)
 	, m_sendPenCancel (false)
 	, m_penCancelPoint (0,0)
 	, m_isSuspended (false)
+    , m_deviceWidth(width)
+    , m_deviceHeight(height)
 {
-	m_deviceWidth = m_screen->geometry().width();
-	m_deviceHeight = m_screen->geometry().height();
 	flickGesture = new FlickGesture;
 	m_screenEdgeFlickGesture = new ScreenEdgeFlickGesture;
 	m_touchTimer.start();

@@ -31,20 +31,18 @@
 #include <stdio.h>
 #include <glib.h>
 
-#include <hid/IncsPublic/HidLib.h>
 #include <nyx/nyx_client.h>
 
 #include "FlickGesture.h"
 #include "ScreenEdgeFlickGesture.h"
 #include "InputControl.h"
-#include "qeglfsscreen.h"
 
 #define EV_GESTURE 0x06
 
 class QPAHiddTpHandler: public QObject {
 Q_OBJECT
 public:
-	QPAHiddTpHandler(QEglFSScreen*);
+	QPAHiddTpHandler(int width, int height);
 	~QPAHiddTpHandler();
 
 	void suspend();

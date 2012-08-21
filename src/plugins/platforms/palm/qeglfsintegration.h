@@ -45,10 +45,8 @@
 
 #include "qeglfsscreen.h"
 
-#if !defined(TASKONE)
 #include "hiddtp_qpa.h"
-#include "hiddkbd_qpa.h"
-#endif
+#include "nyxkeyboardhandler.h"
 
 #include "qwebosclipboard.h"
 #include <QtGui/QPlatformIntegration>
@@ -77,10 +75,8 @@ private:
     QList<QPlatformScreen *> mScreens;
     QEglFSScreen *m_primaryScreen;
 
-#if !defined(TASKONE)
-    QPAHiddTpHandler *m_tpHandler;
-    QPAHiddKbdHandler *m_kbdHandler;
-#endif
+    QPAHiddTpHandler* m_tpHandler;
+    NyxKeyboardHandler* m_keyboard;
 
     bool soft;
     QWebOSClipboard* m_clipboard;

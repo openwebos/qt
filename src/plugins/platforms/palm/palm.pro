@@ -1,45 +1,55 @@
 TARGET = qpalm
 TEMPLATE = lib
-CONFIG += plugin
+CONFIG += plugin $$(WEBOS_CONFIG)
 
-QT += opengl core-private gui-private opengl-private
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
 
-SOURCES =   main.cpp \
-            qeglfsintegration.cpp \
-            ../eglconvenience/qeglconvenience.cpp \
-            ../eglconvenience/qeglplatformcontext.cpp \
-            qeglfswindow.cpp \
-            qeglfswindowsurface.cpp \
-            qeglfsscreen.cpp
+SOURCES = main.cpp \
+          hiddtp_qpa.cpp \
+          NyxInputControl.cpp \
+          nyxkeyboardhandler.cpp
 
-HEADERS =   qeglfsintegration.h \
-            ../eglconvenience/qeglconvenience.h \
-            ../eglconvenience/qeglplatformcontext.h \
-            qeglfswindow.h \
-            qeglfswindowsurface.h \
-            qeglfsscreen.h \
-            FlickGesture.h \
-            ScreenEdgeFlickGesture.h \
-            webosDeviceKeymap.h
+HEADERS += hidd_qpa.h \
+           hiddtp_qpa.h \
+           InputControl.h \
+           NyxInputControl.h \
+           nyxkeyboardhandler.h \
+           FlickGesture.h \
+           ScreenEdgeFlickGesture.h
+
+webos {
+    qemux86 {
+        include(../fb_base/fb_base.pri)
+        SOURCES += ../linuxfb/qlinuxfbintegration.cpp \
+                   emulatorfbintegration.cpp
+        HEADERS += ../linuxfb/qlinuxfbintegration.h \
+                   emulatorfbintegration.h
+
+        LIBS_PRIVATE += -lnyx
+    } else {
+        QT += opengl
+        SOURCES += qeglfsintegration.cpp \
+                   ../eglconvenience/qeglconvenience.cpp \
+                   ../eglconvenience/qeglplatformcontext.cpp \
+                   qeglfswindow.cpp \
+                   qeglfswindowsurface.cpp \
+                   qeglfsscreen.cpp
+
+        HEADERS += qeglfsintegration.h \
+                   ../eglconvenience/qeglconvenience.h \
+                   ../eglconvenience/qeglplatformcontext.h \
+                   qeglfswindow.h \
+                   qeglfswindowsurface.h \
+                   qeglfsscreen.h
+        DEFINES += TARGET_DEVICE
+        LIBS_PRIVATE += -lnyx -lhid -ldl
+    }
+}
+
 
 INCLUDEPATH += ../clipboards
 SOURCES += ../clipboards/qwebosclipboard.cpp
 HEADERS += ../clipboards/qwebosclipboard.h
-
-!contains(DEFINES, TASKONE) {
-HEADERS +=  hidd_qpa.h \
-            hiddtp_qpa.h \
-            InputControl.h \
-            NyxInputControl.h \
-            hiddkbd_qpa.h
-
-SOURCES +=  hiddtp_qpa.cpp \
-            NyxInputControl.cpp \
-            hiddkbd_qpa.cpp
-
-LIBS_PRIVATE += -lnyx -lhid -ldl
-}
 
 include(../fontdatabases/genericunix/genericunix.pri)
 

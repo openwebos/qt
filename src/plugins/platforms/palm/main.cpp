@@ -41,7 +41,13 @@
 ****************************************************************************/
 
 #include <QtGui/QPlatformIntegrationPlugin>
+#include <QDebug>
+#if defined(TARGET_DEVICE)
 #include "qeglfsintegration.h"
+#else
+#include "emulatorfbintegration.h"
+#endif
+
 
 QT_BEGIN_NAMESPACE
 
@@ -56,7 +62,9 @@ QStringList QEglIntegrationPlugin::keys() const
 {
     QStringList list;
     list << "Palm";
+#if defined(TARGET_DEVICE)
     list << "Palm-soft";
+#endif
     return list;
 }
 
@@ -64,10 +72,13 @@ QPlatformIntegration* QEglIntegrationPlugin::create(const QString& system, const
 {
     Q_UNUSED(paramList);
     if (system.toLower() == "palm") {
+#if defined(TARGET_DEVICE)
         return new QEglFSIntegration(false);
-    }
-    else if(system.toLower() == "palm-soft") {
+    } else if(system.toLower() == "palm-soft") {
         return new QEglFSIntegration(true);
+#else
+    return new EmulatorFbIntegration;
+#endif
     }
 
     return 0;

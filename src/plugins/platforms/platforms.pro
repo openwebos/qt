@@ -8,18 +8,21 @@ webos {
     desktop {
         SUBDIRS += xcb
         DEFINES += TARGET_DESKTOP
+    } else:qemux86 {
+        SUBDIRS += palm
+    } else:taskone {
+        SUBDIRS += taskone
+        SUBDIRS += palm
     } else {
         SUBDIRS += palm
         SUBDIRS += webos
-	}
-} else {
-    # This branch is here as a default until bitbake recipies can configure
-    # the build in this manner, once thats done this else branch can be removed
-    SUBDIRS += palm
-    SUBDIRS += webos
+        DEFINES += TARGET_DEVICE
+    }
 }
 
 contains(DEFINES, TASKONE) {
+    # This should be removed once taskone is built through
+    # oe-core, see the above config
     SUBDIRS += taskone
 }
 

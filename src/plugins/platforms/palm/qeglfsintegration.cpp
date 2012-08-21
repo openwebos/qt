@@ -66,23 +66,13 @@ QEglFSIntegration::QEglFSIntegration(bool soft)
     : mFontDb(new QGenericUnixFontDatabase()),
       m_clipboard(new QWebOSClipboard())
 {
-/*
-#if defined(TASKONE)
-    m_primaryScreen = new QEglFSScreen((EGLNativeDisplayType)1);
-    qDebug("+++++++++++++++++++++++++ OPENING FRAME BUFFER 1++++++++++++++++++++++++++++++");
-#else*/
     m_primaryScreen = new QEglFSScreen(EGL_DEFAULT_DISPLAY);
-    qDebug("+++++++++++++++++++++++++ OPENING FRAME BUFFER 0++++++++++++++++++++++++++++++");
-#ifndef TASKONE
-    m_tpHandler = new QPAHiddTpHandler(m_primaryScreen);
-    m_kbdHandler = new QPAHiddKbdHandler;
-#endif
-
+    m_tpHandler = new QPAHiddTpHandler(m_primaryScreen->geometry().width(), m_primaryScreen->geometry().height());
+    m_keyboard = new NyxKeyboardHandler;
     this->soft = soft;
-
     mScreens.append(m_primaryScreen);
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration\n");
+    qDebug() << "QEglFSIntegration";
 #endif
 }
 
@@ -97,7 +87,7 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
 QPixmapData *QEglFSIntegration::createPixmapData(QPixmapData::PixelType type) const
 {
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createPixmapData %d\n", type);
+    qDebug() << __PRETTY_FUNCTION__ << type;
 #endif
     return new QRasterPixmapData(type);
 }
@@ -106,7 +96,7 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWidget *widget, WId wi
 {
     Q_UNUSED(winId);
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createPlatformWindow %p\n",widget);
+    qDebug() << __PRETTY_FUNCTION__ << widget;
 #endif
     return new QEglFSWindow(widget, m_primaryScreen);
 }
@@ -117,7 +107,7 @@ QWindowSurface *QEglFSIntegration::createWindowSurface(QWidget *widget, WId winI
     Q_UNUSED(winId);
 
 #ifdef QEGL_EXTRA_DEBUG
-    qWarning("QEglIntegration::createWindowSurface %p\n",widget);
+    qDebug() << __PRETTY_FUNCTION__ << widget;
 #endif
     return new QEglFSWindowSurface(m_primaryScreen,widget);
 }
