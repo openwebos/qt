@@ -1,4 +1,9 @@
 TARGET = xcb
+CONFIG += $$(WEBOS_CONFIG)
+webos:desktop {
+    # On the webOS platform we need QTouchEvent support
+    DEFINES += ENABLE_QTOUCH_EVENT
+}
 
 include(../../qpluginbase.pri)
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/platforms
@@ -39,7 +44,6 @@ contains(QT_CONFIG, opengl) {
     } else {
         DEFINES += XCB_USE_XLIB
         LIBS += -lX11 -lX11-xcb
-
         contains(QT_CONFIG, opengles2) {
             DEFINES += XCB_USE_EGL
             HEADERS += \

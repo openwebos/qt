@@ -42,7 +42,10 @@
 #include "qxcbwindow.h"
 
 #include <QtDebug>
-
+#if defined(ENABLE_QTOUCH_EVENT)
+#include <QTouchEvent>
+#include <QList>
+#endif
 #include "qxcbconnection.h"
 #include "qxcbscreen.h"
 #ifdef XCB_USE_DRI2
@@ -640,7 +643,6 @@ void QXcbWindow::handleButtonPressEvent(const xcb_button_press_event_t *event)
     QPoint global(event->root_x, event->root_y);
 
     Qt::KeyboardModifiers modifiers = Qt::NoModifier;
-
     if (event->detail >= 4 && event->detail <= 7) {
         //logic borrowed from qapplication_x11.cpp
         int delta = 120 * ((event->detail == 4 || event->detail == 6) ? 1 : -1);
@@ -660,16 +662,40 @@ void QXcbWindow::handleButtonReleaseEvent(const xcb_button_release_event_t *even
 {
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
-
     handleMouseEvent(event->detail, event->state, event->time, local, global);
 }
+#if defined(ENABLE_QTOUCH_EVENT)
+// Adding the support of QTouchEvents, see xcb.pro when this is enabled.
+static void sendTouchEvent(QWidget* w, Qt::TouchPointStates state, const QPoint& local, const QPoint& global)
+{
+    QList<QTouchEvent::TouchPoint> points;
+    QTouchEvent::TouchPoint touchPoint;
+    // As we support only on touch point, a.k.a. the mouse location we'll get away with a static id
+    touchPoint.setId(0);
+    touchPoint.setPos(local);
+    touchPoint.setScreenPos(global);
+    touchPoint.setState(state | Qt::TouchPointPrimary);
+    points.append(touchPoint);
+    QApplicationPrivate::translateRawTouchEvent(w, QTouchEvent::TouchScreen, points);
+}
+#endif
 
 void QXcbWindow::handleMotionNotifyEvent(const xcb_motion_notify_event_t *event)
 {
     QPoint local(event->event_x, event->event_y);
     QPoint global(event->root_x, event->root_y);
 
+#if defined(ENABLE_QTOUCH_EVENT)
+    sendTouchEvent(widget(), Qt::TouchPointMoved, local, global);
+    Qt::MouseButtons buttons = translateMouseButtons(event->state);
+    Qt::MouseButton button = translateMouseButton(event->detail);
+
+    buttons ^= button; // X event uses state *before*, Qt uses state *after*
+    QWindowSystemInterface::handleMouseEvent(widget(), event->time, local, global, buttons);
+#else
     handleMouseEvent(event->detail, event->state, event->time, local, global);
+#endif
+
 }
 
 void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_timestamp_t time, const QPoint &local, const QPoint &global)
@@ -679,6 +705,10 @@ void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_times
 
     buttons ^= button; // X event uses state *before*, Qt uses state *after*
 
+#if defined(ENABLE_QTOUCH_EVENT)
+    Qt::TouchPointState tps = buttons.testFlag(Qt::LeftButton) ? Qt::TouchPointPressed : Qt::TouchPointReleased;
+    sendTouchEvent(widget(), tps, local, global);
+#endif
     QWindowSystemInterface::handleMouseEvent(widget(), time, local, global, buttons);
 }
 
