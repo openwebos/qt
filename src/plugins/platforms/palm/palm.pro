@@ -38,7 +38,7 @@ SOURCES +=  hiddtp_qpa.cpp \
             NyxInputControl.cpp \
             hiddkbd_qpa.cpp
 
-LIBS_PRIVATE += -lnyx -lhid -ldl
+LIBS_PRIVATE += -lnyx -ldl
 }
 
 include(../fontdatabases/genericunix/genericunix.pri)

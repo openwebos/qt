@@ -20,7 +20,7 @@
 **
 ****************************************************************************/
 
-
+#include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/un.h>

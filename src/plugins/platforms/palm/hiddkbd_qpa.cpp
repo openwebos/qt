@@ -20,6 +20,7 @@
 **
 ****************************************************************************/
 
+#include <unistd.h>
 #include <Qt>
 #include <QKeyEvent>
 #include <QApplication>
@@ -28,11 +29,12 @@
 #include <errno.h>
 #include <glib.h>
 #include "hiddkbd_qpa.h"
-#include <hid/IncsPublic/HidLib.h>
+#include "hidd_support.h"
 #include "InputControl.h"
 #include "NyxInputControl.h"
 #include "webosDeviceKeymap.h"
 #include <dlfcn.h>
+#include <linux/input.h>
 
 #include <QWSKeyboardHandler>
 #include <QKbdDriverFactory>

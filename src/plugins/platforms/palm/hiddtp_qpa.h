@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <glib.h>
 
-#include <hid/IncsPublic/HidLib.h>
+#include "hidd_support.h"
 #include <nyx/nyx_client.h>
 
 #include "FlickGesture.h"

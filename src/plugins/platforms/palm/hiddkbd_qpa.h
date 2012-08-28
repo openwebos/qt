@@ -28,7 +28,7 @@
 #include <qsocketnotifier.h>
 #include <map>
 #include "webosDeviceKeymap.h"
-#include <hid/IncsPublic/HidLib.h>
+#include "hidd_support.h"
 
 #include <nyx/nyx_client.h>
 #include <QWSKeyboardHandler>
