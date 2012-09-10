@@ -24,6 +24,7 @@
 #include "qpixmapatlas.h"
 #include "qareaallocator_p.h"
 #include "qdrawutil.h"
+#include "qplatformdefs.h"
 
 #include <QtCore/QHash>
 #include <QtCore/QLinkedList>
