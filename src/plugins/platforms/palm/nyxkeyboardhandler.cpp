@@ -22,8 +22,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <errno.h>
-#include <../kernel/include/linux/compiler.h>
-#include <../kernel/include/linux/input.h> //to include the right input file
+#include <unistd.h>
 
 #include "nyxkeyboardhandler.h"
 #include "NyxInputControl.h"

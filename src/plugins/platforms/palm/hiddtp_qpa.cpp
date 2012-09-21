@@ -25,6 +25,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <errno.h>
+#include <unistd.h>
 #include <linux/input.h>
 #include <QApplication>
 #include <QDateTime>
@@ -674,6 +675,8 @@ void QPAHiddTpHandler::generateTouchEvent()
 
 gboolean QPAHiddTpHandler::ioCallback(GIOChannel* channel, GIOCondition condition, gpointer arg)
 {
+    Q_UNUSED(channel);
+    Q_UNUSED(condition);
     QPAHiddTpHandler* d = (QPAHiddTpHandler*) arg;
 	d->readHiddData();
 

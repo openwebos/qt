@@ -8,7 +8,7 @@ webos {
     desktop {
         SUBDIRS += xcb
         DEFINES += TARGET_DESKTOP
-    } else:qemux86 {
+    } else:qemu* {
         SUBDIRS += palm
     } else:taskone {
         SUBDIRS += taskone

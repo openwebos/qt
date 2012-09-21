@@ -38,7 +38,7 @@ NyxInputControl::~NyxInputControl()
     if (m_handle)
     {
         nyx_error_t error = nyx_device_close(m_handle);
-        g_critical("Unable to release m_handle");
+        g_critical("Unable to release m_handle, error: %d", error);
     }
 }
 
