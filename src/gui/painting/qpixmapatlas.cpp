@@ -36,6 +36,7 @@
 
 #if defined(QT_WEBOS)
 
+#include <unistd.h>
 
 QT_BEGIN_NAMESPACE
 
