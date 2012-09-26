@@ -1124,7 +1124,7 @@ while [ "$#" -gt 0 ]; do
         shift
         VAL=$1
         ;;
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-demosdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config|-sysroot)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-datadir|-libdir|-bindir|-translationdir|-sysconfdir|-examplesdir|-demosdir|-depths|-make|-nomake|-platform|-xplatform|-buildkey|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-crossarch)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1666,6 +1666,9 @@ while [ "$#" -gt 0 ]; do
         case "$XPLATFORM" in *symbian*) XPLATFORM_SYMBIAN=yes;; esac
         case "$XPLATFORM" in symbian-sbsv2) XPLATFORM_SYMBIAN_SBSV2=yes;; esac
         ;;
+	crossarch)
+		CROSSARCH="$VAL"
+		;;
     debug-and-release)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_DEBUG_RELEASE="$VAL"
@@ -3272,6 +3275,8 @@ arm*)
     COMPAT_ARCH=armv6
     ;;
 esac
+
+CFG_ARCH="$CROSSARCH"
 
 if [ -d "$relpath/src/corelib/arch/$CFG_ARCH" ]; then
     if [ "$OPT_VERBOSE" = "yes" ]; then
