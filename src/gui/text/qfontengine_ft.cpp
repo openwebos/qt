@@ -602,6 +602,16 @@ static void convertRGBToARGB_V(const uchar *src, uint *dst, int width, int heigh
     }
 }
 
+static void convertGRAYToARGB(const uchar *src, uint *dst, int width, int height, int src_pitch) {
+    for (int y = 0; y < height; ++y) {
+        int readpos =  (y * src_pitch);
+        int writepos = (y * width);
+        for (int x = 0; x < width; ++x) {
+            dst[writepos + x] = (0xFF << 24) + (src[readpos + x] << 16) + (src[readpos + x] << 8) + src[readpos + x];
+        }
+    }
+}
+
 static void convoluteBitmap(const uchar *src, uchar *dst, int width, int height, int pitch)
 {
     // convolute the bitmap with a triangle filter to get rid of color fringes
@@ -1006,7 +1016,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         bitmap.rows = info.height*vfactor;
         bitmap.width = hpixels;
         bitmap.pitch = format == Format_Mono ? (((info.width + 31) & ~31) >> 3) : ((bitmap.width + 3) & ~3);
-        if (!hsubpixel && vfactor == 1)
+        if (!hsubpixel && vfactor == 1 && format != Format_A32)
             bitmap.buffer = glyph_buffer;
         else
             bitmap.buffer = new uchar[bitmap.rows*bitmap.pitch];
@@ -1037,6 +1047,8 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
             delete [] convoluted;
         } else if (vfactor != 1) {
             convertRGBToARGB_V(bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch, subpixelType != QFontEngineFT::Subpixel_VRGB, true);
+        } else if (format == Format_A32 && bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
+            convertGRAYToARGB(bitmap.buffer, (uint *)glyph_buffer, info.width, info.height, bitmap.pitch);
         }
 
         if (bitmap.buffer != glyph_buffer)
