@@ -5,7 +5,7 @@ abspath="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/configure"
 arch="`uname -m`"
 
 if [ $arch == "x86_64" ]; then
-    $abspath --prefix=$STAGING_DIR -arch $arch -debug -opensource -no-cups -no-nis -no-openssl -no-exceptions -no-accessibility -no-qt3support -no-xmlpatterns -no-multimedia -no-phonon -no-phonon-backend -system-sqlite -no-svg -no-webkit -no-javascript-jit -no-scripttools -reduce-relocations -force-pkg-config -glib -no-gtkstyle -no-xinput -opengl -no-libtiff -confirm-license -make 'libs tools'
+    $abspath --prefix=$STAGING_DIR -arch $arch -debug -opensource -no-cups -no-nis -openssl -no-exceptions -no-accessibility -no-qt3support -no-xmlpatterns -no-multimedia -no-phonon -no-phonon-backend -system-sqlite -no-svg -no-webkit -no-javascript-jit -no-scripttools -reduce-relocations -force-pkg-config -glib -no-gtkstyle -no-xinput -opengl -no-libtiff -confirm-license -make 'libs tools'
 else
-    $abspath --prefix=$STAGING_DIR -debug -opensource -no-cups -no-nis -no-openssl -no-exceptions -no-accessibility -no-qt3support -no-xmlpatterns -no-multimedia -no-phonon -no-phonon-backend -system-sqlite -no-svg -no-webkit -no-javascript-jit -no-scripttools -reduce-relocations -force-pkg-config -glib -no-gtkstyle -no-xinput -opengl -no-libtiff -confirm-license -make 'libs tools'
+    $abspath --prefix=$STAGING_DIR -debug -opensource -no-cups -no-nis -openssl -no-exceptions -no-accessibility -no-qt3support -no-xmlpatterns -no-multimedia -no-phonon -no-phonon-backend -system-sqlite -no-svg -no-webkit -no-javascript-jit -no-scripttools -reduce-relocations -force-pkg-config -glib -no-gtkstyle -no-xinput -opengl -no-libtiff -confirm-license -make 'libs tools'
 fi
