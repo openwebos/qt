@@ -3167,9 +3167,9 @@ if [ -z "${CFG_HOST_ARCH}" ]; then
             CFG_HOST_ARCH=i386
         else
             if [ "$OPT_VERBOSE" = "yes" ]; then
-                echo "    64-bit AMD 80x86 (x86_64) (But using 32 bit build)"
+                echo "    64-bit AMD 80x86 (x86_64)"
             fi
-            CFG_HOST_ARCH=i386
+            CFG_HOST_ARCH=x86_64
         fi
         ;;
     *:*:ppc)
