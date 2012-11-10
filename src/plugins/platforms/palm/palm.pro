@@ -42,7 +42,7 @@ webos {
                    qeglfswindowsurface.h \
                    qeglfsscreen.h
         DEFINES += TARGET_DEVICE
-        LIBS_PRIVATE += -lnyx -lhid -ldl
+        LIBS_PRIVATE += -lnyx -ldl
     }
 }
 
