@@ -1,9 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -31,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1423,23 +1422,24 @@ void QDragManager::cancel(bool deleteSource)
     global_accepted_action = Qt::IgnoreAction;
 }
 
+#ifndef QT_NO_SHAPE
 static
 bool windowInteractsWithPosition(const QPoint & pos, Window w, int shapeType)
 {
     int nrectanglesRet, dummyOrdering;
     XRectangle *rectangles = XShapeGetRectangles(QX11Info::display(), w, shapeType, &nrectanglesRet, &dummyOrdering);
-    bool interacts = true;
+    bool interacts = false;
     if (rectangles) {
-        interacts = false;
         for (int i = 0; !interacts && i < nrectanglesRet; ++i)
             interacts = QRect(rectangles[i].x, rectangles[i].y, rectangles[i].width, rectangles[i].height).contains(pos);
         XFree(rectangles);
     }
     return interacts;
 }
+#endif
 
 static
-Window findRealWindow(const QPoint & pos, Window w, int md)
+Window findRealWindow(const QPoint & pos, Window w, int md, bool ignoreNonXdndAwareWindows)
 {
     if (xdnd_data.deco && w == xdnd_data.deco->effectiveWinId())
         return 0;
@@ -1453,7 +1453,7 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
 
         if (attr.map_state == IsViewable
             && QRect(attr.x,attr.y,attr.width,attr.height).contains(pos)) {
-            bool windowContainsMouse = true;
+            bool windowContainsMouse = !ignoreNonXdndAwareWindows;
             {
                 Atom   type = XNone;
                 int f;
@@ -1464,13 +1464,22 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
                                    AnyPropertyType, &type, &f,&n,&a,&data);
                 if (data) XFree(data);
                 if (type) {
+#ifdef QT_NO_SHAPE
+                    return w;
+#else // !QT_NO_SHAPE
+                    const QPoint relPos = pos - QPoint(attr.x,attr.y);
                     // When ShapeInput and ShapeBounding are not set they return a single rectangle with the geometry of the window, this is why we
                     // need an && here so that in the case one is set and the other is not we still get the correct result.
-#if !defined(Q_OS_SOLARIS)
-                    windowContainsMouse = windowInteractsWithPosition(pos, w, ShapeInput) && windowInteractsWithPosition(pos, w, ShapeBounding);
+#if defined(ShapeInput) && defined(ShapeBounding)
+                    windowContainsMouse = windowInteractsWithPosition(relPos, w, ShapeInput) && windowInteractsWithPosition(relPos, w, ShapeBounding);
+#elif defined(ShapeBounding)
+                    windowContainsMouse = windowInteractsWithPosition(relPos, w, ShapeBounding);
+#else
+                    windowContainsMouse = true;
 #endif
                     if (windowContainsMouse)
                         return w;
+#endif // QT_NO_SHAPE
                 }
             }
 
@@ -1481,7 +1490,7 @@ Window findRealWindow(const QPoint & pos, Window w, int md)
                 r=0;
                 for (uint i=nc; !r && i--;) {
                     r = findRealWindow(pos-QPoint(attr.x,attr.y),
-                                        c[i], md-1);
+                                        c[i], md-1, ignoreNonXdndAwareWindows);
                 }
                 XFree(c);
                 if (r)
@@ -1578,7 +1587,9 @@ void QDragManager::move(const QPoint & globalPos)
         }
         if (xdnd_data.deco && (!target || target == xdnd_data.deco->effectiveWinId())) {
             DNDDEBUG << "need to find real window";
-            target = findRealWindow(globalPos, rootwin, 6);
+            target = findRealWindow(globalPos, rootwin, 6, true);
+            if (target == 0)
+                target = findRealWindow(globalPos, rootwin, 6, false);
             DNDDEBUG << "real window found" << QWidget::find(target) << target;
         }
     }
@@ -1777,7 +1788,7 @@ bool QX11Data::xdndHandleBadwindow()
             qt_xdnd_current_proxy_target = 0;
             manager->object->deleteLater();
             manager->object = 0;
-            delete xdnd_data.deco;
+            xdnd_data.deco->deleteLater(); //delay freeing to avoid crash QTBUG-19363
             xdnd_data.deco = 0;
             return true;
         }

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -179,6 +179,11 @@ public:
     int signalIndex(const char *signalName) const;
     inline bool isSignalConnected(uint signalIdx) const;
 
+    // To allow arbitrary objects to call connectNotify()/disconnectNotify() without making
+    // the API public in QObject. This is used by QDeclarativeNotifierEndpoint.
+    inline void connectNotify(const char *signal);
+    inline void disconnectNotify(const char *signal);
+
 public:
     QString objectName;
     ExtraData *extraData;    // extra data set by the user
@@ -227,6 +232,16 @@ inline bool QObjectPrivate::isSignalConnected(uint signal_index) const
         || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f))
         || qt_signal_spy_callback_set.signal_begin_callback
         || qt_signal_spy_callback_set.signal_end_callback);
+}
+
+inline void QObjectPrivate::connectNotify(const char *signal)
+{
+    q_ptr->connectNotify(signal);
+}
+
+inline void QObjectPrivate::disconnectNotify(const char *signal)
+{
+    q_ptr->disconnectNotify(signal);
 }
 
 inline QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,

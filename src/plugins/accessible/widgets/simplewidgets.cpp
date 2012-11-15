@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,12 +45,14 @@
 #include <qcheckbox.h>
 #include <qpushbutton.h>
 #include <qprogressbar.h>
+#include <qstatusbar.h>
 #include <qradiobutton.h>
 #include <qtoolbutton.h>
 #include <qlabel.h>
 #include <qgroupbox.h>
 #include <qlcdnumber.h>
 #include <qlineedit.h>
+#include <private/qlineedit_p.h>
 #include <qstyle.h>
 #include <qstyleoption.h>
 
@@ -523,6 +525,8 @@ QAccessible::Role QAccessibleDisplay::role(int child) const
     } else if (qobject_cast<QProgressBar*>(object())) {
         return ProgressBar;
 #endif
+    } else if (qobject_cast<QStatusBar*>(object())) {
+        return StatusBar;
     }
     return QAccessibleWidgetEx::role(child);
 }
@@ -545,6 +549,8 @@ QString QAccessibleDisplay::text(Text t, int child) const
                 else
                     str = QString::number(l->intValue());
 #endif
+            } else if (qobject_cast<QStatusBar*>(object())) {
+                return qobject_cast<QStatusBar*>(object())->currentMessage();
             }
         }
         break;
@@ -876,10 +882,22 @@ int QAccessibleLineEdit::cursorPosition()
     return lineEdit()->cursorPosition();
 }
 
-QRect QAccessibleLineEdit::characterRect(int /*offset*/, CoordinateType /*coordType*/)
+QRect QAccessibleLineEdit::characterRect(int offset, CoordinateType coordType)
 {
-    // QLineEdit doesn't hand out character rects
-    return QRect();
+    int left, top, right, bottom;
+    lineEdit()->getTextMargins(&left, &top, &right, &bottom);
+    int x = lineEdit()->d_func()->control->cursorToX(offset);
+    int y = top;
+    QFontMetrics fm(lineEdit()->font());
+    const QString ch = text(offset, offset + 1);
+    int w = fm.width(ch);
+    int h = fm.height();
+
+    QRect r(x, y, w, h);
+    if (coordType == QAccessible2::RelativeToScreen)
+        r.moveTo(lineEdit()->mapToGlobal(r.topLeft()));
+
+    return r;
 }
 
 int QAccessibleLineEdit::selectionCount()

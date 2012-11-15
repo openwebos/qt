@@ -1,9 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
-**
-** Contact: Research In Motion <blackberry-qt@qnx.com>
-** Contact: Klarälvdalens Datakonsult AB <info@kdab.com>
+** Copyright (C) 2011 - 2012 Research In Motion <blackberry-qt@qnx.com>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -228,6 +226,10 @@ void QBBScreen::setRotation(int rotation)
         // Rotating only the primary screen is what we had in the navigator event handler before refactoring
         if (mPrimaryDisplay)
             QWindowSystemInterface::handleScreenGeometryChange(mScreenIndex);
+
+        // Flush everything, so that the windows rotations are applied properly.
+        // Needed for non-maximized windows
+        screen_flush_context(mContext, 0);
     }
 }
 
@@ -251,7 +253,17 @@ void QBBScreen::addWindow(QBBWindow* window)
     if (mChildren.contains(window))
         return;
 
-    mChildren.push_back(window);
+    // Ensure that the desktop window is at the bottom of the zorder.
+    // If we do not do this then we may end up activating the desktop
+    // when the navigator service gets an event that our window group
+    // has been activated (see QBBScreen::activateWindowGroup()).
+    // Such a situation would strangely break focus handling due to the
+    // invisible desktop widget window being layered on top of normal
+    // windows
+    if (window->widget()->windowType() == Qt::Desktop)
+        mChildren.push_front(window);
+    else
+        mChildren.push_back(window);
     updateHierarchy();
 }
 
@@ -349,6 +361,36 @@ void QBBScreen::removeOverlayWindow(screen_window_t window)
     const int numOverlaysRemoved = mOverlays.removeAll(window);
     if (numOverlaysRemoved > 0)
         updateHierarchy();
+}
+
+void QBBScreen::activateWindowGroup(const QByteArray &id)
+{
+#if defined(QBBSCREEN_DEBUG)
+    qDebug() << Q_FUNC_INFO;
+#endif
+
+    if (!rootWindow() || id != rootWindow()->groupName())
+        return;
+
+    if (!mChildren.isEmpty()) {
+        // We're picking up the last window of the list here
+        // because this list is ordered by stacking order.
+        // Last window is effectively the one on top.
+        QWidget * const window = mChildren.last()->widget();
+        QWindowSystemInterface::handleWindowActivated(window);
+    }
+}
+
+void QBBScreen::deactivateWindowGroup(const QByteArray &id)
+{
+#if defined(QBBSCREEN_DEBUG)
+    qDebug() << Q_FUNC_INFO;
+#endif
+
+    if (!rootWindow() || id != rootWindow()->groupName())
+        return;
+
+    QWindowSystemInterface::handleWindowActivated(0);
 }
 
 QT_END_NAMESPACE

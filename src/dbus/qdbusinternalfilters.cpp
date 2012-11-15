@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -89,6 +89,14 @@ static const char propertiesInterfaceXml[] =
     "      <arg name=\"interface_name\" type=\"s\" direction=\"in\"/>\n"
     "      <arg name=\"values\" type=\"a{sv}\" direction=\"out\"/>\n"
     "      <annotation name=\"org.qtproject.QtDBus.QtTypeName.Out0\" value=\"QVariantMap\"/>\n"
+    "    </method>\n"
+    "  </interface>\n";
+
+static const char peerInterfaceXml[] =
+    "  <interface name=\"org.freedesktop.DBus.Peer\">\n"
+    "    <method name=\"Ping\"/>\n"
+    "    <method name=\"GetMachineId\">\n"
+    "      <arg name=\"machine_uuid\" type=\"s\" direction=\"out\"/>\n"
     "    </method>\n"
     "  </interface>\n";
 
@@ -165,6 +173,7 @@ QString qDBusIntrospectObject(const QDBusConnectionPrivate::ObjectTreeNode &node
     }
 
     xml_data += QLatin1String( introspectableInterfaceXml );
+    xml_data += QLatin1String( peerInterfaceXml );
 
     if (node.flags & QDBusConnection::ExportChildObjects) {
         xml_data += generateSubObjectXml(node.obj);

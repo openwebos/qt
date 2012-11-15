@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -97,13 +97,13 @@ void QNetworkReplyImplPrivate::_q_startOperation()
         // state changes.
         state = WaitingForSession;
 
-        QNetworkSession *session = manager->d_func()->networkSession.data();
+        QSharedPointer<QNetworkSession> session(manager->d_func()->getNetworkSession());
 
         if (session) {
             Q_Q(QNetworkReplyImpl);
 
-            QObject::connect(session, SIGNAL(error(QNetworkSession::SessionError)),
-                             q, SLOT(_q_networkSessionFailed()));
+            QObject::connect(session.data(), SIGNAL(error(QNetworkSession::SessionError)),
+                             q, SLOT(_q_networkSessionFailed()), Qt::QueuedConnection);
 
             if (!session->isOpen())
                 session->open();
@@ -268,7 +268,7 @@ void QNetworkReplyImplPrivate::_q_networkSessionConnected()
     if (manager.isNull())
         return;
 
-    QNetworkSession *session = manager->d_func()->networkSession.data();
+    QSharedPointer<QNetworkSession> session = manager->d_func()->getNetworkSession();
     if (!session)
         return;
 
@@ -746,7 +746,7 @@ void QNetworkReplyImplPrivate::finished()
 
     if (!manager.isNull()) {
 #ifndef QT_NO_BEARERMANAGEMENT
-        QNetworkSession *session = manager->d_func()->networkSession.data();
+        QSharedPointer<QNetworkSession> session (manager->d_func()->getNetworkSession());
         if (session && session->state() == QNetworkSession::Roaming &&
             state == Working && errorCode != QNetworkReply::OperationCanceledError) {
             // only content with a known size will fail with a temporary network failure error
@@ -946,8 +946,10 @@ void QNetworkReplyImpl::setReadBufferSize(qint64 size)
 
     QNetworkReply::setReadBufferSize(size);
 
-    if (d->backend)
+    if (d->backend) {
         d->backend->setDownstreamLimited(d->readBufferMaxSize > 0);
+        d->backend->setReadBufferSize(size);
+    }
 }
 
 #ifndef QT_NO_OPENSSL
@@ -1009,11 +1011,16 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
     if (maxlen == 1) {
         // optimization for getChar()
         *data = d->readBuffer.getChar();
+        if (d->backend && readBufferSize())
+            d->backend->emitReadBufferFreed(1);
         return 1;
     }
 
     maxlen = qMin<qint64>(maxlen, d->readBuffer.byteAmount());
-    return d->readBuffer.read(data, maxlen);
+    qint64 bytesRead = d->readBuffer.read(data, maxlen);
+    if (d->backend && readBufferSize())
+        d->backend->emitReadBufferFreed(bytesRead);
+    return bytesRead;
 }
 
 /*!

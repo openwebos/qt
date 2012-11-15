@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
 **
@@ -16,7 +15,8 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** us via http://www.qt-project.org/.
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2089,7 +2089,13 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
             }
         }
     }
-    Q_ASSERT(slot && slot.isObject());
+    if (!slot) {
+        // This connection no longer exists (can happen if the signal is
+        // emitted from another thread and the call gets queued, but the
+        // connection is removed before the QMetaCallEvent gets processed).
+        return;
+    }
+    Q_ASSERT(slot.isObject());
 
     if (engine->isCollecting()) {
         qWarning("QtScript: can't execute signal handler during GC");

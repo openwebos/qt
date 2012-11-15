@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -116,6 +116,8 @@ public:
     // slot-like:
     virtual void downstreamReadyWrite();
     virtual void setDownstreamLimited(bool b);
+    virtual void setReadBufferSize(qint64 size);
+    virtual void emitReadBufferFreed(qint64 size);
     virtual void copyFinished(QIODevice *);
     virtual void ignoreSslErrors();
     virtual void ignoreSslErrors(const QList<QSslError> &errors);

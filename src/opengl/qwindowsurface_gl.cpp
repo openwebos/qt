@@ -1,9 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -31,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -330,12 +329,6 @@ struct QGLWindowSurfacePrivate
 
 QGLFormat QGLWindowSurface::surfaceFormat;
 QGLWindowSurface::SwapMode QGLWindowSurface::swapBehavior = QGLWindowSurface::AutomaticSwap;
-
-void QGLWindowSurfaceGLPaintDevice::endPaint()
-{
-    glFlush();
-    QGLPaintDevice::endPaint();
-}
 
 QSize QGLWindowSurfaceGLPaintDevice::size() const
 {

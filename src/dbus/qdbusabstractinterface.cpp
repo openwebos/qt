@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -385,7 +385,7 @@ QDBusError QDBusAbstractInterface::lastError() const
 }
 
 /*!
-    Sets the timeout in seconds for all future DBus calls to \a timeout.
+    Sets the timeout in milliseconds for all future DBus calls to \a timeout.
     -1 means the default DBus timeout (usually 25 seconds).
 
     \since 4.8
@@ -396,7 +396,7 @@ void QDBusAbstractInterface::setTimeout(int timeout)
 }
 
 /*!
-    Returns the current value of the timeout in seconds.
+    Returns the current value of the timeout in milliseconds.
     -1 means the default DBus timeout (usually 25 seconds).
 
     \since 4.8
@@ -544,7 +544,8 @@ bool QDBusAbstractInterface::callWithCallback(const QString &method,
     return d->connection.callWithCallback(msg,
                                           receiver,
                                           returnMethod,
-                                          errorMethod);
+                                          errorMethod,
+                                          d->timeout);
 }
 
 /*!

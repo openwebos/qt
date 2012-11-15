@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -92,6 +92,10 @@
 #   define qDebug QT_NO_QDEBUG_MACRO
 #   undef old_qDebug
 # endif
+#endif
+
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+#include <sys/prctl.h>
 #endif
 
 #if defined(Q_OS_LINUX) && !defined(SCHED_IDLE)
@@ -276,6 +280,22 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
 
 #ifndef QT_NO_THREAD
 
+#if (defined(Q_OS_LINUX) || (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6) || defined(Q_OS_QNX))
+static void setCurrentThreadName(pthread_t threadId, const char *name)
+{
+#  if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+    Q_UNUSED(threadId);
+    prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
+#  elif (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6)
+    Q_UNUSED(threadId);
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
+        pthread_setname_np(name);
+#  elif defined(Q_OS_QNX)
+    pthread_setname_np(threadId, name);
+#  endif
+}
+#endif
+
 void *QThreadPrivate::start(void *arg)
 {
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
@@ -300,6 +320,17 @@ void *QThreadPrivate::start(void *arg)
 
     // ### TODO: allow the user to create a custom event dispatcher
     createEventDispatcher(data);
+
+#if (defined(Q_OS_LINUX) || (defined(Q_OS_MAC) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6) || defined(Q_OS_QNX))
+    // sets the name of the current thread.
+    QString objectName = thr->objectName();
+
+    if (Q_LIKELY(objectName.isEmpty()))
+        setCurrentThreadName(thr->d_func()->thread_id, thr->metaObject()->className());
+    else
+        setCurrentThreadName(thr->d_func()->thread_id, objectName.toLocal8Bit());
+
+#endif
 
     emit thr->started();
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);

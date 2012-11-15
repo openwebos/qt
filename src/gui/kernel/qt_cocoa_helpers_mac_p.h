@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -181,7 +181,7 @@ Qt::DropActions qt_mac_mapNSDragOperations(NSDragOperation nsActions);
 QWidget *qt_mac_getTargetForKeyEvent(QWidget *widgetThatReceivedEvent);
 QWidget *qt_mac_getTargetForMouseEvent(NSEvent *event, QEvent::Type eventType,
     QPoint &returnLocalPoint, QPoint &returnGlobalPoint, QWidget *nativeWidget, QWidget **returnWidgetUnderMouse);
-bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseButton button, QWidget *nativeWidget);
+bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseButton button, QWidget *nativeWidget, bool fakeEvent = false);
 void qt_mac_handleNonClientAreaMouseEvent(NSWindow *window, NSEvent *event);
 #endif
 
@@ -215,7 +215,7 @@ inline QString qt_mac_NSStringToQString(const NSString *nsstr)
 { return QCFString::toQString(reinterpret_cast<const CFStringRef>(nsstr)); }
 
 inline NSString *qt_mac_QStringToNSString(const QString &qstr)
-{ return [reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr)) autorelease]; }
+{ return [const_cast<NSString *>(reinterpret_cast<const NSString *>(QCFString::toCFStringRef(qstr))) autorelease]; }
 
 #ifdef QT_MAC_USE_COCOA
 class QCocoaPostMessageArgs {

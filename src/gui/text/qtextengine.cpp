@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1656,12 +1656,19 @@ int QTextEngine::findItem(int strPos) const
 {
     itemize();
 
-    int item;
-    for (item = layoutData->items.size()-1; item > 0; --item) {
-        if (layoutData->items[item].position <= strPos)
-            break;
+    int left = 1;
+    int right = layoutData->items.size()-1;
+    while (left <= right) {
+        int middle = ((right-left)/2)+left;
+        if (strPos > layoutData->items[middle].position)
+            left = middle+1;
+        else if (strPos < layoutData->items[middle].position)
+            right = middle-1;
+        else {
+            return middle;
+        }
     }
-    return item;
+    return right;
 }
 
 QFixed QTextEngine::width(int from, int len) const
@@ -2643,20 +2650,28 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
     return layoutData->string;
 }
 
+namespace {
+struct QScriptItemComparator {
+    bool operator()(const QScriptItem &a, const QScriptItem &b) { return a.position < b.position; }
+    bool operator()(int p, const QScriptItem &b) { return p < b.position; }
+    //bool operator()(const QScriptItem &a, int p) { return a.position < p; }
+};
+}
+
 void QTextEngine::setBoundary(int strPos) const
 {
     if (strPos <= 0 || strPos >= layoutData->string.length())
         return;
 
-    int itemToSplit = 0;
-    while (itemToSplit < layoutData->items.size() && layoutData->items.at(itemToSplit).position <= strPos)
-        itemToSplit++;
-    itemToSplit--;
-    if (layoutData->items.at(itemToSplit).position == strPos) {
+    const QScriptItem* it = qUpperBound(layoutData->items.constBegin(), layoutData->items.constEnd(),
+                                        strPos, QScriptItemComparator());
+    Q_ASSERT(it > layoutData->items.constBegin());
+    --it;
+    if (it->position == strPos) {
         // already a split at the requested position
         return;
     }
-    splitItem(itemToSplit, strPos - layoutData->items.at(itemToSplit).position);
+    splitItem(it - layoutData->items.constBegin(), strPos - it->position);
 }
 
 void QTextEngine::splitItem(int item, int pos) const

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -143,6 +143,11 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
     // Truncate the file after successfully opening it if Truncate is passed.
     if (openMode & QIODevice::Truncate)
         q->setSize(0);
+
+    // Seek to the end when in Append mode.
+    if (openMode & QFile::Append) {
+        ::SetFilePointer(fileHandle, 0, 0, FILE_END);
+    }
 
     return true;
 }

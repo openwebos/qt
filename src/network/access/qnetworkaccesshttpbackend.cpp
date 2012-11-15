@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -598,6 +598,10 @@ void QNetworkAccessHttpBackend::postRequest()
         connect(this, SIGNAL(startHttpRequest()), delegate, SLOT(startRequest()));
         connect(this, SIGNAL(abortHttpRequest()), delegate, SLOT(abortRequest()));
 
+        // To throttle the connection.
+        QObject::connect(this, SIGNAL(readBufferSizeChanged(qint64)), delegate, SLOT(readBufferSizeChanged(qint64)));
+        QObject::connect(this, SIGNAL(readBufferFreed(qint64)), delegate, SLOT(readBufferFreed(qint64)));
+
         if (uploadByteDevice) {
             QNonContiguousByteDeviceThreadForwardImpl *forwardUploadDevice =
                     new QNonContiguousByteDeviceThreadForwardImpl(uploadByteDevice->atEnd(), uploadByteDevice->size());
@@ -703,6 +707,16 @@ void QNetworkAccessHttpBackend::setDownstreamLimited(bool b)
     Q_UNUSED(b);
     // We know that readBuffer maximum size limiting is broken since quite a while.
     // The task to fix this is QTBUG-15065
+}
+
+void QNetworkAccessHttpBackend::setReadBufferSize(qint64 size)
+{
+    emit readBufferSizeChanged(size);
+}
+
+void QNetworkAccessHttpBackend::emitReadBufferFreed(qint64 size)
+{
+    emit readBufferFreed(size);
 }
 
 void QNetworkAccessHttpBackend::replyDownloadData(QByteArray d)

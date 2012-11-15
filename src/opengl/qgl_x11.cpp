@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -372,6 +372,7 @@ void* qglx_getProcAddress(const char* procName)
 #if !defined(QT_NO_LIBRARY)
                 extern const QString qt_gl_library_name();
                 QLibrary lib(qt_gl_library_name());
+                lib.setLoadHints(QLibrary::ImprovedSearchHeuristics);
                 glXGetProcAddressARB = (qt_glXGetProcAddressARB) lib.resolve("glXGetProcAddressARB");
 #endif
             }
@@ -396,6 +397,7 @@ void* qglx_getProcAddress(const char* procName)
     if (!procAddress) {
         extern const QString qt_gl_library_name();
         QLibrary lib(qt_gl_library_name());
+        lib.setLoadHints(QLibrary::ImprovedSearchHeuristics);
         procAddress = lib.resolve(procName);
     }
 #endif
@@ -1207,6 +1209,7 @@ void *QGLContext::getProcAddress(const QString &proc) const
 #if !defined(QT_NO_LIBRARY)
                 extern const QString qt_gl_library_name();
                 QLibrary lib(qt_gl_library_name());
+                lib.setLoadHints(QLibrary::ImprovedSearchHeuristics);
                 glXGetProcAddressARB = (qt_glXGetProcAddressARB) lib.resolve("glXGetProcAddressARB");
 #endif
             }

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtMultimedia module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,6 +51,7 @@
 //
 
 #include "qaudiooutput_win32_p.h"
+#include <QtEndian>
 
 #ifndef SPEAKER_FRONT_LEFT
     #define SPEAKER_FRONT_LEFT            0x00000001
@@ -262,7 +263,7 @@ bool QAudioOutputPrivate::open()
     } else if (settings.sampleSize() <= 0) {
         qWarning("QAudioOutput: open error, invalid sample size (%d).",
                  settings.sampleSize());
-    } else if (settings.frequency() < 8000 || settings.frequency() > 48000) {
+    } else if (settings.frequency() < 8000 || settings.frequency() > 96000) {
         qWarning("QAudioOutput: open error, frequency out of range (%d).", settings.frequency());
     } else if (buffer_size == 0) {
         // Default buffer size, 200ms, default period size is 40ms
@@ -454,6 +455,30 @@ qint64 QAudioOutputPrivate::write( const char *data, qint64 len )
 
     char* p = (char*)data;
     int l = (int)len;
+
+    QByteArray reverse;
+    if (settings.byteOrder() == QAudioFormat::BigEndian) {
+
+        switch (settings.sampleSize()) {
+            case 8:
+                // No need to convert
+                break;
+
+            case 16:
+                reverse.resize(l);
+                for (qint64 i = 0; i < (l >> 1); i++)
+                    *((qint16*)reverse.data() + i) = qFromBigEndian(*((qint16*)data + i));
+                p = reverse.data();
+                break;
+
+            case 32:
+                reverse.resize(l);
+                for (qint64 i = 0; i < (l >> 2); i++)
+                    *((qint32*)reverse.data() + i) = qFromBigEndian(*((qint32*)data + i));
+                p = reverse.data();
+                break;
+        }
+    }
 
     WAVEHDR* current;
     int remain;

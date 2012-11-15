@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -159,8 +159,11 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
     if (request.d->operation == QHttpNetworkRequest::Post) {
         // add content type, if not set in the request
         if (request.headerField("content-type").isEmpty()) {
-            qWarning("content-type missing in HTTP POST, defaulting to application/octet-stream");
-            ba += "Content-Type: application/octet-stream\r\n";
+            //Content-Type is mandatory. We can't say anything about the encoding, but x-www-form-urlencoded is the most likely to work.
+            //This warning indicates a bug in application code not setting a required header.
+            //Note that if using QHttpMultipart, the content-type is set in QNetworkAccessManagerPrivate::prepareMultipart already
+            qWarning("content-type missing in HTTP POST, defaulting to application/x-www-form-urlencoded. Use QNetworkRequest::setHeader() to fix this problem.");
+            ba += "Content-Type: application/x-www-form-urlencoded\r\n";
         }
         if (!request.d->uploadByteDevice && request.d->url.hasQuery()) {
             QByteArray query = request.d->url.encodedQuery();

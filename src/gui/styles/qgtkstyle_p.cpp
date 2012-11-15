@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -313,6 +313,7 @@ void QGtkStylePrivate::resolveGtk() const
 {
     // enforce the "0" suffix, so we'll open libgtk-x11-2.0.so.0
     QLibrary libgtk(QLS("gtk-x11-2.0"), 0, 0);
+    libgtk.setLoadHints(QLibrary::ImprovedSearchHeuristics);
 
     gtk_init = (Ptr_gtk_init)libgtk.resolve("gtk_init");
     gtk_window_new = (Ptr_gtk_window_new)libgtk.resolve("gtk_window_new");

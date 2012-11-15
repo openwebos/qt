@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
-** Contact: Research In Motion <blackberry-qt@qnx.com>
+** Copyright (C) 2012 Research In Motion <blackberry-qt@qnx.com>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -76,6 +76,7 @@ protected:
 
     int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                timeval *timeout);
+    int ioEvents(int fd);
 };
 
 struct bpsIOHandlerData;

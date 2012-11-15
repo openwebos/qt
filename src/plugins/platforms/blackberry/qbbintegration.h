@@ -1,9 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
-**
-** Contact: Research In Motion <blackberry-qt@qnx.com>
-** Contact: Klarälvdalens Datakonsult AB <info@kdab.com>
+** Copyright (C) 2011 - 2012 Research In Motion <blackberry-qt@qnx.com>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -46,7 +44,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QBBEventThread;
+class QBBScreenEventThread;
 class QBBNavigatorEventHandler;
 class QBBNavigatorEventNotifier;
 class QBBLocaleThread;
@@ -54,6 +52,7 @@ class QBBAbstractVirtualKeyboard;
 class QBBScreen;
 class QBBScreenEventHandler;
 class QBBNativeInterface;
+class QBBBpsEventFilter;
 
 class QBBIntegration : public QPlatformIntegration
 {
@@ -88,7 +87,7 @@ private:
     void destroyDisplays();
 
     screen_context_t mContext;
-    QBBEventThread *mEventThread;
+    QBBScreenEventThread *mScreenEventThread;
     QBBNavigatorEventHandler *mNavigatorEventHandler;
     QBBNavigatorEventNotifier *mNavigatorEventNotifier;
     QBBLocaleThread *mLocaleThread;
@@ -98,6 +97,7 @@ private:
     bool mPaintUsingOpenGL;
     QBBAbstractVirtualKeyboard *mVirtualKeyboard;
     QBBNativeInterface *mNativeInterface;
+    QBBBpsEventFilter *mBpsEventFilter;
 };
 
 QT_END_NAMESPACE

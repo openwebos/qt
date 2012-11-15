@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1343,44 +1343,21 @@ void QTreeViewPrivate::_q_modelDestroyed()
 QItemViewPaintPairs QTreeViewPrivate::draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const
 {
     Q_ASSERT(r);
-    return QAbstractItemViewPrivate::draggablePaintPairs(indexes, r);
     Q_Q(const QTreeView);
-    QRect &rect = *r;
-    const QRect viewportRect = viewport->rect();
-    int itemOffset = 0;
-    int row = firstVisibleItem(&itemOffset);
-    QPair<int, int> startEnd = startAndEndColumns(viewportRect);
-    QVector<int> columns;
-    for (int i = startEnd.first; i <= startEnd.second; ++i) {
-        int logical = header->logicalIndex(i);
-        if (!header->isSectionHidden(logical))
-            columns += logical;
+    if (spanningIndexes.isEmpty())
+        return QAbstractItemViewPrivate::draggablePaintPairs(indexes, r);
+    QModelIndexList list;
+    foreach (const QModelIndex &idx, indexes) {
+        if (idx.column() > 0 && q->isFirstColumnSpanned(idx.row(), idx.parent()))
+            continue;
+        list << idx;
     }
-    QSet<QModelIndex> visibleIndexes;
-    for (; itemOffset < viewportRect.bottom() && row < viewItems.count(); ++row) {
-        const QModelIndex &index = viewItems.at(row).index;
-        for (int colIndex = 0; colIndex < columns.count(); ++colIndex)
-            visibleIndexes += index.sibling(index.row(), columns.at(colIndex));
-        itemOffset += itemHeight(row);
-    }
-
-    //now that we have the visible indexes, we can try to find those which are selected
-    QItemViewPaintPairs ret;
-    for (int i = 0; i < indexes.count(); ++i) {
-        const QModelIndex &index = indexes.at(i);
-        if (visibleIndexes.contains(index)) {
-            const QRect current = q->visualRect(index);
-            ret += qMakePair(current, index);
-            rect |= current;
-        }
-    }
-    rect &= viewportRect;
-    return ret;
+    return QAbstractItemViewPrivate::draggablePaintPairs(list, r);
 }
 
 void QTreeViewPrivate::adjustViewOptionsForIndex(QStyleOptionViewItemV4 *option, const QModelIndex &current) const
 {
-    const int row = current.row();
+    const int row = viewIndex(current); // get the index in viewItems[]
     option->state = option->state | (viewItems.at(row).expanded ? QStyle::State_Open : QStyle::State_None)
                                   | (viewItems.at(row).hasChildren ? QStyle::State_Children : QStyle::State_None)
                                   | (viewItems.at(row).hasMoreSiblings ? QStyle::State_Sibling : QStyle::State_None);
@@ -2907,7 +2884,9 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     if (emitSignal && animationsEnabled)
         prepareAnimatedOperation(item, QVariantAnimation::Forward);
 #endif //QT_NO_ANIMATION
-    stateBeforeAnimation = state;
+     //if already animating, stateBeforeAnimation is set to the correct value
+    if (state != QAbstractItemView::AnimatingState)
+        stateBeforeAnimation = state;
     q->setState(QAbstractItemView::ExpandingState);
     const QModelIndex index = viewItems.at(item).index;
     storeExpanded(index);
@@ -2998,7 +2977,9 @@ void QTreeViewPrivate::collapse(int item, bool emitSignal)
         prepareAnimatedOperation(item, QVariantAnimation::Backward);
 #endif //QT_NO_ANIMATION
 
-    stateBeforeAnimation = state;
+    //if already animating, stateBeforeAnimation is set to the correct value
+    if (state != QAbstractItemView::AnimatingState)
+        stateBeforeAnimation = state;
     q->setState(QAbstractItemView::CollapsingState);
     expandedIndexes.erase(it);
     viewItems[item].expanded = false;

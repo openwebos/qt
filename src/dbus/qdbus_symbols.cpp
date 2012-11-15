@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -76,6 +76,7 @@ bool qdbus_loadLibDBus()
     static int majorversions[] = { 3, 2, -1 };
     lib->unload();
     lib->setFileName(QLatin1String("dbus-1"));
+    lib->setLoadHints(QLibrary::ImprovedSearchHeuristics);
     for (uint i = 0; i < sizeof(majorversions) / sizeof(majorversions[0]); ++i) {
         lib->setFileNameAndVersion(lib->fileName(), majorversions[i]);
         if (lib->load() && lib->resolve("dbus_connection_open_private"))

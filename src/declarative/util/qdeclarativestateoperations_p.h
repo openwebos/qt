@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,6 +53,14 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
+#ifdef Q_OS_WINCE
+// qgraphicsitem.h includes qfunctions_wince.h.
+// qfunctions_wince.h defines a missing posix rewind for WinCE,
+// but this conflicts with rewind method defined in this class.
+// As a workaround we undefine WinCE posix replacement for rewind here.
+# undef rewind
+#endif
 
 class QDeclarativeParentChangePrivate;
 class Q_DECLARATIVE_PRIVATE_EXPORT QDeclarativeParentChange : public QDeclarativeStateOperation, public QDeclarativeActionEvent

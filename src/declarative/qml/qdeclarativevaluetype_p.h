@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -92,7 +92,7 @@ public:
     static void registerValueTypes();
 
     QDeclarativeValueType *operator[](int idx) const {
-        if (idx >= (int)QVariant::UserType) return 0;
+        if (idx < 0 || idx >= (int)QVariant::UserType) return 0;
         else return valueTypes[idx];
     }
 

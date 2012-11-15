@@ -1,9 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -31,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -212,7 +211,7 @@ QString qws_dataDir()
 
 #if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_QNX)
     if (buf.st_uid != getuid())
-        qFatal("Qt for Embedded Linux data directory is not owned by user %d", getuid());
+        qFatal("Qt for Embedded Linux data directory is not owned by user %d: %s", getuid(), dataDir.constData());
 
     if ((buf.st_mode & 0677) != 0600)
         qFatal("Qt for Embedded Linux data directory has incorrect permissions: %s", dataDir.constData());

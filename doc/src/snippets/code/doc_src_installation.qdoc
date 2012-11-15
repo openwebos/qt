@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,19 +33,20 @@
 ** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 //! [0]
 cd /tmp
-gunzip qt-everywhere-opensource-src-%VERSION%.tar.gz        # uncompress the archive
-tar xvf qt-everywhere-opensource-src-%VERSION%.tar          # unpack it
+gunzip qt-everywhere-opensource-src-4.8.3.tar.gz        # uncompress the archive
+tar xvf qt-everywhere-opensource-src-4.8.3.tar          # unpack it
 //! [0]
 
 
 //! [1]
-cd /tmp/qt-everywhere-opensource-src-%VERSION%
+cd /tmp/qt-everywhere-opensource-src-4.8.3
 ./configure
 //! [1]
 
@@ -67,13 +67,13 @@ PATH               - to locate qmake, moc and other Qt tools
 
 
 //! [5]
-PATH=/usr/local/Trolltech/Qt-%VERSION%/bin:$PATH
+PATH=/usr/local/Trolltech/Qt-4.8.3/bin:$PATH
 export PATH
 //! [5]
 
 
 //! [6]
-setenv PATH /usr/local/Trolltech/Qt-%VERSION%/bin:$PATH
+setenv PATH /usr/local/Trolltech/Qt-4.8.3/bin:$PATH
 //! [6]
 
 
@@ -84,7 +84,7 @@ PATH               - to locate qmake, moc and other Qt tools
 
 //! [8]
 C:
-cd /D C:\Qt\%VERSION%
+cd /D C:\Qt\4.8.3
 configure
 //! [8]
 
@@ -101,13 +101,13 @@ nmake
 
 //! [11]
 cd /tmp
-gunzip qt-everywhere-opensource-src-%VERSION%.tar.gz        # uncompress the archive
-tar xvf qt-everywhere-opensource-src-%VERSION%.tar          # unpack it
+gunzip qt-everywhere-opensource-src-4.8.3.tar.gz        # uncompress the archive
+tar xvf qt-everywhere-opensource-src-4.8.3.tar          # unpack it
 //! [11]
 
 
 //! [12]
-cd /tmp/qt-everywhere-opensource-src-%VERSION%
+cd /tmp/qt-everywhere-opensource-src-4.8.3
 ./configure
 //! [12]
 
@@ -128,13 +128,13 @@ PATH               - to locate qmake, moc and other Qt tools
 
 
 //! [16]
-PATH=/usr/local/Trolltech/Qt-%VERSION%/bin:$PATH
+PATH=/usr/local/Trolltech/Qt-4.8.3/bin:$PATH
 export PATH
 //! [16]
 
 
 //! [17]
-setenv PATH /usr/local/Trolltech/Qt-%VERSION%/bin:$PATH
+setenv PATH /usr/local/Trolltech/Qt-4.8.3/bin:$PATH
 //! [17]
 
 
@@ -145,7 +145,7 @@ PATH               - to locate qmake, moc and other Qt tools
 
 //! [19]
 C:
-cd \Qt\%VERSION%
+cd \Qt\4.8.3
 configure -platform win32-msvc2005 -xplatform wincewm50pocket-msvc2005
 //! [19]
 
@@ -168,7 +168,7 @@ nmake
 
 
 //! [23]
-cd \Qt\%VERSION%
+cd \Qt\4.8.3
 configure -platform win32-g++ -xplatform symbian-abld
 //! [23]
 
@@ -207,7 +207,7 @@ make sis QT_SIS_OPTIONS=-i
 //! [30]
 
 //! [31]
-cd \Qt\%VERSION%
+cd \Qt\4.8.3
 configure -platform win32-g++ -xplatform symbian-sbsv2
 //! [31]
 
@@ -244,17 +244,17 @@ export EPOCROOT
 //! [36]
 
 //! [37]
-PATH=/home/user/qt/%VERSION%/bin:$EPOCROOT/epoc32/tools:$PATH
+PATH=/home/user/qt/4.8.3/bin:$EPOCROOT/epoc32/tools:$PATH
 export PATH
 //! [37]
 
 //! [38]
-cd /home/user/qt/%VERSION%
+cd /home/user/qt/4.8.3
 ./configure -platform linux-g++ -xplatform symbian-armcc
 //! [38]
 
 //! [39]
-cd /home/user/qt/%VERSION%
+cd /home/user/qt/4.8.3
 ./configure -platform linux-g++ -xplatform symbian-gcce -no-webkit
 //! [39]
 

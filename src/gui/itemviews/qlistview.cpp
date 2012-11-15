@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -2133,10 +2133,16 @@ int QListModeViewBase::verticalScrollToValue(int index, QListView::ScrollHint hi
 {
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
         int value;
-        if (scrollValueMap.isEmpty())
+        if (scrollValueMap.isEmpty()) {
             value = 0;
-        else
-            value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()), flowPositions.count() - 1);
+        } else {
+            int scrollBarValue = verticalScrollBar()->value();
+            int numHidden = 0;
+            for (int i = 0; i < flowPositions.count() - 1 && i <= scrollBarValue; ++i)
+                if (isHidden(i))
+                    ++numHidden;
+            value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()) - numHidden, flowPositions.count() - 1);
+        }
         if (above)
             hint = QListView::PositionAtTop;
         else if (below)
@@ -2299,7 +2305,7 @@ QListViewItem QListModeViewBase::indexToListViewItem(const QModelIndex &index) c
                      : segmentPositions.at(segment + 1));
             size.setWidth(right - pos.x());
         } else { // make the items as wide as the viewport
-            size.setWidth(qMax(size.width(), viewport()->width()));
+            size.setWidth(qMax(size.width(), viewport()->width() - 2 * spacing()));
         }
     }
 
@@ -2558,13 +2564,21 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
 {
     if (index < 0)
         return scrollValue;
+
+    QVector<int> visibleFlowPositions;
+    visibleFlowPositions.reserve(flowPositions.count() - 1);
+    for (int i = 0; i < flowPositions.count() - 1; i++) { // flowPositions count is +1 larger than actual row count
+        if (!isHidden(i))
+            visibleFlowPositions.append(flowPositions.at(i));
+    }
+
     if (!wrap) {
         int topIndex = index;
         const int bottomIndex = topIndex;
-        const int bottomCoordinate = flowPositions.at(index);
+        const int bottomCoordinate = visibleFlowPositions.at(index);
 
         while (topIndex > 0 &&
-            (bottomCoordinate - flowPositions.at(topIndex-1) + itemExtent) <= (viewportSize)) {
+               (bottomCoordinate - visibleFlowPositions.at(topIndex - 1) + itemExtent) <= (viewportSize)) {
             topIndex--;
         }
 
@@ -2584,7 +2598,7 @@ int QListModeViewBase::perItemScrollToValue(int index, int scrollValue, int view
                                            ? Qt::Horizontal : Qt::Vertical);
         if (flowOrientation == orientation) { // scrolling in the "flow" direction
             // ### wrapped scrolling in the flow direction
-            return flowPositions.at(index); // ### always pixel based for now
+            return visibleFlowPositions.at(index); // ### always pixel based for now
         } else if (!segmentStartRows.isEmpty()) { // we are scrolling in the "segment" direction
             int segment = qBinarySearch<int>(segmentStartRows, index, 0, segmentStartRows.count() - 1);
             int leftSegment = segment;

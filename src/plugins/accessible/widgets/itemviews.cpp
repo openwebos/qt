@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -111,7 +111,13 @@ QAccessibleInterface *QAccessibleTable2::childFromLogical(int logicalIndex) cons
         }
         --row;
     }
-    return new QAccessibleTable2Cell(view(), view()->model()->index(row, column), cellRole());
+
+    QModelIndex index = view()->model()->index(row, column, view()->rootIndex());
+    if (!index.isValid()) {
+        qWarning() << "QAccessibleTable2::childFromLogical: Invalid index at: " << row << column;
+        return 0;
+    }
+    return new QAccessibleTable2Cell(view(), index, cellRole());
 }
 
 QAccessibleTable2::QAccessibleTable2(QWidget *w)
@@ -230,7 +236,7 @@ QAccessibleTable2Cell *QAccessibleTable2::cell(const QModelIndex &index) const
 QAccessibleTable2CellInterface *QAccessibleTable2::cellAt(int row, int column) const
 {
     Q_ASSERT(role(0) != QAccessible::Tree);
-    QModelIndex index = view()->model()->index(row, column);
+    QModelIndex index = view()->model()->index(row, column, view()->rootIndex());
     //Q_ASSERT(index.isValid());
     if (!index.isValid()) {
         qWarning() << "QAccessibleTable2::cellAt: invalid index: " << index << " for " << view();
@@ -323,7 +329,7 @@ bool QAccessibleTable2::isRowSelected(int row) const
 
 bool QAccessibleTable2::selectRow(int row)
 {
-    QModelIndex index = view()->model()->index(row, 0);
+    QModelIndex index = view()->model()->index(row, 0, view()->rootIndex());
     if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
     view()->selectionModel()->select(index, QItemSelectionModel::Select);
@@ -332,7 +338,7 @@ bool QAccessibleTable2::selectRow(int row)
 
 bool QAccessibleTable2::selectColumn(int column)
 {
-    QModelIndex index = view()->model()->index(0, column);
+    QModelIndex index = view()->model()->index(0, column, view()->rootIndex());
     if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
     view()->selectionModel()->select(index, QItemSelectionModel::Select);
@@ -341,7 +347,7 @@ bool QAccessibleTable2::selectColumn(int column)
 
 bool QAccessibleTable2::unselectRow(int row)
 {
-    QModelIndex index = view()->model()->index(row, 0);
+    QModelIndex index = view()->model()->index(row, 0, view()->rootIndex());
     if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
     view()->selectionModel()->select(index, QItemSelectionModel::Deselect);
@@ -350,7 +356,7 @@ bool QAccessibleTable2::unselectRow(int row)
 
 bool QAccessibleTable2::unselectColumn(int column)
 {
-    QModelIndex index = view()->model()->index(0, column);
+    QModelIndex index = view()->model()->index(0, column, view()->rootIndex());
     if (!index.isValid() || view()->selectionMode() & QAbstractItemView::NoSelection)
         return false;
     view()->selectionModel()->select(index, QItemSelectionModel::Columns & QItemSelectionModel::Deselect);
@@ -409,7 +415,7 @@ int QAccessibleTable2::indexOfChild(const QAccessibleInterface *iface) const
         return cell->index + (verticalHeader() ? 1 : 0) + 1;
     } else if (iface->role(0) == QAccessible::RowHeader){
         const QAccessibleTable2HeaderCell* cell = static_cast<const QAccessibleTable2HeaderCell*>(iface);
-        return (cell->index+1) * (view()->model()->rowCount()+1)  + 1;
+        return (cell->index+1) * (view()->model()->columnCount()+1)  + 1;
     } else if (iface->role(0) == QAccessible::Pane) {
         return 1; // corner button
     } else {

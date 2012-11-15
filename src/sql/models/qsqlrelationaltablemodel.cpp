@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -371,7 +371,7 @@ void QSqlRelationalTableModelPrivate::clearCache()
 
     The \l{sql/relationaltablemodel} example illustrates how to use
     QSqlRelationalTableModel in conjunction with
-    QSqlRelationalDelegate to provide tables with foreigh key
+    QSqlRelationalDelegate to provide tables with foreign key
     support.
 
     \image relationaltable.png

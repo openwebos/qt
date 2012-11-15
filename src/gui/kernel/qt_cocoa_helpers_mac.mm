@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1174,7 +1174,7 @@ static inline void qt_mac_checkEnterLeaveForNativeWidgets(QWidget *maybeEnterWid
     }
 }
 
-bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseButton button, QWidget *nativeWidget)
+bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseButton button, QWidget *nativeWidget, bool fakeEvent)
 {
     // Give the Input Manager a chance to process the mouse events.
     NSInputManager *currentIManager = [NSInputManager currentInputManager];
@@ -1222,6 +1222,8 @@ bool qt_mac_handleMouseEvent(NSEvent *event, QEvent::Type eventType, Qt::MouseBu
         if (GetEventParameter(carbonEvent, kEventParamMouseChord, typeUInt32, 0,
                               sizeof(mac_buttons), 0, &mac_buttons) == noErr)
             buttons = qt_mac_get_buttons(mac_buttons);
+        if (fakeEvent && buttons == 0)
+            buttons = qt_mac_get_buttons(QApplication::mouseButtons());
     }
 
     // Send enter/leave events for the cases when QApplicationPrivate::sendMouseEvent do not:

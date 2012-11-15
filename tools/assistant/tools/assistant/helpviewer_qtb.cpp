@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -163,10 +163,14 @@ void HelpViewer::setSource(const QUrl &url)
     emit loadStarted();
     QString string = url.toString();
     const HelpEngineWrapper &engine = HelpEngineWrapper::instance();
-    const QUrl &resolvedUrl = (string == QLatin1String("help") ? LocalHelpFile :
+    QUrl resolvedUrl = (string == QLatin1String("help") ? LocalHelpFile :
         engine.findFile(string));
+    bool fileFound = resolvedUrl.isValid();
+    if (!fileFound && isLocalUrl(url))
+        resolvedUrl = fixupVirtualFolderForUrl(&engine, url, &fileFound);
+
     QTextBrowser::setSource(resolvedUrl);
-    if (!url.isValid()) {
+    if (!fileFound) {
         setHtml(string == QLatin1String("about:blank") ? AboutBlank
             : PageNotFoundMessage.arg(url.toString()));
     }
@@ -370,8 +374,9 @@ QVariant HelpViewer::loadResource(int type, const QUrl &name)
     TRACE_OBJ
     QByteArray ba;
     if (type < 4) {
-        ba = HelpEngineWrapper::instance().fileData(name);
-        if (name.toString().endsWith(QLatin1String(".svg"), Qt::CaseInsensitive)) {
+        QUrl url = fixupVirtualFolderForUrl(&HelpEngineWrapper::instance(), name);
+        ba = HelpEngineWrapper::instance().fileData(url);
+        if (url.toString().endsWith(QLatin1String(".svg"), Qt::CaseInsensitive)) {
             QImage image;
             image.loadFromData(ba, "svg");
             if (!image.isNull())

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -707,7 +707,8 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
             if (variant.isString()) {
                 d += variant.asString().toUtf8();
             } else if (variant.isNumber()) {
-                d += QByteArray::number(variant.asNumber(),'g',20);
+                double temp = variant.asNumber();
+                d += QByteArray( reinterpret_cast<const char*>(&temp), sizeof(double));
             } else if (variant.isBoolean()) {
                 d += char(variant.asBoolean());
             } else if (variant.isScript()) {
@@ -726,7 +727,8 @@ bool QDeclarativeListModelParser::compileProperty(const QDeclarativeCustomParser
                         }
                     } else {
                         d[0] = char(QDeclarativeParser::Variant::Number);
-                        d += QByteArray::number(v);
+                        double temp = v;
+                        d += QByteArray( reinterpret_cast<const char*>(&temp), sizeof(double));
                     }
                 }
             }
@@ -782,7 +784,6 @@ QByteArray QDeclarativeListModelParser::compile(const QList<QDeclarativeCustomPa
 void QDeclarativeListModelParser::setCustomData(QObject *obj, const QByteArray &d)
 {
     QDeclarativeListModel *rv = static_cast<QDeclarativeListModel *>(obj);
-
     ModelNode *root = new ModelNode(rv->m_nested);
     rv->m_nested->m_ownsRoot = true;
     rv->m_nested->_root = root;
@@ -824,7 +825,9 @@ void QDeclarativeListModelParser::setCustomData(QObject *obj, const QByteArray &
                     n->values.append(bool(data[1 + instr.dataIdx]));
                     break;
                  case QDeclarativeParser::Variant::Number:
-                    n->values.append(QByteArray(data + 1 + instr.dataIdx).toDouble());
+                    double temp;
+                    ::memcpy(&temp, data + 1 + instr.dataIdx, sizeof(double));
+                    n->values.append(temp);
                     break;
                  case QDeclarativeParser::Variant::String:
                     n->values.append(QString::fromUtf8(data + 1 + instr.dataIdx));

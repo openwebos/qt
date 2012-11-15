@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include <QtCore/QHash>
 #include <QtCore/QMap>
 #include <QtCore/QStringList>
 #include <QtCore/QObject>
@@ -88,6 +89,7 @@ public:
     QMap<QString, QHelpDBReader*> fileNameReaderMap;
     QMultiMap<QString, QHelpDBReader*> virtualFolderMap;
     QStringList orderedFileNameList;
+    QHash<QString, QString> nameSpaceVirtualFolderMap;
 
     QHelpCollectionHandler *collectionHandler;
     QString currentFilter;

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,7 @@
 #include <private/qfunctions_p.h>
 #include <private/qguiplatformplugin_p.h>
 
-#if defined(Q_WS_X11) && !defined(Q_NO_STYLE_GTK)
+#if defined(Q_WS_X11) && !defined(QT_NO_STYLE_GTK)
 #  include <private/qgtkstyle_p.h>
 #  include <private/qt_x11_p.h>
 #endif

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -164,6 +164,7 @@ static PtrDrawThemeBackground pDrawThemeBackground = 0;
 static PtrGetThemePartSize pGetThemePartSize = 0;
 static PtrGetThemeColor pGetThemeColor = 0;
 
+int QVistaHelper::instanceCount = 0;
 bool QVistaHelper::is_vista = false;
 QVistaHelper::VistaState QVistaHelper::cachedVistaState = QVistaHelper::Dirty;
 
@@ -244,6 +245,8 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     , backButton_(0)
 {
     is_vista = resolveSymbols();
+    if (instanceCount++ == 0)
+        cachedVistaState = Dirty;
     if (is_vista)
         backButton_ = new QVistaBackButton(wizard);
 
@@ -255,6 +258,7 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
 
 QVistaHelper::~QVistaHelper()
 {
+    --instanceCount;
 }
 
 bool QVistaHelper::isCompositionEnabled()
@@ -277,7 +281,7 @@ bool QVistaHelper::isThemeActive()
 
 QVistaHelper::VistaState QVistaHelper::vistaState()
 {
-    if (cachedVistaState == Dirty)
+    if (instanceCount == 0 || cachedVistaState == Dirty)
         cachedVistaState =
             isCompositionEnabled() ? VistaAero : isThemeActive() ? VistaBasic : Classic;
     return cachedVistaState;
@@ -366,25 +370,24 @@ void QVistaHelper::setTitleBarIconAndCaptionVisible(bool visible)
 
 bool QVistaHelper::winEvent(MSG* msg, long* result)
 {
-    bool retval = true;
-
     switch (msg->message) {
     case WM_NCHITTEST: {
         LRESULT lResult;
-        pDwmDefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam, &lResult);
-        if (lResult == HTCLOSE || lResult == HTMAXBUTTON || lResult == HTMINBUTTON || lResult == HTHELP)
+        // Perform hit testing using DWM
+        if (pDwmDefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam, &lResult)) {
+            // DWM returned a hit, no further processing necessary
             *result = lResult;
-        else
-            *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
-        break;
-    }
-    case WM_NCMOUSEMOVE:
-    case WM_NCLBUTTONDOWN:
-    case WM_NCLBUTTONUP:
-    case WIZ_WM_NCMOUSELEAVE: {
-        LRESULT lResult;
-        pDwmDefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam, &lResult);
-        *result = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
+        } else {
+            // DWM didn't return a hit, process using DefWindowProc
+            lResult = DefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
+            // If DefWindowProc returns a window caption button, just return HTCLIENT (client area).
+            // This avoid unnecessary hits to Windows NT style caption buttons which aren't visible but are
+            // located just under the Aero style window close button.
+            if (lResult == HTCLOSE || lResult == HTMAXBUTTON || lResult == HTMINBUTTON || lResult == HTHELP)
+                *result = HTCLIENT;
+            else
+                *result = lResult;
+        }
         break;
     }
     case WM_NCCALCSIZE: {
@@ -394,10 +397,16 @@ bool QVistaHelper::winEvent(MSG* msg, long* result)
         break;
     }
     default:
-        retval = false;
+        LRESULT lResult;
+        // Pass to DWM to handle
+        if (pDwmDefWindowProc(msg->hwnd, msg->message, msg->wParam, msg->lParam, &lResult))
+            *result = lResult;
+        // If the message wasn't handled by DWM, continue processing it as normal
+        else
+            return false;
     }
 
-    return retval;
+    return true;
 }
 
 void QVistaHelper::setMouseCursor(QPoint pos)
@@ -531,7 +540,7 @@ void QVistaHelper::mousePressEvent(QMouseEvent *event)
 {
     change = noChange;
 
-    if (wizard->windowState() & Qt::WindowMaximized) {
+    if (event->button() != Qt::LeftButton || wizard->windowState() & Qt::WindowMaximized) {
         event->ignore();
         return;
     }
@@ -582,28 +591,34 @@ bool QVistaHelper::eventFilter(QObject *obj, QEvent *event)
         winEvent(&msg, &result);
      } else if (event->type() == QEvent::MouseButtonPress) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        long result;
-        MSG msg;
-        msg.message = WM_NCHITTEST;
-        msg.wParam  = 0;
-        msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        msg.hwnd = wizard->winId();
-        winEvent(&msg, &result);
-        msg.wParam = result;
-        msg.message = WM_NCLBUTTONDOWN;
-        winEvent(&msg, &result);
+
+        if (mouseEvent->button() == Qt::LeftButton) {
+            long result;
+            MSG msg;
+            msg.message = WM_NCHITTEST;
+            msg.wParam  = 0;
+            msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
+            msg.hwnd = wizard->winId();
+            winEvent(&msg, &result);
+            msg.wParam = result;
+            msg.message = WM_NCLBUTTONDOWN;
+            winEvent(&msg, &result);
+        }
      } else if (event->type() == QEvent::MouseButtonRelease) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        long result;
-        MSG msg;
-        msg.message = WM_NCHITTEST;
-        msg.wParam  = 0;
-        msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
-        msg.hwnd = wizard->winId();
-        winEvent(&msg, &result);
-        msg.wParam = result;
-        msg.message = WM_NCLBUTTONUP;
-        winEvent(&msg, &result);
+
+        if (mouseEvent->button() == Qt::LeftButton) {
+            long result;
+            MSG msg;
+            msg.message = WM_NCHITTEST;
+            msg.wParam  = 0;
+            msg.lParam = MAKELPARAM(mouseEvent->globalX(), mouseEvent->globalY());
+            msg.hwnd = wizard->winId();
+            winEvent(&msg, &result);
+            msg.wParam = result;
+            msg.message = WM_NCLBUTTONUP;
+            winEvent(&msg, &result);
+        }
      }
 
      return false;

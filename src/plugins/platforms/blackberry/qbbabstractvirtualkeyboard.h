@@ -1,9 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
-**
-** Contact: Research In Motion <blackberry-qt@qnx.com>
-** Contact: Klarälvdalens Datakonsult AB <info@kdab.com>
+** Copyright (C) 2012 Research In Motion <blackberry-qt@qnx.com>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -82,7 +80,7 @@ protected:
     virtual void applyKeyboardMode(KeyboardMode mode) = 0;
 
     void setVisible(bool visible);
-    void setHeight(bool height);
+    void setHeight(int height);
     void setLanguage(const QString &language);
     void setCountry(const QString &country);
 

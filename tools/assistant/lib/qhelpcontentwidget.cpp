@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,6 @@
 #include "qhelpengine_p.h"
 #include "qhelpdbreader_p.h"
 
-#include <QtCore/QDir>
 #include <QtCore/QStack>
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
@@ -557,7 +556,7 @@ bool QHelpContentWidget::searchContentItem(QHelpContentModel *model,
     if (!parentItem)
         return false;
 
-    if (QDir::cleanPath(parentItem->url().path()) == path) {
+    if (parentItem->url().path() == path) {
         m_syncIndex = parent;
         return true;
     }

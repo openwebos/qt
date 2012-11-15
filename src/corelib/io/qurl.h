@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,7 @@ QT_MODULE(Core)
 
 class QUrlPrivate;
 class QDataStream;
+class QMutexLocker;
 
 class Q_CORE_EXPORT QUrl
 {
@@ -274,6 +275,7 @@ protected:
 #endif
 
 private:
+    void detach(QMutexLocker &locker);
     QUrlPrivate *d;
 public:
     typedef QUrlPrivate * DataPtr;

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1503,7 +1503,7 @@ QStyle *QApplication::style()
     initial colors or the system defaults. This is necessary since certain
     styles have to adapt the color palette to be fully style-guide compliant.
 
-    Setting the style before a palette has been se, i.e., before creating
+    Setting the style before a palette has been set, i.e., before creating
     QApplication, will cause the application to use QStyle::standardPalette()
     for the palette.
 
@@ -1951,8 +1951,14 @@ void QApplicationPrivate::setSystemPalette(const QPalette &pal)
 QFont QApplication::font()
 {
     QMutexLocker locker(applicationFontMutex());
-    if (!QApplicationPrivate::app_font)
+    if (!QApplicationPrivate::app_font) {
+#if defined(Q_OS_BLACKBERRY)
+        QApplicationPrivate::app_font = new QFont(QLatin1String("Slate Pro"));
+        QApplicationPrivate::app_font->setPixelSize(21);
+#else
         QApplicationPrivate::app_font = new QFont(QLatin1String("Helvetica"));
+#endif
+    }
     return *QApplicationPrivate::app_font;
 }
 

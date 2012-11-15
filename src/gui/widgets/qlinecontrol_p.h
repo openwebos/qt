@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -113,8 +113,8 @@ public:
         return (c != -1 ? c : 0);
     }
 
-    bool isUndoAvailable() const { return !m_readOnly && m_undoState; }
-    bool isRedoAvailable() const { return !m_readOnly && m_undoState < (int)m_history.size(); }
+    bool isUndoAvailable() const;
+    bool isRedoAvailable() const;
     void clearUndo() { m_history.clear(); m_modifiedState = m_undoState = 0; }
 
     bool isModified() const { return m_modifiedState != m_undoState; }

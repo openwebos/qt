@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,8 +49,9 @@
 
 #include <QtGui/QApplication>
 #include <QtGui/QWidget>
-#include <QtDeclarative/QDeclarativeView>
-#include <QtDeclarative/QDeclarativeItem>
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsScene>
+#include <QtGui/QGraphicsItem>
 #include <QtDebug>
 
 @interface QUIKitAppDelegate :  NSObject <UIApplicationDelegate> {
@@ -218,13 +219,13 @@ bool QUIKitSoftwareInputHandler::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         UIReturnKeyType returnKeyType = UIReturnKeyDone;
-        if (QDeclarativeView *declarativeView = qobject_cast<QDeclarativeView *>(obj)) {
+        if (QGraphicsView *declarativeView = qobject_cast<QGraphicsView *>(obj)) {
             // register on loosing the focus, so we can auto-remove the input panel again
             QGraphicsScene *scene = declarativeView->scene();
             if (scene) {
                 if (mCurrentFocusObject)
                     disconnect(mCurrentFocusObject, 0, this, SLOT(activeFocusChanged(bool)));
-                QDeclarativeItem *focus = static_cast<QDeclarativeItem *>(scene->focusItem());
+                QObject *focus = dynamic_cast<QObject *>(scene->focusItem());
                 mCurrentFocusObject = focus;
                 if (focus) {
                     connect(mCurrentFocusObject, SIGNAL(activeFocusChanged(bool)), this, SLOT(activeFocusChanged(bool)));

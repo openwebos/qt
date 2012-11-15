@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -503,8 +503,16 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
             if (useDebugLibs && !pluginName.endsWith("_debug.dylib"))
                 continue;
 
+            // Skip the qmltooling plugins in release mode or when QtDeclarative is not used.
+            if (pluginSourcePath.contains("qmltooling") && (!useDebugLibs || deployedFrameworks.indexOf("QtDeclarative.framework") == -1))
+                continue;
+
             // Skip the designer plugins
             if (pluginSourcePath.contains("plugins/designer"))
+                continue;
+
+            // Skipt the tracing graphics system
+            if (pluginName.contains("libqtracegraphicssystem"))
                 continue;
 
 #ifndef QT_GRAPHICSSYSTEM_OPENGL
@@ -530,6 +538,10 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
 
             // Deploy the script plugins if QtScript.framework is in use
             if (deployedFrameworks.indexOf("QtScript.framework") == -1 && pluginName.contains("script"))
+                continue;
+
+            // Deploy the bearer plugins if QtNetwork.framework is in use
+            if (deployedFrameworks.indexOf("QtNetwork.framework") == -1 && pluginName.contains("bearer"))
                 continue;
         }
 

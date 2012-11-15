@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1073,7 +1073,7 @@ void QDeclarativeTextInput::keyPressEvent(QKeyEvent* ev)
         int cursorPosition = d->control->cursor();
         if (cursorPosition == 0)
             ignore = ev->key() == (d->control->layoutDirection() == Qt::LeftToRight ? Qt::Key_Left : Qt::Key_Right);
-        if (cursorPosition == d->control->text().length())
+        if (!ignore && cursorPosition == d->control->text().length())
             ignore = ev->key() == (d->control->layoutDirection() == Qt::LeftToRight ? Qt::Key_Right : Qt::Key_Left);
     }
     if (ignore) {
@@ -1200,7 +1200,17 @@ bool QDeclarativeTextInputPrivate::sendMouseEventToInputContext(
         QGraphicsSceneMouseEvent *event, QEvent::Type eventType)
 {
 #if !defined QT_NO_IM
-    if (event->widget() && control->composeMode()) {
+    Q_Q(QDeclarativeTextInput);
+
+    QWidget *widget = event->widget();
+    // event->widget() is null, if this is delayed event from QDeclarativeFlickable.
+    if (!widget && qApp) {
+        QGraphicsView *view = qobject_cast<QGraphicsView*>(qApp->focusWidget());
+        if (view && view->scene() && view->scene() == q->scene())
+            widget = view->viewport();
+    }
+
+    if (widget && control->composeMode()) {
         int tmp_cursor = xToPos(event->pos().x());
         int mousePos = tmp_cursor - control->cursor();
         if (mousePos < 0 || mousePos > control->preeditAreaText().length()) {
@@ -1210,11 +1220,11 @@ bool QDeclarativeTextInputPrivate::sendMouseEventToInputContext(
                 return true;
         }
 
-        QInputContext *qic = event->widget()->inputContext();
+        QInputContext *qic = widget->inputContext();
         if (qic) {
             QMouseEvent mouseEvent(
                     eventType,
-                    event->widget()->mapFromGlobal(event->screenPos()),
+                    widget->mapFromGlobal(event->screenPos()),
                     event->screenPos(),
                     event->button(),
                     event->buttons(),

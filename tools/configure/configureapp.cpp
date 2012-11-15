@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,7 @@
 
 #include <QDate>
 #include <qdir.h>
+#include <qdiriterator.h>
 #include <qtemporaryfile.h>
 #include <qstack.h>
 #include <qdebug.h>
@@ -282,6 +283,13 @@ Configure::Configure(int& argc, char** argv)
     dictionary[ "DECLARATIVE_DEBUG" ]= "yes";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
     dictionary[ "DIRECTWRITE" ]     = "no";
+    dictionary[ "QPA" ]             = "no";
+    dictionary[ "NIS" ]             = "no";
+    dictionary[ "NEON" ]            = "no";
+    dictionary[ "LARGE_FILE" ]      = "no";
+    dictionary[ "LITTLE_ENDIAN" ]   = "yes";
+    dictionary[ "FONT_CONFIG" ]     = "no";
+    dictionary[ "POSIX_IPC" ]       = "no";
 
     QString version;
     QFile qglobal_h(sourcePath + "/src/corelib/global/qglobal.h");
@@ -426,7 +434,6 @@ QString Configure::firstLicensePath()
             return allPaths.at(i);
     return QString();
 }
-
 
 // #### somehow I get a compiler error about vc++ reaching the nesting limit without
 // undefining the ansi for scoping.
@@ -634,6 +641,8 @@ void Configure::parseCmdLine()
             dictionary[ "FREETYPE" ] = "no";
         else if (configCmdLine.at(i) == "-qt-freetype")
             dictionary[ "FREETYPE" ] = "yes";
+        else if (configCmdLine.at(i) == "-system-freetype")
+            dictionary[ "FREETYPE" ] = "system";
 
         // CE- C runtime --------------------------------------------
         else if (configCmdLine.at(i) == "-crt") {
@@ -1073,6 +1082,10 @@ void Configure::parseCmdLine()
             qmakeLibs += QString("-l" + configCmdLine.at(i));
         } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS=")) {
             opensslLibs = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS_DEBUG=")) {
+            opensslLibsDebug = configCmdLine.at(i);
+        } else if (configCmdLine.at(i).startsWith("OPENSSL_LIBS_RELEASE=")) {
+            opensslLibsRelease = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("PSQL_LIBS=")) {
             psqlLibs = configCmdLine.at(i);
         } else if (configCmdLine.at(i).startsWith("SYBASE=")) {
@@ -1236,6 +1249,58 @@ void Configure::parseCmdLine()
             dictionary["DIRECTWRITE"] = "no";
         }
 
+        else if (configCmdLine.at(i) == "-nis") {
+            dictionary["NIS"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-nis") {
+            dictionary["NIS"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-qpa") {
+            dictionary["QPA"] = "yes";
+        }
+
+        else if (configCmdLine.at(i) == "-cups") {
+            dictionary["QT_CUPS"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-cups") {
+            dictionary["QT_CUPS"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-iconv") {
+            dictionary["QT_ICONV"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-iconv") {
+            dictionary["QT_ICONV"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-neon") {
+            dictionary["NEON"] = "yes";
+        } else if (configCmdLine.at(i) == "-no-neon") {
+            dictionary["NEON"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-largefile") {
+            dictionary["LARGE_FILE"] = "yes";
+        }
+
+        else if (configCmdLine.at(i) == "-little-endian") {
+            dictionary["LITTLE_ENDIAN"] = "yes";
+        }
+
+        else if (configCmdLine.at(i) == "-big-endian") {
+            dictionary["LITTLE_ENDIAN"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-fontconfig") {
+            dictionary["FONT_CONFIG"] = "yes";
+        }
+
+        else if (configCmdLine.at(i) == "-no-fontconfig") {
+            dictionary["FONT_CONFIG"] = "no";
+        }
+
+        else if (configCmdLine.at(i) == "-posix-ipc") {
+            dictionary["POSIX_IPC"] = "yes";
+        }
+
         else {
             dictionary[ "HELP" ] = "yes";
             cout << "Unknown option " << configCmdLine.at(i) << endl;
@@ -1246,8 +1311,16 @@ void Configure::parseCmdLine()
     }
 
     // Ensure that QMAKESPEC exists in the mkspecs folder
-    QDir mkspec_dir = fixSeparators(sourcePath + "/mkspecs");
-    QStringList mkspecs = mkspec_dir.entryList(QDir::AllDirs | QDir::NoDotAndDotDot);
+    const QString mkspecPath = fixSeparators(sourcePath + "/mkspecs");
+    QDirIterator itMkspecs(mkspecPath, QDir::AllDirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+    QStringList mkspecs;
+
+    while (itMkspecs.hasNext()) {
+        QString mkspec = itMkspecs.next();
+        // Remove base PATH
+        mkspec.remove(0, mkspecPath.length() + 1);
+        mkspecs << mkspec;
+    }
 
     if (dictionary["QMAKESPEC"].toLower() == "features"
         || !mkspecs.contains(dictionary["QMAKESPEC"], Qt::CaseInsensitive)) {
@@ -1512,6 +1585,11 @@ void Configure::desc(const char *mark_option, const char *mark, const char *opti
 */
 void Configure::applySpecSpecifics()
 {
+    if (!dictionary[ "XQMAKESPEC" ].isEmpty()) {
+        //Disable building tools, docs and translations when cross compiling.
+        disabledBuildParts << "docs" << "translations" << "tools";
+    }
+
     if (dictionary[ "XQMAKESPEC" ].startsWith("wince")) {
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
         dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
@@ -1619,6 +1697,32 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_ICONV" ]            = "no";
 
         dictionary["DECORATIONS"]           = "default windows styled";
+    } else if (dictionary[ "XQMAKESPEC" ].contains("blackberry")) { //TODO actually wrong.
+        dictionary[ "STYLE_WINDOWSXP" ]     = "no";
+        dictionary[ "STYLE_WINDOWSVISTA" ]  = "no";
+        dictionary[ "STYLE_WINDOWSCE" ]     = "no";
+        dictionary[ "STYLE_WINDOWSMOBILE" ] = "no";
+        dictionary[ "STYLE_S60" ]           = "no";
+        dictionary[ "3DNOW" ]               = "no";
+        dictionary[ "SSE" ]                 = "no";
+        dictionary[ "SSE2" ]                = "no";
+        dictionary[ "MMX" ]                 = "no";
+        dictionary[ "IWMMXT" ]              = "no";
+        dictionary[ "CE_CRT" ]              = "no";
+        dictionary[ "PHONON" ]              = "no";
+        dictionary[ "NIS" ]                 = "no";
+        dictionary[ "QT_CUPS" ]             = "no";
+        dictionary[ "WEBKIT" ]              = "no";
+        dictionary[ "ACCESSIBILITY" ]       = "no";
+        dictionary[ "POSIX_IPC" ]           = "yes";
+        dictionary[ "QPA" ]                 = "yes";
+        dictionary[ "QT_ICONV" ]            = "yes";
+        dictionary[ "LITTLE_ENDIAN" ]       = "yes";
+        dictionary[ "LARGE_FILE" ]          = "yes";
+        dictionary[ "XMLPATTERNS" ]         = "yes";
+        dictionary[ "FONT_CONFIG" ]         = "yes";
+        dictionary[ "FONT_CONFIG" ]         = "yes";
+        dictionary[ "FREETYPE" ]            = "system";
     }
 }
 
@@ -1692,7 +1796,10 @@ bool Configure::displayHelp()
                     "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-no-webkit] [-webkit] [-webkit-debug]\n"
                     "[-graphicssystem raster|opengl|openvg]\n"
-                    "[-no-directwrite] [-directwrite]\n\n", 0, 7);
+                    "[-no-directwrite] [-directwrite] [-no-nis] [-nis] [-qpa]\n"
+                    "[-no-cups] [-cups] [-no-iconv] [-iconv] [-sun-iconv] [-gnu-iconv]\n"
+                    "[-neon] [-no-neon] [-largefile] [-little-endian] [-big-endian]\n"
+                    "[-font-config] [-no-fontconfig] [-posix-ipc]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
 
@@ -1789,6 +1896,29 @@ bool Configure::displayHelp()
         desc(                   "-platform <spec>",     "The operating system and compiler you are building on.\n(default %QMAKESPEC%)\n");
         desc(                   "-xplatform <spec>",    "The operating system and compiler you are cross compiling to.\n");
         desc(                   "",                     "See the README file for a list of supported operating systems and compilers.\n", false, ' ');
+
+        desc("NIS",           "no",      "-no-nis",     "Do not build NIS support.");
+        desc("NIS",           "yes",     "-nis",        "Build NIS support.");
+
+        desc("QPA",           "yes",     "-qpa",        "Enable the QPA build. QPA is a window system agnostic implementation of Qt.");
+
+        desc("NEON",          "yes",     "-neon",       "Enable the use of NEON instructions.");
+        desc("NEON",          "no",      "-no-neon",    "Do not enable the use of NEON instructions.");
+
+        desc("QT_ICONV",      "disable", "-no-iconv",   "Do not enable support for iconv(3).");
+        desc("QT_ICONV",      "yes",     "-iconv",      "Enable support for iconv(3).");
+        desc("QT_ICONV",      "yes",     "-sun-iconv",  "Enable support for iconv(3) using sun-iconv.");
+        desc("QT_ICONV",      "yes",     "-gnu-iconv",  "Enable support for iconv(3) using gnu-libiconv");
+
+        desc("LARGE_FILE",    "yes",   "-largefile",    "Enables Qt to access files larger than 4 GB.");
+
+        desc("LITTLE_ENDIAN", "yes",   "-little-endian","Target platform is little endian (LSB first).");
+        desc("LITTLE_ENDIAN", "no",    "-big-endian",   "Target platform is big endian (MSB first).");
+
+        desc("FONT_CONFIG",   "yes",   "-fontconfig",   "Build with FontConfig support.");
+        desc("FONT_CONFIG",   "no",    "-no-fontconfig","Do not build with FontConfig support.");
+
+        desc("POSIX_IPC",     "yes",   "-posix-ipc",    "Enable POSIX IPC.");
 
 #if !defined(EVAL)
         desc(                   "-qtnamespace <namespace>", "Wraps all Qt library code in 'namespace name {...}");
@@ -1947,6 +2077,7 @@ bool Configure::displayHelp()
         desc("Qt for Symbian OS only:\n\n");
         desc("FREETYPE", "no",     "-no-freetype",         "Do not compile in Freetype2 support.");
         desc("FREETYPE", "yes",    "-qt-freetype",         "Use the libfreetype bundled with Qt.");
+        desc("FREETYPE", "yes",    "-system-freetype",     "Use the libfreetype provided by the system.");
         desc(                      "-fpu <flags>",         "VFP type on ARM, supported options: softvfp(default) | vfpv2 | softvfp+vfpv2");
         desc("S60", "no",          "-no-s60",              "Do not compile in S60 support.");
         desc("S60", "yes",         "-s60",                 "Compile with support for the S60 UI Framework");
@@ -2130,10 +2261,15 @@ bool Configure::checkAvailability(const QString &part)
             available = true; // Built in, we have a fork
     else if (part == "SQL_SQLITE_LIB") {
         if (dictionary[ "SQL_SQLITE_LIB" ] == "system") {
-            // Symbian has multiple .lib/.dll files we need to find
-            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-                available = true; // There is sqlite_symbian plugin which exports the necessary stuff
-                dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3";
+            if (dictionary.contains("XQMAKESPEC")) {
+                // Symbian has multiple .lib/.dll files we need to find
+                if (dictionary["XQMAKESPEC"].startsWith("symbian")) {
+                    available = true; // There is sqlite_symbian plugin which exports the necessary stuff
+                    dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3";
+                } else if (dictionary["XQMAKESPEC"].endsWith("qcc")) {
+                    available = true;
+                    dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3 -lz";
+                }
             } else {
                 available = findFile("sqlite3.h") && findFile("sqlite3.lib");
                 if (available)
@@ -2428,6 +2564,17 @@ bool Configure::verifyConfiguration()
             exit(0);      // Exit cleanly for Ctrl+C
     }
 
+    if (dictionary["QPA"] == "yes") {
+        if (dictionary["QT3SUPPORT"] == "yes") {
+            dictionary["QT3SUPPORT"] = "no";
+
+            cout << "WARNING: Qt3 compatibility is not compatible with QPA builds." << endl
+                 << "Qt3 compatibility (Qt3Support) will be disabled." << endl
+                 << "(Press any key to continue..)";
+            if (_getch() == 3) // _Any_ keypress w/no echo(eat <Enter> for stdout)
+                exit(0);      // Exit cleanly for Ctrl+C
+        }
+    }
     return true;
 }
 
@@ -2581,6 +2728,8 @@ void Configure::generateOutputVars()
     // Text rendering --------------------------------------------------
     if (dictionary[ "FREETYPE" ] == "yes")
         qtConfig += "freetype";
+    else if (dictionary[ "FREETYPE" ] == "system")
+        qtConfig += "system-freetype";
 
     // Styles -------------------------------------------------------
     if (dictionary[ "STYLE_WINDOWS" ] == "yes")
@@ -2703,17 +2852,20 @@ void Configure::generateOutputVars()
 
     if (dictionary["OPENGL_ES_CM"] == "yes") {
         qtConfig += "opengles1";
-        qtConfig += "egl";
+        if (dictionary["QPA"] == "no")
+            qtConfig += "egl";
     }
 
     if (dictionary["OPENGL_ES_2"] == "yes") {
         qtConfig += "opengles2";
-        qtConfig += "egl";
+        if (dictionary["QPA"] == "no")
+            qtConfig += "egl";
     }
 
     if (dictionary["OPENVG"] == "yes") {
         qtConfig += "openvg";
-        qtConfig += "egl";
+        if (dictionary["QPA"] == "no")
+            qtConfig += "egl";
     }
 
     if (dictionary["S60"] == "yes") {
@@ -2793,6 +2945,37 @@ void Configure::generateOutputVars()
     if (dictionary[ "NATIVE_GESTURES" ] == "yes")
         qtConfig += "native-gestures";
 
+    if (dictionary["QPA"] == "yes")
+        qtConfig += "qpa";
+
+    if (dictionary["CROSS_COMPILE"] == "yes")
+        configStream << " cross_compile";
+
+    if (dictionary["NIS"] == "yes")
+        qtConfig += "nis";
+
+    if (dictionary["CUPS"] == "yes")
+        qtConfig += "cups";
+
+    if (dictionary["QT_ICONV"] == "yes")
+        qtConfig += "iconv";
+    else if (dictionary["QT_ICONV"] == "sun")
+        qtConfig += "sun-libiconv";
+    else if (dictionary["QT_ICONV"] == "gnu")
+        qtConfig += "gnu-libiconv";
+
+    if (dictionary["NEON"] == "yes")
+        qtConfig += "neon";
+
+    if (dictionary["LARGE_FILE"] == "yes")
+        qtConfig += "largefile";
+
+    if (dictionary["FONT_CONFIG"] == "yes") {
+        qtConfig += "fontconfig";
+        qmakeVars += "QMAKE_CFLAGS_FONTCONFIG =";
+        qmakeVars += "QMAKE_LIBS_FONTCONFIG   = -lfreetype -lfontconfig";
+    }
+
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
     // We currently have no switch for QtConcurrent, so add it unconditionally.
@@ -2815,8 +2998,10 @@ void Configure::generateOutputVars()
         }
     }
 
-    if (dictionary.contains("XQMAKESPEC") && (dictionary["QMAKESPEC"] != dictionary["XQMAKESPEC"]))
+    if (dictionary.contains("XQMAKESPEC") && (dictionary["QMAKESPEC"] != dictionary["XQMAKESPEC"])) {
             qmakeConfig += "cross_compile";
+            dictionary["CROSS_COMPILE"] = "yes";
+    }
 
     // Directories and settings for .qmake.cache --------------------
 
@@ -2860,12 +3045,22 @@ void Configure::generateOutputVars()
         qmakeVars += QString("INCLUDEPATH    += ") + escapeSeparators(qmakeIncludes.join(" "));
     if (!opensslLibs.isEmpty())
         qmakeVars += opensslLibs;
-    else if (dictionary[ "OPENSSL" ] == "linked") {
-        if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("symbian"))
-            qmakeVars += QString("OPENSSL_LIBS    = -llibssl -llibcrypto");
-        else
-            qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
+    if (dictionary[ "OPENSSL" ] == "linked") {
+        if (!opensslLibsDebug.isEmpty() || !opensslLibsRelease.isEmpty()) {
+            if (opensslLibsDebug.isEmpty() || opensslLibsRelease.isEmpty()) {
+                cout << "Error: either both or none of OPENSSL_LIBS_DEBUG/_RELEASE must be defined." << endl;
+                exit(1);
+            }
+            qmakeVars += opensslLibsDebug;
+            qmakeVars += opensslLibsRelease;
+        } else if (opensslLibs.isEmpty()) {
+            if (dictionary.contains("XQMAKESPEC") && dictionary[ "XQMAKESPEC" ].startsWith("symbian")) {
+                qmakeVars += QString("OPENSSL_LIBS    = -llibssl -llibcrypto");
+            } else {
+                qmakeVars += QString("OPENSSL_LIBS    = -lssleay32 -llibeay32");
+            }
         }
+    }
     if (!psqlLibs.isEmpty())
         qmakeVars += QString("QT_LFLAGS_PSQL=") + psqlLibs.section("=", 1);
 
@@ -3013,6 +3208,28 @@ void Configure::generateCachefile()
             configStream << " incredibuild_xge";
         if (dictionary["PLUGIN_MANIFESTS"] == "no")
             configStream << " no_plugin_manifest";
+        if (dictionary["QPA"] == "yes")
+            configStream << " qpa";
+        if (dictionary["NIS"] == "yes")
+            configStream << " nis";
+        if (dictionary["QT_CUPS"] == "yes")
+            configStream << " cups";
+
+        if (dictionary["QT_ICONV"] == "yes")
+            configStream << " iconv";
+        else if (dictionary["QT_ICONV"] == "sun")
+            configStream << " sun-libiconv";
+        else if (dictionary["QT_ICONV"] == "gnu")
+            configStream << " gnu-libiconv";
+
+        if (dictionary["NEON"] == "yes")
+            configStream << " neon";
+
+        if (dictionary["LARGE_FILE"] == "yes")
+            configStream << " largefile";
+
+        if (dictionary["FONT_CONFIG"] == "yes")
+            configStream << " fontconfig";
 
         if (dictionary.contains("SYMBIAN_DEFFILES")) {
             if (dictionary["SYMBIAN_DEFFILES"] == "yes") {
@@ -3150,7 +3367,11 @@ void Configure::generateConfigfiles()
         tmpStream << "/* Machine byte-order */" << endl;
         tmpStream << "#define Q_BIG_ENDIAN 4321" << endl;
         tmpStream << "#define Q_LITTLE_ENDIAN 1234" << endl;
-        tmpStream << "#define Q_BYTE_ORDER Q_LITTLE_ENDIAN" << endl;
+
+        if (dictionary["LITTLE_ENDIAN"] == "yes")
+            tmpStream << "#define Q_BYTE_ORDER Q_LITTLE_ENDIAN" << endl;
+        else
+            tmpStream << "#define Q_BYTE_ORDER Q_BIG_ENDIAN" << endl;
 
         tmpStream << endl << "// Compile time features" << endl;
         tmpStream << "#define QT_ARCH_" << dictionary["ARCHITECTURE"].toUpper() << endl;
@@ -3202,9 +3423,10 @@ void Configure::generateConfigfiles()
         if (dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
         if (dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
-        if (dictionary["OPENGL_ES_CM"] == "no" &&
-           dictionary["OPENGL_ES_2"]  == "no" &&
-           dictionary["OPENVG"]       == "no")      qconfigList += "QT_NO_EGL";
+        if ((dictionary["OPENGL_ES_CM"]   == "no"
+             && dictionary["OPENGL_ES_2"] == "no"
+             && dictionary["OPENVG"]      == "no")
+            || (dictionary["QPA"]         == "yes")) qconfigList += "QT_NO_EGL";
 
         if (dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
@@ -3225,6 +3447,22 @@ void Configure::generateConfigfiles()
         if (dictionary["GRAPHICS_SYSTEM"] == "opengl")  qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
         if (dictionary["GRAPHICS_SYSTEM"] == "raster")  qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
         if (dictionary["GRAPHICS_SYSTEM"] == "runtime") qconfigList += "QT_GRAPHICSSYSTEM_RUNTIME";
+
+        if (dictionary["POSIX_IPC"] == "yes")        qconfigList += "QT_POSIX_IPC";
+
+        if (dictionary["QPA"] == "yes")
+            qconfigList << "Q_WS_QPA" << "QT_NO_QWS_QPF" << "QT_NO_QWS_QPF2";
+
+        if (dictionary["NIS"] == "yes")
+            qconfigList << "QT_NIS";
+        else
+            qconfigList << "QT_NO_NIS";
+
+        if (dictionary["LARGE_FILE"] == "yes")
+            tmpStream << "#define QT_LARGEFILE_SUPPORT 64" << endl;
+
+        if (dictionary["FONT_CONFIG"] == "no")
+            qconfigList << "QT_NO_FONTCONFIG";
 
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
             // These features are not ported to Symbian (yet)
@@ -3469,6 +3707,7 @@ void Configure::displayConfig()
     cout << "SSE support................." << dictionary[ "SSE" ] << endl;
     cout << "SSE2 support................" << dictionary[ "SSE2" ] << endl;
     cout << "IWMMXT support.............." << dictionary[ "IWMMXT" ] << endl;
+    cout << "NEON support................" << dictionary[ "NEON" ] << endl;
     cout << "OpenGL support.............." << dictionary[ "OPENGL" ] << endl;
     cout << "OpenVG support.............." << dictionary[ "OPENVG" ] << endl;
     cout << "OpenSSL support............." << dictionary[ "OPENSSL" ] << endl;
@@ -3476,6 +3715,9 @@ void Configure::displayConfig()
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
     cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
     cout << "QtMultimedia support........" << dictionary[ "MULTIMEDIA" ] << endl;
+    cout << "Large File support.........." << dictionary[ "LARGE_FILE" ] << endl;
+    cout << "NIS support................." << dictionary[ "NIS" ] << endl;
+    cout << "Iconv support..............." << dictionary[ "QT_ICONV" ] << endl;
     {
         QString webkit = dictionary[ "WEBKIT" ];
         if (webkit == "debug")
@@ -3588,11 +3830,18 @@ void Configure::displayConfig()
         cout << "WARNING: Using static linking will disable the use of plugins." << endl;
         cout << "         Make sure you compile ALL needed modules into the library." << endl;
     }
-    if (dictionary[ "OPENSSL" ] == "linked" && opensslLibs.isEmpty()) {
-        cout << "NOTE: When linking against OpenSSL, you can override the default" << endl;
-        cout << "library names through OPENSSL_LIBS." << endl;
-        cout << "For example:" << endl;
-        cout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
+    if (dictionary[ "OPENSSL" ] == "linked") {
+        if (!opensslLibsDebug.isEmpty() || !opensslLibsRelease.isEmpty()) {
+            cout << "Using OpenSSL libraries:" << endl;
+            cout << "   debug  : " << opensslLibsDebug << endl;
+            cout << "   release: " << opensslLibsRelease << endl;
+            cout << "   both   : " << opensslLibs << endl;
+        } else if (opensslLibs.isEmpty()) {
+            cout << "NOTE: When linking against OpenSSL, you can override the default" << endl;
+            cout << "library names through OPENSSL_LIBS and optionally OPENSSL_LIBS_DEBUG/OPENSSL_LIBS_RELEASE" << endl;
+            cout << "For example:" << endl;
+            cout << "    configure -openssl-linked OPENSSL_LIBS=\"-lssleay32 -llibeay32\"" << endl;
+        }
     }
     if (dictionary[ "ZLIB_FORCED" ] == "yes") {
         QString which_zlib = "supplied";
@@ -4077,6 +4326,8 @@ void Configure::readLicense()
         dictionary["PLATFORM NAME"] = "Qt for Windows CE";
     else if (dictionary.value("XQMAKESPEC").startsWith("symbian"))
         dictionary["PLATFORM NAME"] = "Qt for Symbian";
+    else if (dictionary["QPA"] == "yes")
+        dictionary["PLATFORM NAME"] = "Qt for QPA";
     else
         dictionary["PLATFORM NAME"] = "Qt for Windows";
     dictionary["LICENSE FILE"] = sourcePath;

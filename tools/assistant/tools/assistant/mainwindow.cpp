@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -440,6 +440,7 @@ void MainWindow::setupActions()
 #endif
 
     QMenu *menu = menuBar()->addMenu(tr("&File"));
+    connect(menu, SIGNAL(aboutToShow()), this, SLOT(aboutToShowFileMenu()));
 
     OpenPagesManager * const openPages = OpenPagesManager::instance();
     m_newTabAction
@@ -1028,7 +1029,6 @@ QString MainWindow::collectionFileDirectory(bool createDir, const QString &cache
         else
             collectionPath = collectionPath + QDir::separator() + cacheDir;
     }
-    collectionPath = QDir::cleanPath(collectionPath);
     if (createDir) {
         QDir dir;
         if (!dir.exists(collectionPath))
@@ -1094,6 +1094,15 @@ void MainWindow::registerDocumentation(const QString &component,
                 << absFileName;
         helpEngine.setQtDocInfo(component, docInfo);
     }
+}
+
+void MainWindow::aboutToShowFileMenu()
+{
+    OpenPagesManager * const openPages = OpenPagesManager::instance();
+    if (openPages->pageCount() > 1)
+        m_closeTabAction->setEnabled(true);
+    else
+        m_closeTabAction->setEnabled(false);
 }
 
 QT_END_NAMESPACE

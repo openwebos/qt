@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -97,21 +97,23 @@ QDeclarativeAbstractBoundSignal::~QDeclarativeAbstractBoundSignal()
 
 QDeclarativeBoundSignal::QDeclarativeBoundSignal(QObject *scope, const QMetaMethod &signal, 
                                QObject *parent)
-: m_expression(0), m_signal(signal), m_paramsValid(false), m_isEvaluating(false), m_params(0)
+: m_expression(0), m_signal(signal), m_paramsValid(false), m_isEvaluating(false), m_params(0),
+  m_scope(scope, this)
 {
-    // This is thread safe.  Although it may be updated by two threads, they
-    // will both set it to the same value - so the worst thing that can happen
-    // is that they both do the work to figure it out.  Boo hoo.
-    if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
-
-    QDeclarative_setParent_noEvent(this, parent);
-    QDeclarativePropertyPrivate::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
+    init(parent);
 }
 
 QDeclarativeBoundSignal::QDeclarativeBoundSignal(QDeclarativeContext *ctxt, const QString &val, 
                                QObject *scope, const QMetaMethod &signal,
                                QObject *parent)
-: m_expression(0), m_signal(signal), m_paramsValid(false), m_isEvaluating(false), m_params(0)
+: m_expression(0), m_signal(signal), m_paramsValid(false), m_isEvaluating(false), m_params(0),
+  m_scope(scope, this)
+{
+    init(parent);
+    m_expression = new QDeclarativeExpression(ctxt, scope, val);
+}
+
+void QDeclarativeBoundSignal::init(QObject *parent)
 {
     // This is thread safe.  Although it may be updated by two threads, they
     // will both set it to the same value - so the worst thing that can happen
@@ -119,15 +121,23 @@ QDeclarativeBoundSignal::QDeclarativeBoundSignal(QDeclarativeContext *ctxt, cons
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
     QDeclarative_setParent_noEvent(this, parent);
-    QDeclarativePropertyPrivate::connect(scope, m_signal.methodIndex(), this, evaluateIdx);
+    QDeclarativePropertyPrivate::connect(m_scope, m_signal.methodIndex(), this, evaluateIdx);
 
-    m_expression = new QDeclarativeExpression(ctxt, scope, val);
+    QDeclarativeData * const data = QDeclarativeData::get(m_scope, true);
+    data->addBoundSignal(this);
 }
 
 QDeclarativeBoundSignal::~QDeclarativeBoundSignal()
 {
+    unregisterScopeObject();
     delete m_expression;
     m_expression = 0;
+}
+
+void QDeclarativeBoundSignal::disconnect()
+{
+    QObjectPrivate * const priv = QObjectPrivate::get(m_scope);
+    priv->disconnectNotify(m_signal.signature());
 }
 
 int QDeclarativeBoundSignal::index() const 
@@ -193,6 +203,15 @@ int QDeclarativeBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
         return -1;
     } else {
         return QObject::qt_metacall(c, id, a);
+    }
+}
+
+void QDeclarativeBoundSignal::unregisterScopeObject()
+{
+    if (m_scope) {
+        QDeclarativeData * const data = QDeclarativeData::get(m_scope, false);
+        if (data)
+            data->removeBoundSignal(this);
     }
 }
 

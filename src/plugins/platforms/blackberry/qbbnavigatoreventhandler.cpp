@@ -1,9 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Research In Motion
-**
-** Contact: Research In Motion <blackberry-qt@qnx.com>
-** Contact: Klarälvdalens Datakonsult AB <info@kdab.com>
+** Copyright (C) 2012 Research In Motion <blackberry-qt@qnx.com>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -96,6 +94,24 @@ void QBBNavigatorEventHandler::handleExit()
 #endif
 
     QApplication::quit();
+}
+
+void QBBNavigatorEventHandler::handleWindowGroupActivated(const QByteArray &id)
+{
+#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << Q_FUNC_INFO << id;
+#endif
+
+    Q_EMIT windowGroupActivated(id);
+}
+
+void QBBNavigatorEventHandler::handleWindowGroupDeactivated(const QByteArray &id)
+{
+#if defined(QBBNAVIGATOREVENTHANDLER_DEBUG)
+    qDebug() << Q_FUNC_INFO << id;
+#endif
+
+    Q_EMIT windowGroupDeactivated(id);
 }
 
 QT_END_NAMESPACE

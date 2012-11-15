@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -93,6 +93,7 @@ TreeWidgetEditor::TreeWidgetEditor(QDesignerFormWindowInterface *form, QDialog *
     connect(ui.moveItemDownButton, SIGNAL(clicked()), this, SLOT(on_moveItemDownButton_clicked()));
     connect(ui.moveItemRightButton, SIGNAL(clicked()), this, SLOT(on_moveItemRightButton_clicked()));
     connect(ui.moveItemLeftButton, SIGNAL(clicked()), this, SLOT(on_moveItemLeftButton_clicked()));
+    connect(ui.deleteItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItemButton_clicked()));
     connect(ui.treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
             this, SLOT(on_treeWidget_currentItemChanged()));
     connect(ui.treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)),

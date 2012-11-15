@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1703,14 +1703,27 @@ void QWizardPrivate::_q_updateButtonStates()
 
 void QWizardPrivate::_q_handleFieldObjectDestroyed(QObject *object)
 {
+    int destroyed_index = -1;
     QVector<QWizardField>::iterator it = fields.begin();
     while (it != fields.end()) {
         const QWizardField &field = *it;
         if (field.object == object) {
+            destroyed_index = fieldIndexMap.value(field.name, -1);
             fieldIndexMap.remove(field.name);
             it = fields.erase(it);
         } else {
             ++it;
+        }
+    }
+    if (destroyed_index != -1) {
+        QMap<QString, int>::iterator it2 = fieldIndexMap.begin();
+        while (it2 != fieldIndexMap.end()) {
+            int index = it2.value();
+            if (index > destroyed_index) {
+                QString field_name = it2.key();
+                fieldIndexMap.insert(field_name, index-1);
+            }
+            ++it2;
         }
     }
 }

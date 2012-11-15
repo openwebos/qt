@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -82,9 +82,12 @@ static QHostAddress addressFromSockaddr(sockaddr *sa)
 
     if (sa->sa_family == AF_INET)
         address.setAddress(htonl(((sockaddr_in *)sa)->sin_addr.s_addr));
-    else if (sa->sa_family == AF_INET6)
+    else if (sa->sa_family == AF_INET6) {
         address.setAddress(((qt_sockaddr_in6 *)sa)->sin6_addr.qt_s6_addr);
-    else
+        int scope = ((qt_sockaddr_in6 *)sa)->sin6_scope_id;
+        if (scope)
+            address.setScopeId(QString::number(scope));
+    } else
         qWarning("Got unknown socket family %d", sa->sa_family);
     return address;
 
@@ -137,8 +140,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
     ULONG bufSize = sizeof staticBuf;
 
     const QHash<QHostAddress, QHostAddress> &ipv4netmasks = ipv4Netmasks();
-    ULONG flags = GAA_FLAG_INCLUDE_ALL_INTERFACES |
-                  GAA_FLAG_INCLUDE_PREFIX |
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX |
                   GAA_FLAG_SKIP_DNS_SERVER |
                   GAA_FLAG_SKIP_MULTICAST;
     ULONG retval = ptrGetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAdapter, &bufSize);

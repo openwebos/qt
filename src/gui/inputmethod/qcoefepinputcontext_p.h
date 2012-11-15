@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -64,6 +64,10 @@
 #include <fepbase.h>
 #include <aknedsts.h>
 #include <eikccpu.h>
+#include <eikedwin.h>
+#include <aknedformaccessor.h>
+
+class CAknExtendedInputCapabilities;
 
 QT_BEGIN_NAMESPACE
 
@@ -132,6 +136,7 @@ private:
     void commitTemporaryPreeditString();
     bool isWidgetVisible(QWidget *widget, int offset = 0);
     bool isPartialKeyboardSupported();
+    bool vietCharConversion(const QEvent *event);
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();
@@ -219,6 +224,11 @@ private:
     QAction *m_pasteAction;
     QPointer<QWidget> m_lastFocusedEditor;
     QPointer<QObject> m_lastFocusedObject;
+
+    CAknExtendedInputCapabilities *m_extendedInputCapabilities;
+
+    QScopedPointer<CAknEdwinFormAccessor> m_formAccessor;
+    QScopedPointer<CEikEdwin> m_dummyEditor;
 
     friend class tst_QInputContext;
 };

@@ -1,9 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -36,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,10 +42,14 @@
 #include "qapplication_p.h"
 #include "qcolormap.h"
 #include "qpixmapcache.h"
+#if defined(Q_OS_BLACKBERRY)
+#include "qeventdispatcher_blackberry_qpa_p.h"
+#else
 #if !defined(QT_NO_GLIB)
 #include "qeventdispatcher_glib_qpa_p.h"
 #endif
 #include "qeventdispatcher_qpa_p.h"
+#endif
 #ifndef QT_NO_CURSOR
 #include "private/qcursor_p.h"
 #endif
@@ -148,12 +151,16 @@ QString QApplicationPrivate::appName() const
 void QApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QApplication);
+#if defined(Q_OS_BLACKBERRY)
+    eventDispatcher = new QEventDispatcherBlackberryQPA(q);
+#else
 #if !defined(QT_NO_GLIB)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QPAEventDispatcherGlib(q);
     else
 #endif
     eventDispatcher = new QEventDispatcherQPA(q);
+#endif
 }
 
 static bool qt_try_modal(QWidget *widget, QEvent::Type type)
@@ -619,10 +626,6 @@ void QApplication::setMainWidget(QWidget *mainWidget)
 
 void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent *e)
 {
-    if (!e->widget)
-       return;
-
-    // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
     static QWeakPointer<QWidget> implicit_mouse_grabber;
 
     QEvent::Type type;
@@ -752,7 +755,6 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
     // Remember, we might enter a modal event loop when sending the event,
     // so think carefully before adding code below this point.
 
-    // qDebug() << "sending mouse ev." << ev.type() << localPoint << globalPoint << ev.button() << ev.buttons() << mouseWidget << "mouse grabber" << implicit_mouse_grabber;
 
     QMouseEvent ev(type, localPoint, globalPoint, button, buttons, QApplication::keyboardModifiers());
 
@@ -761,6 +763,8 @@ void QApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mouse
         if (cursor)
             cursor.data()->pointerEvent(ev);
     }
+
+    // qDebug() << "sending mouse event" << ev.type() << localPoint << globalPoint << ev.button() << ev.buttons() << mouseWidget << "mouse grabber" << implicit_mouse_grabber;
 
     int oldOpenPopupCount = openPopupCount;
     QApplication::sendSpontaneousEvent(mouseWidget, &ev);
@@ -879,9 +883,6 @@ void QApplicationPrivate::processLeaveEvent(QWindowSystemInterfacePrivate::Leave
 
 void QApplicationPrivate::processActivatedEvent(QWindowSystemInterfacePrivate::ActivatedWindowEvent *e)
 {
-    if (!e->activated)
-        return;
-
     QApplication::setActiveWindow(e->activated.data());
 }
 

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -4799,8 +4799,13 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
         if (it == cache->constEnd()) {
             // render new glyph and put it in the cache
             glyph_metrics_t metrics = fontEngine->boundingBox(glyphs[i]);
-            int glyph_width = qRound(metrics.width.toReal())+2;
-            int glyph_height = qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal())+2;
+            QImage glyph_im(fontEngine->alphaMapForGlyph(glyphs[i]));
+            int glyph_width = glyph_im.width();
+            int glyph_height = qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal()) + 2;
+            Q_ASSERT(glyph_width >= 0);
+            // pad the glyph width to an even number
+            if (glyph_width % 2 != 0)
+                ++glyph_width;
 
             if (font_tex->x_offset + glyph_width + x_margin > font_tex->width) {
                 int strip_height = qt_next_power_of_two(qRound(fontEngine->ascent().toReal() + fontEngine->descent().toReal())+2);
@@ -4833,13 +4838,6 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, QFontEngine *fontEngine,
                     }
                 }
             }
-
-            QImage glyph_im(fontEngine->alphaMapForGlyph(glyphs[i]));
-            glyph_width = glyph_im.width();
-            Q_ASSERT(glyph_width >= 0);
-            // pad the glyph width to an even number
-            if (glyph_width%2 != 0)
-                ++glyph_width;
 
             QGLGlyphCoord *qgl_glyph = new QGLGlyphCoord;
             qgl_glyph->x = qreal(font_tex->x_offset) / font_tex->width;

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -75,8 +75,11 @@ Bindings are free to implement their own memory management, so the delete operat
 necessarily safe.  The default implementation clears the binding, removes it from the object
 and calls delete.
 */
-void QDeclarativeAbstractBinding::destroy()
+void QDeclarativeAbstractBinding::destroy(DestroyMode mode)
 {
+    if (mode == DisconnectBinding)
+        disconnect(QDeclarativeAbstractBinding::DisconnectOne);
+
     removeFromObject();
     clear();
 
@@ -488,6 +491,12 @@ QString QDeclarativeBinding::expression() const
     return QDeclarativeExpression::expression();
 }
 
+void QDeclarativeBinding::disconnect(DisconnectMode disconnectMode)
+{
+    Q_UNUSED(disconnectMode);
+    setNotifyOnValueChanged(false);
+}
+
 QDeclarativeValueTypeProxyBinding::QDeclarativeValueTypeProxyBinding(QObject *o, int index)
 : m_object(o), m_index(index), m_bindings(0)
 {
@@ -537,6 +546,12 @@ void QDeclarativeValueTypeProxyBinding::recursiveDisable(QDeclarativeAbstractBin
 
 void QDeclarativeValueTypeProxyBinding::update(QDeclarativePropertyPrivate::WriteFlags)
 {
+}
+
+void QDeclarativeValueTypeProxyBinding::disconnect(DisconnectMode disconnectMode)
+{
+    Q_UNUSED(disconnectMode);
+    // Nothing to do
 }
 
 QDeclarativeAbstractBinding *QDeclarativeValueTypeProxyBinding::binding(int propertyIndex)

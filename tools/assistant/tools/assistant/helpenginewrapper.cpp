@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,7 @@
 
 #include "helpenginewrapper.h"
 #include "../shared/collectionconfiguration.h"
+#include "../../lib/qhelpengine_p.h"
 
 #include <QtCore/QDateTime>
 #include <QtCore/QFileInfo>
@@ -327,6 +328,12 @@ QString HelpEngineWrapper::error() const
 {
     TRACE_OBJ
     return d->m_helpEngine->error();
+}
+
+QString HelpEngineWrapper::virtualFolderForNameSpace(const QString &nameSpace) const
+{
+    TRACE_OBJ
+    return d->m_helpEngine->d->nameSpaceVirtualFolderMap.value(nameSpace, QString());
 }
 
 const QStringList HelpEngineWrapper::qtDocInfo(const QString &component) const

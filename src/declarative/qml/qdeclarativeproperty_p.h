@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -134,7 +134,7 @@ public:
     static int valueTypeCoreIndex(const QDeclarativeProperty &that);
     static int bindingIndex(const QDeclarativeProperty &that);
     static QMetaMethod findSignalByName(const QMetaObject *mo, const QByteArray &);
-    static bool connect(const QObject *sender, int signal_index,
+    static bool connect(QObject *sender, int signal_index,
                         const QObject *receiver, int method_index,
                         int type = 0, int *types = 0);
     static const QMetaObject *metaObjectForProperty(const QMetaObject *, int);

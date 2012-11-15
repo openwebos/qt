@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,10 @@
 #include "qstyleoption.h"
 #include "qsizegrip.h"
 #include "qmainwindow.h"
+
+#ifndef QT_NO_ACCESSIBILITY
+#include "qaccessible.h"
+#endif
 
 #include <private/qlayoutengine_p.h>
 #include <private/qwidget_p.h>
@@ -595,8 +599,6 @@ void QStatusBar::reformat()
 void QStatusBar::showMessage(const QString &message, int timeout)
 {
     Q_D(QStatusBar);
-    if (d->tempItem == message)
-        return;
 
     d->tempItem = message;
 
@@ -692,6 +694,12 @@ void QStatusBar::hideOrShow()
     }
 
     emit messageChanged(d->tempItem);
+
+#ifndef QT_NO_ACCESSIBILITY
+    if (QAccessible::isActive())
+        QAccessible::updateAccessibility(this, 0, QAccessible::NameChanged);
+#endif
+
     repaint(d->messageRect());
 }
 

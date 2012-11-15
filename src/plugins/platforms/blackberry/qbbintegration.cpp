@@ -1,9 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 - 2012 Research In Motion
-**
-** Contact: Research In Motion <blackberry-qt@qnx.com>
-** Contact: Klarälvdalens Datakonsult AB <info@kdab.com>
+** Copyright (C) 2011 - 2012 Research In Motion <blackberry-qt@qnx.com>
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -41,7 +39,7 @@
 
 #include "qbbintegration.h"
 #include "qbbinputcontext.h"
-#include "qbbeventthread.h"
+#include "qbbscreeneventthread.h"
 #include "qbbglcontext.h"
 #include "qbbglwindowsurface.h"
 #include "qbbnavigatoreventhandler.h"
@@ -50,14 +48,19 @@
 #include "qbbscreen.h"
 #include "qbbscreeneventhandler.h"
 #include "qbbwindow.h"
-#include "qbbvirtualkeyboard.h"
+#include "qbbvirtualkeyboardpps.h"
 #include "qgenericunixfontdatabase.h"
 #include "qbbclipboard.h"
 #include "qbbglcontext.h"
 #include "qbblocalethread.h"
 #include "qbbnativeinterface.h"
+#if defined(Q_OS_BLACKBERRY)
+#include "qbbbpseventfilter.h"
+#include "qbbvirtualkeyboardbps.h"
+#endif
 
-#include "qapplication.h"
+#include <QtCore/QAbstractEventDispatcher>
+#include <QtGui/QApplication>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/QPlatformWindow>
 #include <QtGui/QWindowSystemInterface>
@@ -75,12 +78,14 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_METATYPE(screen_window_t);
 
 QBBIntegration::QBBIntegration() :
+    mScreenEventThread(0),
     mNavigatorEventHandler(new QBBNavigatorEventHandler()),
     mFontDb(new QGenericUnixFontDatabase()),
     mScreenEventHandler(new QBBScreenEventHandler()),
     mPaintUsingOpenGL(getenv("QBB_USE_OPENGL") != NULL),
     mVirtualKeyboard(0),
-    mNativeInterface(new QBBNativeInterface(this))
+    mNativeInterface(new QBBNativeInterface(this)),
+    mBpsEventFilter(0)
 {
     qRegisterMetaType<screen_window_t>();
 
@@ -102,18 +107,23 @@ QBBIntegration::QBBIntegration() :
     }
 
     // Create/start navigator event notifier
+    // Not on BlackBerry, it has specialised event dispatcher which also handles navigator events
+#if !defined(Q_OS_BLACKBERRY)
     mNavigatorEventNotifier = new QBBNavigatorEventNotifier(mNavigatorEventHandler);
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(mNavigatorEventNotifier, "start", Qt::QueuedConnection);
+#endif
 
     // Create displays for all possible screens (which may not be attached)
     createDisplays();
 
     // create/start event thread
-    mEventThread = new QBBEventThread(mContext, mScreenEventHandler);
-    mEventThread->start();
+#if defined(QBB_SCREENEVENTTHREAD)
+    mScreenEventThread = new QBBScreenEventThread(mContext, mScreenEventHandler);
+    mScreenEventThread->start();
+#endif
 
 #ifdef QBBLOCALETHREAD_ENABLED
     // Start the locale change monitoring thread.
@@ -123,14 +133,30 @@ QBBIntegration::QBBIntegration() :
 
 #if defined(Q_OS_BLACKBERRY)
     bps_initialize();
-#endif
 
+    QBBVirtualKeyboardBps *virtualKeyboardBps = new QBBVirtualKeyboardBps;
+
+    mBpsEventFilter = new QBBBpsEventFilter(mNavigatorEventHandler,
+            (mScreenEventThread ? 0 : mScreenEventHandler), virtualKeyboardBps);
+
+    if (!mScreenEventThread) {
+        Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
+            QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
+            mBpsEventFilter->registerForScreenEvents(screen);
+        }
+    }
+
+    mBpsEventFilter->installOnEventDispatcher(QAbstractEventDispatcher::instance());
+
+    mVirtualKeyboard = virtualKeyboardBps;
+#else
     // create/start the keyboard class.
-    mVirtualKeyboard = new QBBVirtualKeyboard();
+    mVirtualKeyboard = new QBBVirtualKeyboardPps();
 
     // delay invocation of start() to the time the event loop is up and running
     // needed to have the QThread internals of the main thread properly initialized
     QMetaObject::invokeMethod(mVirtualKeyboard, "start", Qt::QueuedConnection);
+#endif
 
     // TODO check if we need to do this for all screens or only the primary one
     QObject::connect(mVirtualKeyboard, SIGNAL(heightChanged(int)),
@@ -149,21 +175,32 @@ QBBIntegration::~QBBIntegration()
 
     delete mNativeInterface;
 
-    // destroy the keyboard class.
-    delete mVirtualKeyboard;
-
 #ifdef QBBLOCALETHREAD_ENABLED
     // stop/destroy the locale thread.
     delete mLocaleThread;
 #endif
 
+#if defined(QBB_SCREENEVENTTHREAD)
     // stop/destroy event thread
-    delete mEventThread;
+    delete mScreenEventThread;
+#elif defined(Q_OS_BLACKBERRY)
+    Q_FOREACH (QPlatformScreen *platformScreen, mScreens) {
+        QBBScreen *screen = static_cast<QBBScreen*>(platformScreen);
+        mBpsEventFilter->unregisterForScreenEvents(screen);
+    }
+#endif
 
     // stop/destroy navigator event handling classes
     delete mNavigatorEventNotifier;
-    delete mNavigatorEventHandler;
 
+#if defined(Q_OS_BLACKBERRY)
+    delete mBpsEventFilter;
+#endif
+
+    // destroy the keyboard class.
+    delete mVirtualKeyboard;
+
+    delete mNavigatorEventHandler;
     delete mScreenEventHandler;
 
     // destroy all displays
@@ -283,7 +320,7 @@ QBBScreen *QBBIntegration::primaryDisplay() const
 
 void QBBIntegration::setCursorPos(int x, int y)
 {
-    mEventThread->injectPointerMoveEvent(x, y);
+    mScreenEventThread->injectPointerMoveEvent(x, y);
 }
 
 void QBBIntegration::createDisplays()
@@ -315,6 +352,8 @@ void QBBIntegration::createDisplays()
                          screen, SLOT(windowClosed(screen_window_t)));
 
         QObject::connect(mNavigatorEventHandler, SIGNAL(rotationChanged(int)), screen, SLOT(setRotation(int)));
+        QObject::connect(mNavigatorEventHandler, SIGNAL(windowGroupActivated(QByteArray)), screen, SLOT(activateWindowGroup(QByteArray)));
+        QObject::connect(mNavigatorEventHandler, SIGNAL(windowGroupDeactivated(QByteArray)), screen, SLOT(deactivateWindowGroup(QByteArray)));
     }
 }
 

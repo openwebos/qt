@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -273,7 +273,7 @@ void QLinuxInputMouseHandler::readMouseData()
         } else if (data->type == EV_KEY && data->code == BTN_TOUCH) {
             m_buttons = data->value ? Qt::LeftButton : Qt::NoButton;
 
-            sendMouseEvent(m_x, m_y, m_buttons);
+            posChanged = true;
             pendingMouseEvent = false;
         } else if (data->type == EV_KEY && data->code >= BTN_LEFT && data->code <= BTN_MIDDLE) {
             Qt::MouseButton button = Qt::NoButton;

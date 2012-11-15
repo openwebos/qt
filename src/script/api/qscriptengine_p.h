@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtScript module of the Qt Toolkit.
 **
@@ -16,7 +15,8 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** If you have questions regarding the use of this file, please contact
-** Nokia at qt-info@nokia.com.
+** us via http://www.qt-project.org/.
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,7 @@
 #include "bridge/qscriptobject_p.h"
 #include "bridge/qscriptqobject_p.h"
 #include "bridge/qscriptvariant_p.h"
+#include "bridge/qscriptactivationobject_p.h"
 
 #include "DateConstructor.h"
 #include "DateInstance.h"
@@ -1018,6 +1019,8 @@ inline quint16 QScriptEnginePrivate::toUInt16(JSC::ExecState *exec, JSC::JSValue
 
 inline JSC::UString QScriptEnginePrivate::toString(JSC::ExecState *exec, JSC::JSValue value)
 {
+    if (!value)
+        return JSC::UString();
     JSC::JSValue savedException;
     saveException(exec, &savedException);
     JSC::UString str = value.toString(exec);
@@ -1058,6 +1061,9 @@ inline QObject *QScriptEnginePrivate::toQObject(JSC::ExecState *exec, JSC::JSVal
             if ((type == QMetaType::QObjectStar) || (type == QMetaType::QWidgetStar))
                 return *reinterpret_cast<QObject* const *>(var.constData());
         }
+    } else if (isObject(value) && value.inherits(&QScript::QScriptActivationObject::info)) {
+        QScript::QScriptActivationObject *proxy = static_cast<QScript::QScriptActivationObject *>(JSC::asObject(value));
+        return toQObject(exec, proxy->delegate());
     }
 #endif
     return 0;

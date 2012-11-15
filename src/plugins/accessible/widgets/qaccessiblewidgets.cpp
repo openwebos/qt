@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -1621,6 +1621,7 @@ QPair< int, int > QAccessibleTextWidget::getBoundaries(int offset, BoundaryType 
         result.first = cursor.position();
         cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
         result.second = cursor.position();
+        break;
     case WordBoundary:
         cursor.movePosition(QTextCursor::StartOfWord, QTextCursor::MoveAnchor);
         result.first = cursor.position();

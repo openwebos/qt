@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -17,6 +16,7 @@
 ** Alternatively, this file may be used in accordance with the terms
 ** and conditions contained in a signed written agreement between you
 ** and Nokia.
+**
 **
 **
 **
@@ -58,12 +58,12 @@ for your platform from the following list.
 
 \section1 Step 2: Unpacking the Archive
     Unpack the archive if you have not done so already. For example,
-    if you have the \c{qt-everywhere-opensource-src-%VERSION%.tar.gz}
+    if you have the \c{qt-everywhere-opensource-src-4.8.3.tar.gz}
     package, type the following commands at a command line prompt:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 0
 
-    This creates the directory \c{/tmp/qt-everywhere-opensource-src-%VERSION%}
+    This creates the directory \c{/tmp/qt-everywhere-opensource-src-4.8.3}
     containing the files from the archive. We only support the GNU version of
     the tar archiving utility. Note that on some systems it is called gtar.
 
@@ -73,7 +73,7 @@ for your platform from the following list.
     \c{./configure} script in the package directory.
 
     By default, Qt is configured for installation in the
-    \c{/usr/local/Trolltech/Qt-%VERSION%} directory, but this can be
+    \c{/usr/local/Trolltech/Qt-4.8.3} directory, but this can be
     changed by using the \c{-prefix} option.
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 1
@@ -125,7 +125,7 @@ for your platform from the following list.
 
     For compilers that do not support rpath you must also extended the
     \c LD_LIBRARY_PATH environment variable to include
-    \c{/usr/local/Trolltech/Qt-%VERSION%/lib}. On Linux with GCC this step
+    \c{/usr/local/Trolltech/Qt-4.8.3/lib}. On Linux with GCC this step
     is not needed.
 
 \bold {That's all. Qt is now installed.}
@@ -186,7 +186,7 @@ for your platform from the following list.
 \section1 Step 2: Unpack the Archive
 
     Uncompress the files into the directory you want Qt installed;
-    e.g. \c{C:\Qt\%VERSION%}.
+    e.g. \c{C:\Qt\4.8.3}.
 
     \note The install path must not contain any spaces or Windows specific
     file system characters.
@@ -198,7 +198,7 @@ for your platform from the following list.
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 7
 
-    This is done by adding \c{c:\Qt\%VERSION%\bin} to the \c PATH variable.
+    This is done by adding \c{c:\Qt\4.8.3\bin} to the \c PATH variable.
 
     For newer versions of Windows, \c PATH can be extended through
     the \menu{Control Panel|System|Advanced|Environment variables} menu.
@@ -299,12 +299,12 @@ must be run as root.
     For the open source version you do not need a license file.
 
     Unpack the archive if you have not done so already. For example,
-    if you have the \c{qt-everywhere-opensource-src-%VERSION%.tar.gz}
+    if you have the \c{qt-everywhere-opensource-src-4.8.3.tar.gz}
     package, type the following commands at a command line prompt:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 11
 
-    This creates the directory \c{/tmp/qt-everywhere-opensource-src-%VERSION%}
+    This creates the directory \c{/tmp/qt-everywhere-opensource-src-4.8.3}
     containing the files from the archive.
 
 \section1 Step 2:  Build the Qt Library
@@ -313,7 +313,7 @@ must be run as root.
     \c{./configure} script in the package directory.
 
     By default, Qt is configured for installation in the
-    \c{/usr/local/Trolltech/Qt-%VERSION%} directory, but this can be
+    \c{/usr/local/Trolltech/Qt-4.8.3} directory, but this can be
     changed by using the \c{-prefix} option.
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 12
@@ -407,7 +407,7 @@ in the \l{Qt for Windows CE Requirements} document.
 
 \section1 Step 1: Install the License File (commercial editions only)
     Uncompress the files into the directory you want to install Qt into;
-    e.g., \c{C:\Qt\%VERSION%}.
+    e.g., \c{C:\Qt\4.8.3}.
 
     \note The install path must not contain any spaces.
 
@@ -417,7 +417,7 @@ in the \l{Qt for Windows CE Requirements} document.
     to be extended:
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 18
-    This is done by adding \c{c:\Qt\%VERSION%\bin} to the \c PATH variable.
+    This is done by adding \c{c:\Qt\4.8.3\bin} to the \c PATH variable.
 
     For newer versions of Windows, \c PATH can be extended through
     "Control Panel->System->Advanced->Environment variables" and for
@@ -545,7 +545,7 @@ the Symbian platform from scratch.
 \section1 Step 2: Install Qt
 
     Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source
-    package into the directory you want Qt installed, e.g. \c{C:\Qt\%VERSION%}.
+    package into the directory you want Qt installed, e.g. \c{C:\Qt\4.8.3}.
 
     \note Qt must be installed on the same drive as the Symbian SDK you are
     using, and the install path must not contain any spaces.
@@ -557,7 +557,7 @@ the Symbian platform from scratch.
 
 \snippet doc/src/snippets/code/doc_src_installation.qdoc 18
 
-    This is done by adding \c{c:\Qt\%VERSION%\bin} to the \c PATH variable.
+    This is done by adding \c{c:\Qt\4.8.3\bin} to the \c PATH variable.
 
     On Windows the\c PATH can be extended by navigating to
     "Control Panel->System->Advanced->Environment variables".
@@ -690,7 +690,7 @@ See \l{http://qt.gitorious.org/qt/pages/QtCreatorSymbianLinux} for more details.
 \section1 Step 2: Unpack the Archive
 
 Uncompress the \l{http://qt.nokia.com/downloads}{downloaded} source package into the
-directory you want Qt installed, e.g. \c{/home/user/qt/%VERSION%}.
+directory you want Qt installed, e.g. \c{/home/user/qt/4.8.3}.
 
 
 \section1 Step 3: Set the Environment Variables
@@ -1471,8 +1471,6 @@ We hope you will enjoy using Qt.
     \row   \o \c {-no-gif} \o Do not compile GIF reading support.
     \o This option denotes a default value and needs to be evaluated.
     If the evaluation succeeds, the feature is included.
-    \row   \o \c {-qt-gif} \o Compile GIF reading support. \o See also
-    src/gui/image/qgifhandler_p.h
     \row   \o \c {-no-libpng} \o Do not compile PNG support. \o
     \row   \o \c {-qt-libpng} \o Use the libpng bundled with Qt.
     \o This option denotes a default value and needs to be evaluated.

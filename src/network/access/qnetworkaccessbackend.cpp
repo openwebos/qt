@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -161,6 +161,18 @@ void QNetworkAccessBackend::downstreamReadyWrite()
 void QNetworkAccessBackend::setDownstreamLimited(bool b)
 {
     Q_UNUSED(b);
+    // do nothing
+}
+
+void QNetworkAccessBackend::setReadBufferSize(qint64 size)
+{
+    Q_UNUSED(size);
+    // do nothing
+}
+
+void QNetworkAccessBackend::emitReadBufferFreed(qint64 size)
+{
+    Q_UNUSED(size);
     // do nothing
 }
 
@@ -358,13 +370,14 @@ bool QNetworkAccessBackend::start()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
     // For bearer, check if session start is required
-    if (manager->networkSession) {
+    QSharedPointer<QNetworkSession> networkSession(manager->getNetworkSession());
+    if (networkSession) {
         // session required
-        if (manager->networkSession->isOpen() &&
-            manager->networkSession->state() == QNetworkSession::Connected) {
+        if (networkSession->isOpen() &&
+            networkSession->state() == QNetworkSession::Connected) {
             // Session is already open and ready to use.
             // copy network session down to the backend
-            setProperty("_q_networksession", QVariant::fromValue(manager->networkSession));
+            setProperty("_q_networksession", QVariant::fromValue(networkSession));
         } else {
             // Session not ready, but can skip for loopback connections
 
@@ -387,7 +400,7 @@ bool QNetworkAccessBackend::start()
 #ifndef QT_NO_BEARERMANAGEMENT
     // Get the proxy settings from the network session (in the case of service networks,
     // the proxy settings change depending which AP was activated)
-    QNetworkSession *session = manager->networkSession.data();
+    QNetworkSession *session = networkSession.data();
     QNetworkConfiguration config;
     if (session) {
         QNetworkConfigurationManager configManager;

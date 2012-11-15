@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,8 +43,8 @@
 
 #include <qfile.h>
 #include "qlibrary_p.h"
-#include <qfileinfo.h>
 #include <qcoreapplication.h>
+#include <private/qfilesystementry_p.h>
 
 #ifndef QT_NO_LIBRARY
 
@@ -84,28 +84,28 @@ bool QLibraryPrivate::load_sys()
 {
     QString attempt;
 #if !defined(QT_NO_DYNAMIC_LIBRARY)
-    QFileInfo fi(fileName);
+    QFileSystemEntry fsEntry(fileName);
 
 #if defined(Q_OS_SYMBIAN)
     QString path; // In Symbian, always resolve with just the filename
     QString name;
 
     // Replace possible ".qtplugin" suffix with ".dll"
-    if (fi.suffix() == QLatin1String("qtplugin"))
-        name = fi.completeBaseName() + QLatin1String(".dll");
+    if (fsEntry.suffix() == QLatin1String("qtplugin"))
+        name = fsEntry.completeBaseName() + QLatin1String(".dll");
     else
-        name = fi.fileName();
+        name = fsEntry.fileName();
 #else
-    QString path = fi.path();
-    QString name = fi.fileName();
+    QString path = fsEntry.path();
+    QString name = fsEntry.fileName();
     if (path == QLatin1String(".") && !fileName.startsWith(path))
         path.clear();
     else
         path += QLatin1Char('/');
 #endif
-    // The first filename we want to attempt to load is the filename as the callee specified.
-    // Thus, the first attempt we do must be with an empty prefix and empty suffix.
-    QStringList suffixes(QLatin1String("")), prefixes(QLatin1String(""));
+
+    QStringList suffixes;
+    QStringList prefixes;
     if (pluginState != IsAPlugin) {
 #if !defined(Q_OS_SYMBIAN)
         prefixes << QLatin1String("lib");
@@ -187,6 +187,23 @@ bool QLibraryPrivate::load_sys()
     }
 #endif
 #endif // QT_HPUX_LD
+    // If using the new search heuristics we do:
+    //
+    //   If the filename is an absolute path then we want to try that first as it is most likely
+    //   what the callee wants. If we have been given a non-absolute path then lets try the
+    //   native library name first to avoid unnecessary calls to dlopen().
+    //
+    // otherwise:
+    //
+    //   We use the old behaviour which is to always try the specified filename first
+    if ((loadHints & QLibrary::ImprovedSearchHeuristics) && !fsEntry.isAbsolute()) {
+        suffixes.append(QLatin1String(""));
+        prefixes.append(QLatin1String(""));
+    } else {
+        suffixes.prepend(QLatin1String(""));
+        prefixes.prepend(QLatin1String(""));
+    }
+
     bool retry = true;
     for(int prefix = 0; retry && !pHnd && prefix < prefixes.size(); prefix++) {
         for(int suffix = 0; retry && !pHnd && suffix < suffixes.size(); suffix++) {

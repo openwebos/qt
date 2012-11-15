@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,24 +54,25 @@ QUIKitScreen::QUIKitScreen(int screenIndex)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     CGRect bounds = [uiScreen() bounds];
-    m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);
+    CGFloat scale = [uiScreen() scale];
+    updateInterfaceOrientation();
 
     m_format = QImage::Format_ARGB32_Premultiplied;
 
     m_depth = 24;
 
     const qreal inch = 25.4;
-    qreal dpi = 160.;
-    int dragDistance = 12;
+    qreal unscaledDpi = 160.;
+    int dragDistance = 12 * scale;
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
-        dpi = 132.;
-        dragDistance = 10;
+        unscaledDpi = 132.;
+        dragDistance = 10 * scale;
     }
-    m_physicalSize = QSize(qRound(bounds.size.width * inch / dpi), qRound(bounds.size.height * inch / dpi));
+    m_physicalSize = QSize(qRound(bounds.size.width * inch / unscaledDpi), qRound(bounds.size.height * inch / unscaledDpi));
     qApp->setStartDragDistance(dragDistance);
 
     QFont font; // system font is helvetica, so that is fine already
-    font.setPixelSize([UIFont systemFontSize]);
+    font.setPixelSize([UIFont systemFontSize] * scale);
     qApp->setFont(font);
 
     [pool release];
@@ -89,15 +90,17 @@ UIScreen *QUIKitScreen::uiScreen() const
 void QUIKitScreen::updateInterfaceOrientation()
 {
     CGRect bounds = [uiScreen() bounds];
+    CGFloat scale = [uiScreen() scale];
     switch ([[UIApplication sharedApplication] statusBarOrientation]) {
     case UIInterfaceOrientationPortrait:
     case UIInterfaceOrientationPortraitUpsideDown:
-        m_geometry = QRect(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height);;
+        m_geometry = QRect(bounds.origin.x * scale, bounds.origin.y * scale,
+                           bounds.size.width * scale, bounds.size.height * scale);;
         break;
     case UIInterfaceOrientationLandscapeLeft:
     case UIInterfaceOrientationLandscapeRight:
-        m_geometry = QRect(bounds.origin.x, bounds.origin.y,
-                           bounds.size.height, bounds.size.width);
+        m_geometry = QRect(bounds.origin.x * scale, bounds.origin.y * scale,
+                           bounds.size.height * scale, bounds.size.width * scale);
         break;
     }
     foreach (QWidget *widget, qApp->topLevelWidgets()) {

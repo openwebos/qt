@@ -1,9 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -31,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -497,7 +496,7 @@ QT_BEGIN_NAMESPACE
     the application is compiled using Forte Developer, or Sun Studio
     C++.  The header file also declares a range of macros (Q_OS_*)
     that are defined for the specified platforms. For example,
-    Q_OS_X11 which is defined for the X Window System.
+    Q_OS_WIN32 which is defined for Microsoft Windows.
 
     The purpose of these macros is to enable programmers to add
     compiler or platform specific code to their application.
@@ -1175,6 +1174,7 @@ bool qSharedBuild()
     \value MV_10_5     Mac OS X 10.5
     \value MV_10_6     Mac OS X 10.6
     \value MV_10_7     Mac OS X 10.7
+    \value MV_10_8     Mac OS X 10.8
     \value MV_Unknown  An unknown and currently unsupported platform
 
     \value MV_CHEETAH  Apple codename for MV_10_0
@@ -1185,6 +1185,7 @@ bool qSharedBuild()
     \value MV_LEOPARD  Apple codename for MV_10_5
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
     \value MV_LION     Apple codename for MV_10_7
+    \value MV_MOUNTAINLION Apple codename for MV_10_8
 
     \sa WinVersion, SymbianVersion
 */
@@ -1741,6 +1742,8 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_VISTA;
         } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 1) {
             winver = QSysInfo::WV_WINDOWS7;
+        } else if (osver.dwMajorVersion == 6 && osver.dwMinorVersion == 2) {
+            winver = QSysInfo::WV_WINDOWS8;
         } else {
             qWarning("Qt: Untested Windows version %d.%d detected!",
                      int(osver.dwMajorVersion), int(osver.dwMinorVersion));
@@ -1772,6 +1775,8 @@ QSysInfo::WinVersion QSysInfo::windowsVersion()
             winver = QSysInfo::WV_VISTA;
         else if (override == "WINDOWS7")
             winver = QSysInfo::WV_WINDOWS7;
+        else if (override == "WINDOWS8")
+            winver = QSysInfo::WV_WINDOWS8;
     }
 #endif
 

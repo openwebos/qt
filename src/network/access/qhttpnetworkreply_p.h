@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -128,7 +128,10 @@ public:
     bool readAnyAvailable() const;
     QByteArray readAny();
     QByteArray readAll();
+    QByteArray read(qint64 amount);
+    qint64 sizeNextBlock();
     void setDownstreamLimited(bool t);
+    void setReadBufferSize(qint64 size);
 
     bool supportsUserProvidedDownloadBuffer();
     void setUserProvidedDownloadBuffer(char*);
@@ -236,6 +239,7 @@ public:
     bool lastChunkRead;
     qint64 currentChunkSize;
     qint64 currentChunkRead;
+    qint64 readBufferMaxSize;
     QPointer<QHttpNetworkConnection> connection;
     QPointer<QHttpNetworkConnectionChannel> connectionChannel;
     bool initInflate;

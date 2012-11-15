@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,6 +46,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QPoint>
 #include <QtCore/QSize>
+#include <QtCore/QPointer>
 #include <qglobal.h>
 
 QT_BEGIN_NAMESPACE
@@ -75,7 +76,7 @@ namespace qdesigner_internal {
         Qt::Alignment alignment() const;
     private:
         QWidget *m_editorWidget;
-        QWidget *m_parentWidget;
+        QPointer<QWidget> m_parentWidget;
         const bool m_noChildEvent;
         QPoint m_posOffset;
         QSize m_sizeOffset;

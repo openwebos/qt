@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -201,11 +201,29 @@ QByteArray QHttpNetworkReply::readAll()
     return d->responseData.readAll();
 }
 
+QByteArray QHttpNetworkReply::read(qint64 amount)
+{
+    Q_D(QHttpNetworkReply);
+    return d->responseData.read(amount);
+}
+
+qint64 QHttpNetworkReply::sizeNextBlock()
+{
+    Q_D(QHttpNetworkReply);
+    return d->responseData.sizeNextBlock();
+}
+
 void QHttpNetworkReply::setDownstreamLimited(bool dsl)
 {
     Q_D(QHttpNetworkReply);
     d->downstreamLimited = dsl;
     d->connection->d_func()->readMoreLater(this);
+}
+
+void QHttpNetworkReply::setReadBufferSize(qint64 size)
+{
+    Q_D(QHttpNetworkReply);
+    d->readBufferMaxSize = size;
 }
 
 bool QHttpNetworkReply::supportsUserProvidedDownloadBuffer()
@@ -253,7 +271,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       connectionCloseEnabled(true),
       forceConnectionCloseEnabled(false),
       lastChunkRead(false),
-      currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
+      currentChunkSize(0), currentChunkRead(0), readBufferMaxSize(0), connection(0), initInflate(false),
       autoDecompress(false), responseData(), requestIsPrepared(false)
       ,pipeliningUsed(false), downstreamLimited(false)
       ,userProvidedDownloadBuffer(0)
@@ -625,7 +643,8 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
         // check for explicit indication of close or the implicit connection close of HTTP/1.0
         connectionCloseEnabled = (connectionHeaderField.toLower().contains("close") ||
             headerField("proxy-connection").toLower().contains("close")) ||
-            (majorVersion == 1 && minorVersion == 0 && connectionHeaderField.isEmpty());
+            (majorVersion == 1 && minorVersion == 0 &&
+            (connectionHeaderField.isEmpty() && !headerField("proxy-connection").toLower().contains("keep-alive")));
     }
     return bytes;
 }
@@ -699,6 +718,8 @@ qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QByteData
 {
 
     qint64 toBeRead = qMin(socket->bytesAvailable(), bodyLength - contentRead);
+    if (readBufferMaxSize)
+        toBeRead = qMin(toBeRead, readBufferMaxSize);
     QByteArray bd;
     bd.resize(toBeRead);
     qint64 haveRead = socket->read(bd.data(), toBeRead);
@@ -746,6 +767,8 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyRaw(QAbstractSocket *socket, QByte
     Q_ASSERT(out);
 
     int toBeRead = qMin<qint64>(128*1024, qMin<qint64>(size, socket->bytesAvailable()));
+    if (readBufferMaxSize)
+        toBeRead = qMin<qint64>(toBeRead, readBufferMaxSize);
 
     while (toBeRead > 0) {
         QByteArray byteData;
@@ -772,6 +795,10 @@ qint64 QHttpNetworkReplyPrivate::readReplyBodyChunked(QAbstractSocket *socket, Q
 {
     qint64 bytes = 0;
     while (socket->bytesAvailable()) {
+
+        if (readBufferMaxSize && (bytes > readBufferMaxSize))
+            break;
+
         if (!lastChunkRead && currentChunkRead >= currentChunkSize) {
             // For the first chunk and when we're done with a chunk
             currentChunkSize = 0;

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -17,6 +16,7 @@
 ** Alternatively, this file may be used in accordance with the terms
 ** and conditions contained in a signed written agreement between you
 ** and Nokia.
+**
 **
 **
 **
@@ -199,7 +199,7 @@
 
     \o The shadow build directory must be on the same level as the Qt source
         package.\br
-    If the Qt package is in \c{C:\Qt\%VERSION%} the shadow build directory
+    If the Qt package is in \c{C:\Qt\4.8.3} the shadow build directory
     could be \c{C:\Qt\shadowbuild}. A shadow build from a directory like
     \c{C:\shadowbuild} will not compile.
     \o Avoid using "release" and "debug" in the path to the shadow build
@@ -210,7 +210,7 @@
     distribution of Perl on Windows.)
     \endlist
 
-    So lets assume you have installed Qt in \c{C:\Qt\%VERSION%} and you want
+    So lets assume you have installed Qt in \c{C:\Qt\4.8.3} and you want
     to create a shadow build in \c{C:\Qt\mobile5-shadow}:
 
     \list

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -17,6 +16,7 @@
 ** Alternatively, this file may be used in accordance with the terms
 ** and conditions contained in a signed written agreement between you
 ** and Nokia.
+**
 **
 **
 **
@@ -729,12 +729,12 @@
     A comprehensive list of changes between Qt 4.5 and Qt 4.6 is
     included in the \c changes-4.6.0 file
     \l{http://qt.nokia.com/developer/changes/changes-4.6.0}{available
-    online}. A \l{Known Issues in %VERSION%}{list of known issues}
+    online}. A \l{Known Issues in 4.8.3}{list of known issues}
     for this release is also available.
 
     Changes between this release and the previous release are provided
-    in the \c{changes-%VERSION%} file (also
-    \l{http://qt.nokia.com/developer/changes/changes-%VERSION%}{available online}).
+    in the \c{changes-4.8.3} file (also
+    \l{http://qt.nokia.com/developer/changes/changes-4.8.3}{available online}).
 \endomit
 
     A list of other Qt 4 features can be found on the \bold{\l{What's
@@ -939,12 +939,12 @@
     A comprehensive list of changes between Qt 4.4 and Qt 4.5 is included
     in the \c changes-4.5.0 file
     \l{http://qt.nokia.com/developer/changes/changes-4.5.0}{available online}.
-    A \l{Known Issues in %VERSION%}{list of known issues} for this release is also
+    A \l{Known Issues in 4.8.3}{list of known issues} for this release is also
     available.
 
     Changes between this release and the previous release are provided
-    in the \c{changes-%VERSION%} file (also
-    \l{http://qt.nokia.com/developer/changes/changes-%VERSION%}{available online}).
+    in the \c{changes-4.8.3} file (also
+    \l{http://qt.nokia.com/developer/changes/changes-4.8.3}{available online}).
 
     A list of other Qt 4 features can be found on the
     \bold{\l{What's New in Qt 4}} page.

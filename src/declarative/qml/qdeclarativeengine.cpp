@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,7 @@
 #include "private/qdeclarativeengine_p.h"
 #include "qdeclarativeengine.h"
 
+#include "private/qdeclarativeboundsignal_p.h"
 #include "private/qdeclarativecontext_p.h"
 #include "private/qdeclarativecompiler_p.h"
 #include "private/qdeclarativeglobalscriptclass_p.h"
@@ -87,6 +88,7 @@
 #include <QStack>
 #include <QMap>
 #include <QPluginLoader>
+#include <QtGui/qapplication.h>
 #include <QtGui/qfontdatabase.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qthreadstorage.h>
@@ -354,10 +356,14 @@ QDeclarativeEnginePrivate::QDeclarativeEnginePrivate(QDeclarativeEngine *e)
 {
     if (!qt_QmlQtModule_registered) {
         qt_QmlQtModule_registered = true;
-        QDeclarativeItemModule::defineModule();
-        QDeclarativeUtilModule::defineModule();
         QDeclarativeEnginePrivate::defineModule();
-        QDeclarativeValueTypeFactory::registerValueTypes();
+
+        const QApplication::Type appType = QApplication::type();
+        if (appType != QApplication::Tty) {
+            QDeclarativeItemModule::defineModule();
+            QDeclarativeValueTypeFactory::registerValueTypes();
+        }
+        QDeclarativeUtilModule::defineModule(appType);
     }
     globalClass = new QDeclarativeGlobalScriptClass(&scriptEngine);
 }
@@ -542,6 +548,11 @@ void QDeclarativePrivate::qdeclarativeelement_destructor(QObject *o)
             d->context->destroy();
             d->context = 0;
         }
+
+        // Disconnect the notifiers now - during object destruction this would be too late, since
+        // the disconnect call wouldn't be able to call disconnectNotify(), as it isn't possible to
+        // get the metaobject anymore.
+        d->disconnectNotifiers();
     }
 }
 
@@ -1103,6 +1114,7 @@ public:
 
     QHash<int, QObject *> attachedProperties;
     QDeclarativeNotifier objectNameNotifier;
+    QList<QDeclarativeAbstractBoundSignal *> boundSignals;
 };
 
 QDeclarativeDataExtended::QDeclarativeDataExtended()
@@ -1125,6 +1137,32 @@ QHash<int, QObject *> *QDeclarativeData::attachedProperties() const
     return &extendedData->attachedProperties;
 }
 
+void QDeclarativeData::addBoundSignal(QDeclarativeAbstractBoundSignal *signal)
+{
+    if (!extendedData) extendedData = new QDeclarativeDataExtended;
+    extendedData->boundSignals.append(signal);
+}
+
+void QDeclarativeData::removeBoundSignal(QDeclarativeAbstractBoundSignal *signal)
+{
+    if (extendedData)
+        extendedData->boundSignals.removeAll(signal);
+}
+
+void QDeclarativeData::disconnectNotifiers()
+{
+    QDeclarativeAbstractBinding *binding = bindings;
+    while (binding) {
+        binding->disconnect(QDeclarativeAbstractBinding::DisconnectAll);
+        binding = binding->m_nextBinding;
+    }
+
+    if (extendedData) {
+        Q_FOREACH (QDeclarativeAbstractBoundSignal *signal, extendedData->boundSignals)
+            signal->disconnect();
+    }
+}
+
 void QDeclarativeData::destroyed(QObject *object)
 {
     if (deferredComponent)
@@ -1140,7 +1178,7 @@ void QDeclarativeData::destroyed(QObject *object)
         QDeclarativeAbstractBinding *next = binding->m_nextBinding;
         binding->m_prevBinding = 0;
         binding->m_nextBinding = 0;
-        binding->destroy();
+        binding->destroy(QDeclarativeAbstractBinding::KeepBindingConnected);
         binding = next;
     }
 

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -305,7 +305,7 @@ void ObjectInspector::ObjectInspectorPrivate::showContainersCurrentPage(QWidget 
     bool macroStarted = false;
     // Find a multipage container (tab widgets, etc.) in the hierarchy and set the right page.
     while (w != 0) {
-        if (fw->isManaged(w)) { // Rule out unmanaged internal scroll areas, for example, on QToolBoxes.
+        if (fw->isManaged(w) && !qobject_cast<QMainWindow *>(w)) { // Rule out unmanaged internal scroll areas, for example, on QToolBoxes.
             if (QDesignerContainerExtension *c = qt_extension<QDesignerContainerExtension*>(m_core->extensionManager(), w)) {
                 const int count = c->count();
                 if (count > 1 && !c->widget(c->currentIndex())->isAncestorOf(widget)) {

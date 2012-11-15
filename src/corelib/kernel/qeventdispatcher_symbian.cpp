@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -30,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -281,7 +281,7 @@ void QTimerActiveObject::DoCancel()
         // Cancel requires a signal to continue, we're in the wrong thread to use the RTimer
         if (m_threadData->symbian_thread_handle.ExitType() == EExitPending) {
             // owner thread is still running, it will receive a stray event if the timer fires now.
-            qFatal("QTimerActiveObject cancelled from wrong thread");
+            RDebug::Print(_L("QTimerActiveObject cancelled from wrong thread, owner thread will probably panic with stray signal"));
         }
         TRequestStatus *status = &iStatus;
         User::RequestComplete(status, KErrCancel);
@@ -1041,7 +1041,8 @@ void QEventDispatcherSymbian::closingDown()
 
     delete m_completeDeferredAOs;
     delete m_wakeUpAO;
-    if (m_activeScheduler) {
+    // only delete the active scheduler in its own thread
+    if (m_activeScheduler && QThread::currentThread() == thread()) {
         delete m_activeScheduler;
     }
 }

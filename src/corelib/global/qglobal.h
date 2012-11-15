@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,19 +44,19 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.8.2"
+#define QT_VERSION_STR "4.8.3"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040802
+#define QT_VERSION 0x040803
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
 #define QT_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 
-#define QT_PACKAGEDATE_STR "YYYY-MM-DD"
+#define QT_PACKAGEDATE_STR "2012-09-11"
 
-#define QT_PACKAGE_TAG ""
+#define QT_PACKAGE_TAG "a07ce9dcc0edd088cf48f44324ff4f82a9abe0c6"
 
 #if !defined(QT_BUILD_MOC)
 #include <QtCore/qconfig.h>
@@ -324,7 +324,10 @@ namespace QT_NAMESPACE {}
 #  if !defined(MAC_OS_X_VERSION_10_7)
 #       define MAC_OS_X_VERSION_10_7 MAC_OS_X_VERSION_10_6 + 1
 #  endif
-#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_7)
+#  if !defined(MAC_OS_X_VERSION_10_8)
+#       define MAC_OS_X_VERSION_10_8 MAC_OS_X_VERSION_10_7 + 1
+#  endif
+#  if (MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_8)
 #    warning "This version of Mac OS X is unsupported"
 #  endif
 #endif
@@ -844,6 +847,20 @@ namespace QT_NAMESPACE {}
 #  if defined(Q_CC_MSVC)
 #    define Q_COMPILER_MANGLES_RETURN_TYPE
 #  endif
+#endif
+
+#ifdef __cplusplus
+# if defined(Q_OS_QNX) || defined(Q_OS_BLACKBERRY)
+#  include <utility>
+#  if defined(_YVALS) || defined(_LIBCPP_VER)
+// QNX: libcpp (Dinkumware-based) doesn't have the <initializer_list>
+// header, so the feature is useless, even if the compiler supports
+// it. Disable.
+#    ifdef Q_COMPILER_INITIALIZER_LISTS
+#      undef Q_COMPILER_INITIALIZER_LISTS
+#    endif
+#  endif
+# endif
 #endif
 
 /*
@@ -1569,6 +1586,7 @@ public:
         WV_2003     = 0x0040,
         WV_VISTA    = 0x0080,
         WV_WINDOWS7 = 0x0090,
+        WV_WINDOWS8 = 0x00a0,
         WV_NT_based = 0x00f0,
 
         /* version numbers */
@@ -1578,6 +1596,7 @@ public:
         WV_5_2      = WV_2003,
         WV_6_0      = WV_VISTA,
         WV_6_1      = WV_WINDOWS7,
+        WV_6_2      = WV_WINDOWS8,
 
         WV_CE       = 0x0100,
         WV_CENET    = 0x0200,
@@ -1603,6 +1622,7 @@ public:
         MV_10_5 = 0x0007,
         MV_10_6 = 0x0008,
         MV_10_7 = 0x0009,
+        MV_10_8 = 0x000A,
 
         /* codenames */
         MV_CHEETAH = MV_10_0,
@@ -1612,7 +1632,8 @@ public:
         MV_TIGER = MV_10_4,
         MV_LEOPARD = MV_10_5,
         MV_SNOWLEOPARD = MV_10_6,
-        MV_LION = MV_10_7
+        MV_LION = MV_10_7,
+        MV_MOUNTAINLION = MV_10_8
     };
     static const MacVersion MacintoshVersion;
 #endif

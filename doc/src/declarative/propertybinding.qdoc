@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -17,6 +16,7 @@
 ** Alternatively, this file may be used in accordance with the terms
 ** and conditions contained in a signed written agreement between you
 ** and Nokia.
+**
 **
 **
 **
@@ -104,7 +104,7 @@ although it is possible to use the \l {Using the Binding Element}{Binding} eleme
 
 \section1 Types of Properties
 
-Properties may bind to different types, but they are are \e type-safe. That is,
+Properties may bind to different types, but they are \e type-safe. That is,
 properties only allow you to assign a value that matches the property type. For
 example, if a property is a real, and if you try to assign a string to it you
 will get an error.

@@ -1,8 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -35,6 +34,7 @@
 **
 **
 **
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,6 +57,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class HelpEngineWrapper;
 
 #if !defined(QT_NO_WEBKIT)
 class HelpViewer : public QWebView
@@ -100,7 +102,6 @@ public:
     bool findText(const QString &text, FindFlags flags, bool incremental,
         bool fromSearch);
 
-    static const QString DocPath;
     static const QString AboutBlank;
     static const QString LocalHelpFile;
     static const QString PageNotFoundMessage;
@@ -109,6 +110,7 @@ public:
     static bool canOpenPage(const QString &url);
     static QString mimeFromUrl(const QUrl &url);
     static bool launchWithExternalApp(const QUrl &url);
+    static QString fixupVirtualFolderForUrl(const HelpEngineWrapper *engine, const QUrl &url, bool *fixed = 0);
 
 public slots:
     void copy();

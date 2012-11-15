@@ -1,9 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-** All rights reserved.
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: http://www.qt-project.org/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -31,6 +29,7 @@
 ** Other Usage
 ** Alternatively, this file may be used in accordance with the terms and
 ** conditions contained in a signed written agreement between you and Nokia.
+**
 **
 **
 **
@@ -103,14 +102,22 @@ static QStringList fallbackFamilies(const QString &family, const QFont::Style &s
     return retList;
 }
 
+static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt);
+
 static void initializeDb()
 {
-    static int initialized = false;
+    QFontDatabasePrivate *db = privateDb();
 
-    if (!initialized) {
-        //init by asking for the platformfontdb for the first time :)
+    // init by asking for the platformfontdb for the first time or after invalidation
+    if (!db->count)
         QApplicationPrivate::platformIntegration()->fontDatabase()->populateFontDatabase();
-        initialized = true;
+
+    if (db->reregisterAppFonts) {
+        for (int i = 0; i < db->applicationFonts.count(); i++) {
+            if (!db->applicationFonts.at(i).families.isEmpty())
+                registerFont(&db->applicationFonts[i]);
+        }
+        db->reregisterAppFonts = false;
     }
 }
 
@@ -133,7 +140,9 @@ void qt_applyFontDatabaseSettings(const QSettings &settings)
 
 static inline void load(const QString & = QString(), int = -1)
 {
-    initializeDb();
+    // Only initialize the database if it has been cleared or not initialized yet
+    if (!privateDb()->count)
+        initializeDb();
 }
 
 static
