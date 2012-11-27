@@ -2,7 +2,6 @@
 **
 ** Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-** Copyright (C) 2012 TaskOne
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
@@ -58,7 +57,7 @@ QT_MODULE(Gui)
 
 class QWSLinuxInputKbPrivate;
 
-#if !defined(QT_WEBOS) || defined(TASKONE)
+#ifndef QT_WEBOS
 class QWSLinuxInputKeyboardHandler : public QWSKeyboardHandler
 #else // QT_WEBOS
 class Q_GUI_EXPORT QWSLinuxInputKeyboardHandler : public QWSKeyboardHandler

@@ -187,16 +187,6 @@ void QEglFSScreen::createAndSetPlatformContext()
     kdRealizeWindow(window,&eglWindow);
 #endif
 
-#ifdef TASKONE
-    // It should be fixed to assign by requested window size.
-    eglWindow = (fbdev_window *)malloc(sizeof(fbdev_window));
-    eglWindow->x = 0;
-    eglWindow->y = 0;
-    eglWindow->width = 1280;
-    eglWindow->height = 720;
-    eglWindow->bStretchToDisplay = TRUE;
-#endif
-
     m_surface = eglCreateWindowSurface(m_dpy, config, eglWindow, NULL);
     if (m_surface == EGL_NO_SURFACE) {
         qWarning("Could not create the egl surface: error = 0x%x\n", eglGetError());
