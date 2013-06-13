@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).
-** Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+** Copyright (c) 2012-2013 LG Electronics, Inc.
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
